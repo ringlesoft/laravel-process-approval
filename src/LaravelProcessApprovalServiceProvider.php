@@ -5,7 +5,6 @@ namespace RingleSoft\LaravelProcessApproval;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 use RingleSoft\LaravelProcessApproval\Console\Commands\FlowCommand;
-use RingleSoft\LaravelProcessApproval\Console\Commands\InstallCommand;
 use RingleSoft\LaravelProcessApproval\Console\Commands\StepCommand;
 use RingleSoft\LaravelProcessApproval\View\Components\ApprovalActions;
 
@@ -32,10 +31,9 @@ class LaravelProcessApprovalServiceProvider extends ServiceProvider
         );
 
 
-
         if ($this->app->runningInConsole()) {
             $this->commands([
-                InstallCommand::class,
+//                InstallCommand::class,
                 FlowCommand::class,
                 StepCommand::class,
             ]);

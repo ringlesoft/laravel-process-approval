@@ -2,28 +2,28 @@
 
 namespace RingleSoft\LaravelProcessApproval\Traits;
 
-use Illuminate\Database\Eloquent\Relations\MorphOne;
-use RingleSoft\LaravelProcessApproval\Events\ProcessApprovedEvent;
-use RingleSoft\LaravelProcessApproval\Events\ProcessDiscardedEvent;
-use RingleSoft\LaravelProcessApproval\Events\ProcessRejectedEvent;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use RingleSoft\LaravelProcessApproval\Contracts\ApprovableModel;
 use RingleSoft\LaravelProcessApproval\Enums\ApprovalActionEnum;
 use RingleSoft\LaravelProcessApproval\Enums\RequestStatusEnum;
+use RingleSoft\LaravelProcessApproval\Events\ApprovalNotificationEvent;
+use RingleSoft\LaravelProcessApproval\Events\ProcessApprovalCompletedEvent;
+use RingleSoft\LaravelProcessApproval\Events\ProcessApprovedEvent;
+use RingleSoft\LaravelProcessApproval\Events\ProcessDiscardedEvent;
+use RingleSoft\LaravelProcessApproval\Events\ProcessRejectedEvent;
 use RingleSoft\LaravelProcessApproval\Events\ProcessSubmittedEvent;
 use RingleSoft\LaravelProcessApproval\Models\ProcessApproval;
 use RingleSoft\LaravelProcessApproval\Models\ProcessApprovalFlow;
 use RingleSoft\LaravelProcessApproval\Models\ProcessApprovalFlowStep;
-use RingleSoft\LaravelProcessApproval\Events\ProcessApprovalCompletedEvent;
 
 trait Approvable
 {
@@ -48,6 +48,26 @@ trait Approvable
     }
 
 
+
+    /**
+     * Approvals relation
+     * @return MorphMany
+     */
+    public function approvals(): MorphMany
+    {
+        return $this->morphMany(ProcessApproval::class, 'approvable');
+    }
+
+    /**
+     * Last approval relation
+     * @return MorphOne
+     */
+    public function lastApproval(): MorphOne
+    {
+        return $this->morphOne(ProcessApproval::class, 'approvable')->latest();
+    }
+
+
     public static function approved(): Builder {
         return self::query()->whereHas('lastApproval', static function($q) {
             return $q->where('approval_action', ApprovalActionEnum::APPROVED->value)
@@ -62,6 +82,9 @@ trait Approvable
         });
     }
 
+    /**
+     * @return Builder
+     */
     public static function discarded(): Builder {
         return self::query()->whereHas('lastApproval', static function($q) {
             return $q->where('approval_action', ApprovalActionEnum::DISCARDED->value)
@@ -70,32 +93,14 @@ trait Approvable
     }
 
     /**
-     * It makes sense if approvable requests are edited before they are submitted for approvals
-     * @return void
+     * Load approvals for the model
+     * @return Collection|void|null
      */
-    public function submit($user = null)
-    {
-        ProcessSubmittedEvent::dispatch($this);
-        if($this->getApprovalSteps()->count() === 0) {
-            $this->completeApproval();
-        }
-    }
-
     private function loadApprovals()
     {
         if ($this->_approvalSteps !== null) {
             return $this->_approvalSteps;
         }
-    }
-
-    public function approvals(): MorphMany
-    {
-        return $this->morphMany(ProcessApproval::class, 'approvable');
-    }
-
-    public function lastApproval(): MorphOne
-    {
-        return $this->morphOne(ProcessApproval::class, 'approvable')->latest();
     }
 
     /**
@@ -189,6 +194,21 @@ trait Approvable
         return null;
     }
 
+
+
+    /**
+     * It makes sense if approvable requests are edited before they are submitted for approvals
+     * @return void
+     */
+    public function submit($user = null)
+    {
+        ProcessSubmittedEvent::dispatch($this);
+        if($this->getApprovalSteps()->count() === 0) {
+            $this->completeApproval();
+        }
+    }
+
+
     /**
      * Approve a request
      * @param null $comment
@@ -199,8 +219,8 @@ trait Approvable
     {
         $nextStep = $this->nextApprovalStep();
         if (!$nextStep) {
-            session()->flash('error', 'No approval steps remaining');
-            return redirect()->back(); // TODO throw exception and capture it
+            ApprovalNotificationEvent::dispatch('Approval already completed', $this);
+            return false;
         }
         DB::beginTransaction();
         try {
@@ -216,9 +236,8 @@ trait Approvable
             if ($approval) {
                 ProcessApprovedEvent::dispatch($approval);
                 if ($this->isApprovalCompleted()) {
-                    $this->update(['status' => RequestStatusEnum::APPROVED->value]);
                     if ($this->onApprovalCompleted($approval)) {
-                        Log::info('Approval went well');
+                        // Approval went well
                     } else {
                         throw new \Exception('Callback action after approval failed');
                     }
@@ -228,6 +247,9 @@ trait Approvable
             Log::error('Process approval failure: ', [$e]);
             DB::rollBack();
             return false;
+        }
+        if ($this->isApprovalCompleted()) {
+            ProcessApprovalCompletedEvent::dispatch($approval);
         }
         DB::commit();
         return $approval ?? false;
@@ -242,8 +264,6 @@ trait Approvable
      */
     public function reject($comment = null, Authenticatable|null $user = null): ProcessApproval|bool
     {
-        $rules = [];
-        // TODO run a validation
         $nextStep = $this->nextApprovalStep();
         $approval = ProcessApproval::query()->create([
             'approvable_type' => $this->getApprovableType(),
@@ -292,9 +312,9 @@ trait Approvable
      */
     public function getNextApprovers(): Collection
     {
-        $this->loadApprovals(); // Refresh
+        $this->loadApprovals();
         $nextStep = $this->nextApprovalStep();
-        return User::role($nextStep?->role)->get();
+        return (config('process_approval.users_model'))::role($nextStep?->role)->get();
     }
 
     /**
@@ -310,17 +330,19 @@ trait Approvable
 
     /**
      * The link for viewing the request
-     * Always override this method for accuracy
-     * @return string
+     * @return string|null
      */
-    public function getViewLink(): string
+    public function getViewLink(): string|null
     {
-        $name = Str::of(self::getApprovableType())->afterLast("\\")->snake()->plural();
-        return route('admin.' . $name->toString() . '.show', $this);
+        if(method_exists($this, 'viewLink')){
+            return $this->viewLink();
+        }
+        return null;
     }
 
     public function getApprovalSummaryUI()
     {
+        // TODO Implement the logic
         return $this->isApprovalCompleted() ?
             '<span class="badge bg-success-transparent" title="Approved" data-bs-toggle="tooltip"><i class="bi bi-check"></i></span>'
             :

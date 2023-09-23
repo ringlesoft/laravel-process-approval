@@ -33,6 +33,20 @@ interface ApprovableModel
      * @return Builder
      */
     public static function approved(): Builder;
+
+    /**
+     * Get only rejected models
+     * @return Builder
+     */
+    public static function rejected(): Builder;
+
+    /**
+     * Get only rejected models
+     * @return Builder
+     */
+    public static function discarded(): Builder;
+
+
     /**
      * Returns a list of all approval(and rejections) done on this record
      * @return MorphMany
