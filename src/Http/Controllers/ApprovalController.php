@@ -35,7 +35,7 @@ class ApprovalController extends Controller
         $request->validate($rules);
         $className = $request->input('model_name');
         $model = $className::findOrFail($id);
-        if($model->submit(auth()?->user())) {
+        if($model->submit($this->getUser($request->get('user_id')))) {
             ApprovalNotificationEvent::dispatch('Document Submitted', $model);
         } else {
             ApprovalNotificationEvent::dispatch('Failed to submit document', $model, 'ERROR');

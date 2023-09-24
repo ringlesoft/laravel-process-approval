@@ -168,6 +168,15 @@ trait Approvable
     }
 
     /**
+     * Check if approval has started
+     * @return bool
+     */
+    public function isSubmitted(): bool
+    {
+        return $this->approvalStatus?->status !== ApprovalStatusEnum::CREATED->value;
+    }
+
+    /**
      * Get the next approval Step
      * @return ProcessApprovalFlowStep|null
      */
@@ -209,7 +218,7 @@ trait Approvable
      * It makes sense if approvable requests are edited before they are submitted for approvals
      * @return void
      */
-    public function submit($comment, $user = null)
+    public function submit($user = null)
     {
         ProcessSubmittedEvent::dispatch($this);
         $nextStep = $this->nextApprovalStep();
@@ -224,7 +233,7 @@ trait Approvable
                 'approvable_id' => $this->id,
                 'process_approval_flow_step_id' => $nextStep->id,
                 'approval_action' => ApprovalActionEnum::APPROVED,
-                'comment' => $comment,
+                'comment' => '',
                 'user_id' => $user?->id,
                 'approver_name' => $user?->name ?? 'Unknown'
             ]);
