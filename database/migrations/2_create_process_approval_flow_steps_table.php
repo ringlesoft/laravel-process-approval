@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('process_approval_flow_steps', function (Blueprint $table) {
+        Schema::create('process_approval_flow_steps', static function (Blueprint $table) {
             $table->id();
             $table->foreignId('process_approval_flow_id')->references('id')->on('process_approval_flows');
             $table->foreignId('role_id')->index();

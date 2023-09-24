@@ -16,13 +16,18 @@ class ApprovalNotificationEvent
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public ApprovableModel|null $model;
+    /**
+     * @var mixed|string
+     */
+    public mixed $type;
 
     /**
      * Create a new event instance.
      */
-    public function __construct($message, ApprovableModel|null $model)
+    public function __construct($message, ApprovableModel|null $model, $type = 'SUCCESS')
     {
         $this->model = $model;
+        $this->type = $type;
     }
 
     /**

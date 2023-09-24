@@ -2,10 +2,11 @@
 
 namespace RingleSoft\LaravelProcessApproval\Enums;
 
-enum RequestStatusEnum: string
+enum ApprovalStatusEnum: string
 {
-    case PENDING = 'Pending';
+    case CREATED = 'Created';
     case SUBMITTED = 'Submitted';
+    case PENDING = 'PENDING';
     case APPROVED = 'Approved';
     case REJECTED = 'Rejected';
     case DISCARDED = 'Discarded';

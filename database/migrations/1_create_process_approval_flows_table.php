@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('process_approval_flows', function (Blueprint $table) {
+        Schema::create('process_approval_flows', static function (Blueprint $table) {
             $table->id();
             $table->string('name');
             $table->string('approvable_type');

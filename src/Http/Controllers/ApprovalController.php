@@ -9,6 +9,7 @@ use Illuminate\Routing\Redirector;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use RingleSoft\LaravelProcessApproval\Contracts\ApprovableModel;
+use RingleSoft\LaravelProcessApproval\Events\ApprovalNotificationEvent;
 
 class ApprovalController extends Controller
 {
@@ -35,9 +36,9 @@ class ApprovalController extends Controller
         $className = $request->input('model_name');
         $model = $className::findOrFail($id);
         if($model->submit(auth()?->user())) {
-//            session()->flash('success', "Document submitted successfully!");
+            ApprovalNotificationEvent::dispatch('Document Submitted', $model);
         } else {
-//            session()->flash('error', "Failed to submit document");
+            ApprovalNotificationEvent::dispatch('Failed to submit document', $model, 'ERROR');
         }
         return $this->redirector->back();
     }
@@ -60,9 +61,9 @@ class ApprovalController extends Controller
         $model = $className::findOrFail($id);
         $comment = $request->input('comment');
         if($model->approve($comment, $this->getUser($request->get('user_id')))) {
-            session()->flash('success', "Document approved successfully!");
+            ApprovalNotificationEvent::dispatch('Document approved successfully', $model);
         } else {
-            session()->flash('error', "Failed to approve document");
+            ApprovalNotificationEvent::dispatch('Failed to approve document', $model, 'ERROR');
         }
         return $this->redirector->back();
     }
@@ -85,9 +86,9 @@ class ApprovalController extends Controller
         $model = $className::findOrFail($id);
         $comment = $request->input('comment');
         if($model->reject($comment, $this->getUser($request->get('user_id')))) {
-            session()->flash('success', "Document approved successfully!");
+            ApprovalNotificationEvent::dispatch('Document approved successfully', $model);
         } else {
-            session()->flash('error', "Failed to approve document");
+            ApprovalNotificationEvent::dispatch('Failed to approve document', $model, 'ERROR');
         }
         return $this->redirector->back();
     }
@@ -110,9 +111,9 @@ class ApprovalController extends Controller
         $model = $className::findOrFail($id);
         $comment = $request->input('comment');
         if($model->discard($comment, $this->getUser($request->get('user_id')) )) {
-            session()->flash('success', "Document discarded successfully!");
+            ApprovalNotificationEvent::dispatch('Document discarded successfully', $model);
         } else {
-            session()->flash('error', "Failed to discard document");
+            ApprovalNotificationEvent::dispatch('Failed to discard document', $model, 'ERROR');
         }
         return $this->redirector->back();
     }

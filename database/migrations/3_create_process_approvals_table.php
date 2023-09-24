@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('process_approvals', function (Blueprint $table) {
+        Schema::create('process_approvals', static function (Blueprint $table) {
             $table->id();
             $table->morphs('approvable');
             $table->foreignId('process_approval_flow_step_id')->references('id')->on('process_approval_flow_steps')->cascadeOnDelete();

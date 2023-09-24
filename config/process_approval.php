@@ -14,6 +14,7 @@ return [
      */
     'users_model' => "\\App\\Models\\User",
 
+
     /**
      * The path in which application models ar located
      */

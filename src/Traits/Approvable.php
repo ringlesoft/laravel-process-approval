@@ -11,10 +11,9 @@ use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
 use RingleSoft\LaravelProcessApproval\Contracts\ApprovableModel;
 use RingleSoft\LaravelProcessApproval\Enums\ApprovalActionEnum;
-use RingleSoft\LaravelProcessApproval\Enums\RequestStatusEnum;
+use RingleSoft\LaravelProcessApproval\Enums\ApprovalStatusEnum;
 use RingleSoft\LaravelProcessApproval\Events\ApprovalNotificationEvent;
 use RingleSoft\LaravelProcessApproval\Events\ProcessApprovalCompletedEvent;
 use RingleSoft\LaravelProcessApproval\Events\ProcessApprovedEvent;
@@ -24,10 +23,28 @@ use RingleSoft\LaravelProcessApproval\Events\ProcessSubmittedEvent;
 use RingleSoft\LaravelProcessApproval\Models\ProcessApproval;
 use RingleSoft\LaravelProcessApproval\Models\ProcessApprovalFlow;
 use RingleSoft\LaravelProcessApproval\Models\ProcessApprovalFlowStep;
+use RingleSoft\LaravelProcessApproval\Models\ProcessApprovalStatus;
 
 trait Approvable
 {
     private Collection|null $_approvalSteps = null;
+
+
+    protected static function boot()
+    {
+        parent::boot();
+        static::created(static function ($model) {
+            $model->approvalStatus()->create([
+                'steps' => $model->approvalFlowSteps()->map(function ($item) {
+                    $set = $item->only(['id', 'role_id', 'action']);
+                    $set['process_approval_id'] = null;
+                    $set['process_approval_action'] = null;
+                    return $set;
+                }),
+                'status' => (property_exists($model, 'autoSubmit') && $model->autoSubmit) ? ApprovalStatusEnum::SUBMITTED->value : ApprovalStatusEnum::CREATED->value,
+            ]);
+        });
+    }
 
     /**
      * Get the class of this approvable
@@ -47,7 +64,10 @@ trait Approvable
         return ProcessApprovalFlow::query()->where('approvable_type', self::getApprovableType())->with('steps.approval')->first();
     }
 
-
+    public function approvalStatus(): MorphOne
+    {
+        return $this->morphOne(ProcessApprovalStatus::class, 'approvable');
+    }
 
     /**
      * Approvals relation
@@ -67,28 +87,38 @@ trait Approvable
         return $this->morphOne(ProcessApproval::class, 'approvable')->latest();
     }
 
+    public function approvalFlowSteps()
+    {
+        return ProcessApprovalFlowStep::query()
+            ->join('process_approval_flows', 'process_approval_flows.id', 'process_approval_flow_steps.process_approval_flow_id')
+            ->where('process_approval_flows.approvable_type', self::getApprovableType())
+            ->select('process_approval_flow_steps.*')
+            ->orderByRaw('`order` asc, id asc')
+            ->get();
+    }
 
-    public static function approved(): Builder {
-        return self::query()->whereHas('lastApproval', static function($q) {
-            return $q->where('approval_action', ApprovalActionEnum::APPROVED->value)
-                ->whereRaw("process_approvals.id = (select MAX(a2.id) from process_approvals as a2 WHERE a2.approvable_id = process_approvals.approvable_id AND a2.approvable_type = process_approvals.approvable_type LIMIT 1 )");
+
+    public static function approved(): Builder
+    {
+        return self::query()->whereHas('approvalStatus', static function ($q) {
+            return $q->where('status', ApprovalActionEnum::APPROVED->value);
         });
     }
 
-    public static function rejected(): Builder {
-        return self::query()->whereHas('lastApproval', static function($q) {
-            return $q->where('approval_action', ApprovalActionEnum::REJECTED->value)
-                ->whereRaw("process_approvals.id = (select MAX(a2.id) from process_approvals as a2 WHERE a2.approvable_id = process_approvals.approvable_id AND a2.approvable_type = process_approvals.approvable_type LIMIT 1 )");
+    public static function rejected(): Builder
+    {
+        return self::query()->whereHas('approvalStatus', static function ($q) {
+            return $q->where('status', ApprovalActionEnum::REJECTED->value);
         });
     }
 
     /**
      * @return Builder
      */
-    public static function discarded(): Builder {
-        return self::query()->whereHas('lastApproval', static function($q) {
-            return $q->where('approval_action', ApprovalActionEnum::DISCARDED->value)
-                ->whereRaw("process_approvals.id = (select MAX(a2.id) from process_approvals as a2 WHERE a2.approvable_id = process_approvals.approvable_id AND a2.approvable_type = process_approvals.approvable_type LIMIT 1 )");
+    public static function discarded(): Builder
+    {
+        return self::query()->whereHas('approvalStatus', static function ($q) {
+            return $q->where('status', ApprovalActionEnum::DISCARDED->value);
         });
     }
 
@@ -107,26 +137,26 @@ trait Approvable
      * Returns a collection of steps with corresponding approvals
      * @return mixed
      */
-    private function getApprovalSteps(): Collection
-    {
-        $this->loadApprovals();
-        $id = $this->id;
-        $myClass =  (string) self::getApprovableType();
-        $this->_approvalSteps = ProcessApprovalFlowStep::query()
-            ->join('process_approval_flows', 'process_approval_flow_steps.process_approval_flow_id', '=', 'process_approval_flows.id')
-            ->leftJoin('process_approvals', static function ($join) use ($id, $myClass) {
-                $join->on('process_approval_flow_steps.id', '=', 'process_approvals.process_approval_flow_step_id')
-                    ->on('process_approvals.approvable_type', '=', DB::raw("'". (addslashes($myClass)) ."'"))
-                    ->on('process_approvals.approvable_id', '=', DB::raw("'{$id}'"))
-                    ->whereRaw("process_approvals.id = (select MAX(a2.id) from process_approvals as a2 WHERE a2.process_approval_flow_step_id = process_approval_flow_steps.id AND a2.approvable_id = {$id} AND a2.approvable_type = '".(addslashes($myClass))."' LIMIT 1 )");
-            })
-            ->orderByRaw('process_approval_flow_steps.order asc, process_approval_flow_steps.id asc')
-            ->where('process_approval_flow_steps.active', 1)
-            ->where('process_approval_flows.approvable_type', (string)$myClass)
-            ->selectRaw('process_approval_flow_steps.*, process_approvals.approval_action, process_approvals.user_id')
-            ->get();
-        return $this->_approvalSteps;
-    }
+//    private function getApprovalSteps(): Collection
+//    {
+//        $this->loadApprovals();
+//        $id = $this->id;
+//        $myClass = (string)self::getApprovableType();
+//        $this->_approvalSteps = ProcessApprovalFlowStep::query()
+//            ->join('process_approval_flows', 'process_approval_flow_steps.process_approval_flow_id', '=', 'process_approval_flows.id')
+//            ->leftJoin('process_approvals', static function ($join) use ($id, $myClass) {
+//                $join->on('process_approval_flow_steps.id', '=', 'process_approvals.process_approval_flow_step_id')
+//                    ->on('process_approvals.approvable_type', '=', DB::raw("'" . (addslashes($myClass)) . "'"))
+//                    ->on('process_approvals.approvable_id', '=', DB::raw("'{$id}'"))
+//                    ->whereRaw("process_approvals.id = (select MAX(a2.id) from process_approvals as a2 WHERE a2.process_approval_flow_step_id = process_approval_flow_steps.id AND a2.approvable_id = {$id} AND a2.approvable_type = '" . (addslashes($myClass)) . "' LIMIT 1 )");
+//            })
+//            ->orderByRaw('process_approval_flow_steps.order asc, process_approval_flow_steps.id asc')
+//            ->where('process_approval_flow_steps.active', 1)
+//            ->where('process_approval_flows.approvable_type', (string)$myClass)
+//            ->selectRaw('process_approval_flow_steps.*, process_approvals.approval_action, process_approvals.user_id')
+//            ->get();
+//        return $this->_approvalSteps;
+//    }
 
     /**
      * Check if Approval process is completed
@@ -134,8 +164,8 @@ trait Approvable
      */
     public function isApprovalCompleted(): bool
     {
-        foreach ($this->getApprovalSteps() ?? [] as $index => $item) {
-            if ($item->approval_action !== ApprovalActionEnum::APPROVED->value) {
+        foreach (collect($this->approvalStatus()->steps ?? []) as $index => $item) {
+            if ($item->approval_action === null || $item->process_approval_id === null) {
                 return false;
             }
         }
@@ -159,7 +189,7 @@ trait Approvable
      */
     public function isApprovalStarted(): bool
     {
-        return $this->approvals()->count() > 0;
+        return !in_array($this->approvalStatus->status, [ApprovalStatusEnum::CREATED->value, ApprovalStatusEnum::SUBMITTED->value, ApprovalStatusEnum::PENDING->value,], true);
     }
 
     /**
@@ -168,11 +198,14 @@ trait Approvable
      */
     public function nextApprovalStep(): ProcessApprovalFlowStep|null
     {
-        foreach ($this->getApprovalSteps() ?? [] as $index => $item) {
-            if ($item->approval_action !== ApprovalActionEnum::APPROVED->value && $item->approval_action !== ApprovalActionEnum::DISCARDED->value) {
-                return ProcessApprovalFlowStep::query()->with('role')->find($item->id);
+        foreach (collect($this->approvalStatus->steps ?? []) as $index => $step) {
+            if($step['process_approval_id'] === null ){
+                return ProcessApprovalFlowStep::query()->with('role')->find($step['id']);
             }
-            if ($item->approval_action === ApprovalActionEnum::DISCARDED->value) {
+            if ($step['process_approval_action'] !== ApprovalActionEnum::APPROVED->value && $step['process_approval_action'] !== ApprovalActionEnum::DISCARDED->value) {
+                return ProcessApprovalFlowStep::query()->with('role')->find($step['id']);
+            }
+            if ($step['process_approval_action'] === ApprovalActionEnum::DISCARDED->value) {
                 return null;
             }
         }
@@ -185,27 +218,62 @@ trait Approvable
      */
     public function previousApprovalStep(): ProcessApprovalFlowStep|null
     {
-        $steps = $this->getApprovalSteps() ?? [];
-        foreach ($steps as $index => $item) {
-            if ($steps[$index + 1]->approval_action === null) {
-                return ProcessApprovalFlowStep::query()->find($item->process_approval_flow_step_id);
+        $previous_id = null;
+        foreach (collect($this->approvalStatus->steps ?? []) as $index => $step) {
+            if ($step['process_approval_id'] === null) {
+                return ProcessApprovalFlowStep::query()->find($previous_id);
+            } else {
+                $previous_id = $step->id;
             }
         }
         return null;
     }
 
 
-
     /**
      * It makes sense if approvable requests are edited before they are submitted for approvals
      * @return void
      */
-    public function submit($user = null)
+    public function submit($comment, $user = null)
     {
         ProcessSubmittedEvent::dispatch($this);
-        if($this->getApprovalSteps()->count() === 0) {
-            $this->completeApproval();
+        $nextStep = $this->nextApprovalStep();
+        if (!$nextStep) {
+            ApprovalNotificationEvent::dispatch('Approval already completed', $this);
+            return false;
         }
+        DB::beginTransaction();
+        try {
+            $approval = ProcessApproval::query()->updateOrCreate([
+                'approvable_type' => $this->getApprovableType(),
+                'approvable_id' => $this->id,
+                'process_approval_flow_step_id' => $nextStep->id,
+                'approval_action' => ApprovalActionEnum::APPROVED,
+                'comment' => $comment,
+                'user_id' => $user?->id,
+                'approver_name' => $user?->name ?? 'Unknown'
+            ]);
+            if ($approval) {
+                $this->approvalStatus()->update(['status' => ApprovalStatusEnum::SUBMITTED]);
+                ProcessApprovedEvent::dispatch($approval);
+                if ($this->isApprovalCompleted()) {
+                    if ($this->onApprovalCompleted($approval)) {
+                        // Approval went well
+                    } else {
+                        throw new \Exception('Callback action after approval failed');
+                    }
+                }
+            }
+        } catch (\Exception $e) {
+            Log::error('Process approval failure: ', [$e]);
+            DB::rollBack();
+            return false;
+        }
+        if ($this->isApprovalCompleted()) {
+            ProcessApprovalCompletedEvent::dispatch($approval);
+        }
+        DB::commit();
+        return $approval ?? false;
     }
 
 
@@ -234,6 +302,7 @@ trait Approvable
                 'approver_name' => $user?->name ?? 'Unknown'
             ]);
             if ($approval) {
+                $this->updateStatus($nextStep->id, $approval);
                 ProcessApprovedEvent::dispatch($approval);
                 if ($this->isApprovalCompleted()) {
                     if ($this->onApprovalCompleted($approval)) {
@@ -264,20 +333,28 @@ trait Approvable
      */
     public function reject($comment = null, Authenticatable|null $user = null): ProcessApproval|bool
     {
-        $nextStep = $this->nextApprovalStep();
-        $approval = ProcessApproval::query()->create([
-            'approvable_type' => $this->getApprovableType(),
-            'approvable_id' => $this->id,
-            'process_approval_flow_step_id' => $nextStep->id,
-            'approval_action' => ApprovalActionEnum::REJECTED,
-            'comment' => $comment,
-            'user_id' => $user?->id,
-            'approver_name' => $user?->name ?? 'Unknown'
-        ]);
-        if ($approval) {
-            $this->loadApprovals();
-            ProcessRejectedEvent::dispatch($approval);
+        DB::beginTransaction();
+        try {
+            $nextStep = $this->nextApprovalStep();
+            $approval = ProcessApproval::query()->create([
+                'approvable_type' => $this->getApprovableType(),
+                'approvable_id' => $this->id,
+                'process_approval_flow_step_id' => $nextStep->id,
+                'approval_action' => ApprovalActionEnum::REJECTED,
+                'comment' => $comment,
+                'user_id' => $user?->id,
+                'approver_name' => $user?->name ?? 'Unknown'
+            ]);
+            if ($approval) {
+                $this->updateStatus($nextStep->id, $approval);
+                $this->loadApprovals();
+                ProcessRejectedEvent::dispatch($approval);
+            }
+        } catch (\Exception $e) {
+            Log::debug('Process Approval - reject: ', $e);
+            DB::rollBack();
         }
+        DB::commit();
         return $approval ?? false;
     }
 
@@ -290,19 +367,27 @@ trait Approvable
     public function discard($comment = null, Authenticatable|null $user = null): ProcessApproval|bool
     {
         $nextStep = $this->nextApprovalStep();
-        $approval = ProcessApproval::query()->create([
-            'approvable_type' => $this->getApprovableType(),
-            'approvable_id' => $this->id,
-            'process_approval_flow_step_id' => $nextStep->id,
-            'approval_action' => ApprovalActionEnum::DISCARDED,
-            'comment' => $comment,
-            'user_id' => $user?->id,
-            'approver_name' => $user?->name ?? 'Unknown'
-        ]);
-        if ($approval) {
-            $this->loadApprovals();
-            ProcessDiscardedEvent::dispatch($approval);
+        DB::beginTransaction();
+        try {
+            $approval = ProcessApproval::query()->create([
+                'approvable_type' => $this->getApprovableType(),
+                'approvable_id' => $this->id,
+                'process_approval_flow_step_id' => $nextStep->id,
+                'approval_action' => ApprovalActionEnum::DISCARDED,
+                'comment' => $comment,
+                'user_id' => $user?->id,
+                'approver_name' => $user?->name ?? 'Unknown'
+            ]);
+            if ($approval) {
+                $this->updateStatus($nextStep->id, $approval);
+                $this->loadApprovals();
+                ProcessDiscardedEvent::dispatch($approval);
+            }
+        } catch (\Exception $e) {
+            Log::debug('Process Approval - discard: ', $e);
+            DB::rollBack();
         }
+        DB::commit();
         return $approval ?? false;
     }
 
@@ -334,7 +419,7 @@ trait Approvable
      */
     public function getViewLink(): string|null
     {
-        if(method_exists($this, 'viewLink')){
+        if (method_exists($this, 'viewLink')) {
             return $this->viewLink();
         }
         return null;
@@ -347,6 +432,31 @@ trait Approvable
             '<span class="badge bg-success-transparent" title="Approved" data-bs-toggle="tooltip"><i class="bi bi-check"></i></span>'
             :
             '<span class="badge bg-warning-transparent" title="Pending" data-bs-toggle="tooltip"><i class="bi bi-clock"></i></span>';
+    }
+
+    /**
+     * @param $stepId
+     * @param ProcessApproval $approval
+     * @return int
+     */
+    private function updateStatus($stepId, ProcessApproval $approval): int
+    {
+        $steps = collect($this->approvalStatus->steps);
+        $current = $steps->map(static function($step) use($stepId, $approval) {
+            if($step['id'] === $stepId){
+                $step['process_approval_id'] = $approval->id;
+                $step['process_approval_action'] = $approval->approval_action;
+            }
+            return $step;
+        });
+        $action = $approval->approval_action;
+        if($action === ApprovalStatusEnum::APPROVED->value && !$this->isApprovalCompleted()){
+            $action = ApprovalStatusEnum::PENDING->value;
+        }
+        return $this->approvalStatus()->update([
+            'steps' => $current->toArray(),
+            'status' => $action
+        ]);
     }
 
 }

@@ -123,10 +123,5 @@ interface ApprovableModel
      */
     public function getNextApprovers(): Collection;
 
-    /**
-     * Get the view Link of this record
-     * @return string
-     */
-    public function getViewLink(): string;
 }
 
