@@ -134,31 +134,6 @@ trait Approvable
     }
 
     /**
-     * Returns a collection of steps with corresponding approvals
-     * @return mixed
-     */
-//    private function getApprovalSteps(): Collection
-//    {
-//        $this->loadApprovals();
-//        $id = $this->id;
-//        $myClass = (string)self::getApprovableType();
-//        $this->_approvalSteps = ProcessApprovalFlowStep::query()
-//            ->join('process_approval_flows', 'process_approval_flow_steps.process_approval_flow_id', '=', 'process_approval_flows.id')
-//            ->leftJoin('process_approvals', static function ($join) use ($id, $myClass) {
-//                $join->on('process_approval_flow_steps.id', '=', 'process_approvals.process_approval_flow_step_id')
-//                    ->on('process_approvals.approvable_type', '=', DB::raw("'" . (addslashes($myClass)) . "'"))
-//                    ->on('process_approvals.approvable_id', '=', DB::raw("'{$id}'"))
-//                    ->whereRaw("process_approvals.id = (select MAX(a2.id) from process_approvals as a2 WHERE a2.process_approval_flow_step_id = process_approval_flow_steps.id AND a2.approvable_id = {$id} AND a2.approvable_type = '" . (addslashes($myClass)) . "' LIMIT 1 )");
-//            })
-//            ->orderByRaw('process_approval_flow_steps.order asc, process_approval_flow_steps.id asc')
-//            ->where('process_approval_flow_steps.active', 1)
-//            ->where('process_approval_flows.approvable_type', (string)$myClass)
-//            ->selectRaw('process_approval_flow_steps.*, process_approvals.approval_action, process_approvals.user_id')
-//            ->get();
-//        return $this->_approvalSteps;
-//    }
-
-    /**
      * Check if Approval process is completed
      * @return bool
      */
@@ -427,11 +402,11 @@ trait Approvable
 
     public function getApprovalSummaryUI()
     {
-        // TODO Implement the logic
-        return $this->isApprovalCompleted() ?
-            '<span class="badge bg-success-transparent" title="Approved" data-bs-toggle="tooltip"><i class="bi bi-check"></i></span>'
-            :
-            '<span class="badge bg-warning-transparent" title="Pending" data-bs-toggle="tooltip"><i class="bi bi-clock"></i></span>';
+        $html = "";
+        foreach (($this->approvalStatus->steps ?? []) as $index => $item) {
+            $html .= '<span class="badge bg-success-transparent" title="'.($item['process_approval_action'] ?? 'Pending').'" data-bs-toggle="tooltip">✔️</span>';
+        }
+        return $html;
     }
 
     /**

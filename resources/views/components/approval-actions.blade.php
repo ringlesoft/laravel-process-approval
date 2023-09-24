@@ -6,19 +6,18 @@
                 <thead>
                 <tr>
                     <th style="width: 50px;">By:</th>
-                    @foreach($approvalFlow->steps ?? [] as $step)
-                        <th>{{$step->role->name}}</th>
+                    @foreach($modelApprovalSteps as $item)
+                        <th>{{$item['step']->role?->name ?? 'Step '. $loop->iteration}}</th>
                     @endforeach
                 </tr>
                 <tr>
                     <th>Date</th>
-                    @foreach($approvalFlow->steps ?? [] as $step)
+                    @foreach($modelApprovalSteps as $item)
                         <td>
                             <div class="d-flex flex-column justify-content-center align-items-center">
-                                @if($currentApproval = $step->approvalForModel($model))
+                                @if($currentApproval = $item['approval'])
                                     <div>
                                         @if($currentApproval->approval_action === \RingleSoft\LaravelProcessApproval\Enums\ApprovalActionEnum::APPROVED->value)
-
                                             <div
                                                 data-bs-toggle="popover"
                                                 data-bs-placement="bottom"
