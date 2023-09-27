@@ -67,6 +67,12 @@ interface ApprovableModel
     public function isRejected(): bool;
 
     /**
+     * Returns true if the previous action on this record was discarded
+     * @return bool
+     */
+    public function isDiscarded(): bool;
+
+    /**
      * Get the next approval step for this record
      * @return ProcessApprovalFlowStep|null
      */

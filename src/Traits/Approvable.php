@@ -147,6 +147,16 @@ trait Approvable
         return true;
     }
 
+
+    /**
+     * Check if approval has started
+     * @return bool
+     */
+    public function isSubmitted(): bool
+    {
+        return $this->approvalStatus?->status !== ApprovalStatusEnum::CREATED->value;
+    }
+
     /**
      * Check if this request is rejected
      * @return bool
@@ -159,21 +169,23 @@ trait Approvable
     }
 
     /**
-     * Check if approval has started
+     * Check if this request is discarded
      * @return bool
      */
-    public function isApprovalStarted(): bool
+    public function isDiscarded(): bool
     {
-        return !in_array($this->approvalStatus->status, [ApprovalStatusEnum::CREATED->value, ApprovalStatusEnum::SUBMITTED->value, ApprovalStatusEnum::PENDING->value,], true);
+        $next = $this->nextApprovalStep();
+        return $next->approval?->approval_action === ApprovalActionEnum::DISCARDED->value;
+
     }
 
     /**
      * Check if approval has started
      * @return bool
      */
-    public function isSubmitted(): bool
+    public function isApprovalStarted(): bool
     {
-        return $this->approvalStatus?->status !== ApprovalStatusEnum::CREATED->value;
+        return !in_array($this->approvalStatus->status, [ApprovalStatusEnum::CREATED->value, ApprovalStatusEnum::SUBMITTED->value, ApprovalStatusEnum::PENDING->value,], true);
     }
 
     /**
