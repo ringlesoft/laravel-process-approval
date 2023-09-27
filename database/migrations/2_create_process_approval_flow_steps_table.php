@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('process_approval_flow_id')->references('id')->on('process_approval_flows');
             $table->foreignId('role_id')->index();
+            $table->json('permissions')->nullable();
             $table->integer('order')->nullable()->index();
             $table->enum('action', ['APPROVE', 'VERIFY', 'CHECK'])->default('APPROVE');
             $table->tinyInteger('active')->default(1);

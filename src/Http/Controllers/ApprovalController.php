@@ -47,9 +47,9 @@ class ApprovalController extends Controller
      * Approve or Reject request
      * @param Request $request
      * @param $id
-     * @return void
+     * @return RedirectResponse
      */
-    public function approve(Request $request, $id)
+    public function approve(Request $request, $id): RedirectResponse
     {
         $rules = [
             'model_name' => ['string', 'required'],
@@ -71,10 +71,10 @@ class ApprovalController extends Controller
     /**
      * Approve or Reject request
      * @param Request $request
-     * @param ApprovableModel $model
-     * @return void
+     * @param $id
+     * @return RedirectResponse
      */
-    public function reject(Request $request, $id)
+    public function reject(Request $request, $id): RedirectResponse
     {
         $rules = [
             'model_name' => ['string', 'required'],
@@ -99,7 +99,7 @@ class ApprovalController extends Controller
      * @param $id
      * @return RedirectResponse
      */
-    public function discard(Request $request, $id)
+    public function discard(Request $request, $id): RedirectResponse
     {
         $rules = [
             'model_name' => ['string', 'required'],

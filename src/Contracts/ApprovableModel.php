@@ -79,6 +79,13 @@ interface ApprovableModel
     public function previousApprovalStep(): ProcessApprovalFlowStep|null;
 
     /**
+     * Submit the Request
+     * @param Authenticatable|null $user
+     * @return ProcessApproval|bool|RedirectResponse
+     */
+    public function submit(Authenticatable|null $user = null): ProcessApproval|bool|RedirectResponse;
+
+    /**
      * Approve the Request
      * @param null $comment
      * @param Authenticatable|null $user
