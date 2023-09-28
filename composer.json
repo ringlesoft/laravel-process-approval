@@ -3,6 +3,7 @@
     "description": "A package to handle process approval flow in a laravel application.",
     "type": "laravel-package",
     "homepage": "https://ringlesoft.com/packages/laravel-process-approval",
+    "license": "MIT",
     "autoload": {
         "psr-4": {
             "RingleSoft\\LaravelProcessApproval\\": "src/"
