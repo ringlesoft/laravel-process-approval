@@ -5,6 +5,7 @@ namespace RingleSoft\LaravelProcessApproval\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 use RingleSoft\LaravelProcessApproval\Models\ProcessApprovalFlow;
+use Symfony\Component\Console\Question\ChoiceQuestion;
 use function Laravel\Prompts\text;
 
 class FlowCommand extends Command
@@ -36,16 +37,23 @@ class FlowCommand extends Command
                 $this->addFlow($model);
                 break;
             case 'remove':
-                $model = $this->argument('params')
-                    ??
-                    $model = $this->ask("Enter the name of the model you want to make approvable");
-                $this->removeFlow($model);
+                $flowsArray = ProcessApprovalFlow::query()
+                    ->get()
+                    ->pluck('id', "id")
+                    ->toArray();
+                $choice = $this->choice('Choose an option:', $flowsArray);
+                $this->removeFlow($choice);
                 break;
             default:
                 print('Unknown action '. $this->argument('action'));
         }
     }
 
+    /**
+     * Create a new approval flow
+     * @param $name
+     * @return true
+     */
     private function addFlow($name) {
 
             if(!Str::contains($name, '\\')){
@@ -73,20 +81,22 @@ class FlowCommand extends Command
         return true;
     }
 
-    public function removeFlow($name)
+    /**
+     * Remove approval flow
+     * @param $name
+     * @return void
+     */
+    public function removeFlow($flow)
     {
-        if(!Str::contains($name, '\\')){
-            $name = config('process_approval.models_path')."\\{$name}";
-        }
-        $flow = ProcessApprovalFlow::query()->where('approvable_type', $name)->first();
+        $flow = ProcessApprovalFlow::find($flow);
         if($flow){
             if($flow->delete()) {
-                $this->line("{$name} removed successfully!");
+                $this->line("{$flow} removed successfully!");
             } else {
-                $this->alert("Failed to remove {$name}", 'critical');
+                $this->alert("Failed to remove {$flow}", 'critical');
             }
         } else {
-            $this->alert("{$name} doesn't exist on the approval flows table");
+            $this->alert("Flow doesn't exist on the approval flows table");
         }
     }
 }

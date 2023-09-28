@@ -8,7 +8,7 @@
                     <tr>
                         <th style="width: 50px;">By:</th>
                         @foreach($modelApprovalSteps as $item)
-                            <th>{{$item['step']->role?->name ?? 'Step '. $loop->iteration}}</th>
+                            <th style="width: {{(100 / count($modelApprovalSteps))}}%;" class="text-center">{{$item['step']->role?->name ?? 'Step '. $loop->iteration}}</th>
                         @endforeach
                     </tr>
                     <tr>
