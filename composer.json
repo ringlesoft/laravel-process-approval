@@ -4,6 +4,14 @@
     "type": "laravel-package",
     "homepage": "https://ringlesoft.com/packages/laravel-process-approval",
     "license": "MIT",
+    "keywords": [
+        "ringlesoft",
+        "approval",
+        "approve",
+        "flow",
+        "procedure",
+        "laravel"
+    ],
     "autoload": {
         "psr-4": {
             "RingleSoft\\LaravelProcessApproval\\": "src/"
@@ -12,7 +20,9 @@
     "authors": [
         {
             "name": "David Ringle",
-            "email": "ringunger@gmail.com"
+            "email": "ringunger@gmail.com",
+            "homepage": "https://ringlesoft.com",
+            "role": "Developer"
         }
     ],
     "require": {
@@ -39,6 +49,6 @@
         }
     },
     "version": "1.0.0",
-    "minimum-stability": "stable",
+    "minimum-stability": "dev",
     "prefer-stable": true
 }
