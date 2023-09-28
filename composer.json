@@ -38,10 +38,10 @@
     "extra": {
         "laravel": {
             "providers": [
-                "RingleSoft\\ProcessApproval\\ProcessApprovalServiceProvider"
+                "RingleSoft\\LaravelProcessApproval\\LaravelProcessApprovalServiceProvider"
             ],
             "aliases": {
-                "ProcessApproval": "RingleSoft\\ProcessApproval\\Facade"
+                "ProcessApproval": "RingleSoft\\LaravelProcessApproval\\Facade"
             },
             "dont-discover": [
             ]
