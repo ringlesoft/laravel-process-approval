@@ -28,13 +28,12 @@
     "require": {
         "php": ">=8.1",
         "illuminate/broadcasting": "^10.7",
-        "illuminate/database": "^10.7",
-        "illuminate/routing": "^10.24",
-        "laravel/prompts": "^0.1.8"
+        "illuminate/database": "^10.0"
     }
     ,
     "require-dev": {
-        "roave/security-advisories": "dev-latest"
+        "roave/security-advisories": "dev-latest",
+        "illuminate/routing": "^10.24"
     },
     "extra": {
         "laravel": {
