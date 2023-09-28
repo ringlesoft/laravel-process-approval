@@ -16,7 +16,7 @@ class LaravelProcessApprovalServiceProvider extends ServiceProvider
 
     public function boot()
     {
-        Blade::component('approval-actions-bs', ApprovalActions::class, 'ringlesoft');
+        Blade::component('approval-actions', ApprovalActions::class, 'ringlesoft');
 
         $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
         $this->loadViewsFrom(__DIR__.'/../resources/views', 'ringlesoft');

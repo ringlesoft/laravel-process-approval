@@ -9,6 +9,8 @@ process to meet that need.
 The package relies on an existing `Role` management. This can be a custom role management or another package such as
 Spatie's `laravel permissions`.
 
+<img src="https://ringlesoft.com/images/packages/approvals2.png" />
+
 ## Installation
 
 #### 1. Install Using composer:
@@ -30,12 +32,17 @@ php artisan migrate
 The package relies on Approval flows and steps. This is to enable multiple approval flows within the system. Yuo can
 implement your own way of creating and managing the flows. However there are available command-line functions to help
 you get started easily.
+
 ##### i. Creating a new flow
+
 To create a new flow, Run the following command on your terminal.
+
 ```bash
  php artisan process-approval:flow add FundRequest
 ```
+
 #### ii. Creating a step for the flow
+
 ```bash
 php artisan process-approval:step add  
 ```
@@ -80,10 +87,10 @@ use \RingleSoft\ProcessApproval\Traits\Approvable;
 }
 ```
 
-#### 4. place the `<x-approval-actions >` component on the `show` page of your model
+#### 4. place the `<x-ringlesoft-approval-actions >` component on the `show` page of your model and pass the instance of the model with the `model` parameter
 
 ```php
-    <x-ringlesoft-approval-actions-bs :model="$fundRequest" />
+    <x-ringlesoft-approval-actions :model="$fundRequest" />
 ```
 
 Currently, the UI is implemented based on bootstrap. Support for tailwind and vanilla css will come soon.
@@ -99,12 +106,14 @@ requirement.
 - `users_model` - Specify the model that represents the authenticated users. (default is `App\Models\User`).
 - `models_path` - Specify the default path for models in your application. (default is `App\Models`).
 
-If you want the model to auto-submit when it is created you can add the following property on the model:
+> If you want the model to auto-submit when it is created you can add the following property on the model:
+
 ```php
 public autoSubmit:bool = true;
 ```
 
-If you want to use signatures for users, add the `getSignature()` method to your User model:
+> If you want to use signatures for users, add the `getSignature()` method to your User model and make it return the signature of the user.
+
 ```php
 Class User extends Model {
     ...
@@ -114,6 +123,12 @@ Class User extends Model {
     }
 }
 ```
+> If you want to display a summary of the approval process (normally when listing the models) you can use the `getApprovalSummaryUI()` method
+
+```php
+    $fundRequest->getApprovalSummaryUI();
+```
+
 
 ## Events
 
