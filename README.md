@@ -7,12 +7,37 @@ that require review and approval from multiple approvers before execution, this 
 process to meet that need.
 
 The package relies on an existing `Role` management. This can be a custom role management or another package such as
-Spatie laravel permissions.
+Spatie's `laravel permissions`.
 
 ## Installation
 
+#### 1. Install Using composer:
+
 ```bash
 composer require ringlesoft/laravel-process-approval
+```
+
+#### 2. Run migration:
+
+The package comes with four migrations. Run artisan migrate command before you start using the package.
+
+```bash
+php artisan migrate
+```
+
+#### 3. Create Approval flows and Steps
+
+The package relies on Approval flows and steps. This is to enable multiple approval flows within the system. Yuo can
+implement your own way of creating and managing the flows. However there are available command-line functions to help
+you get started easily.
+##### i. Creating a new flow
+To create a new flow, Run the following command on your terminal.
+```bash
+ php artisan process-approval:flow add FundRequest
+```
+#### ii. Creating a step for the flow
+```bash
+php artisan process-approval:step add  
 ```
 
 ## Usage
@@ -73,7 +98,22 @@ requirement.
   the Spatie\Permissions\Models\Role)
 - `users_model` - Specify the model that represents the authenticated users. (default is `App\Models\User`).
 - `models_path` - Specify the default path for models in your application. (default is `App\Models`).
--
+
+If you want the model to auto-submit when it is created you can add the following property on the model:
+```php
+public autoSubmit:bool = true;
+```
+
+If you want to use signatures for users, add the `getSignature()` method to your User model:
+```php
+Class User extends Model {
+    ...
+    
+    public function getSignature(){
+        return $this->signature_path; // Return the path to user's signature
+    }
+}
+```
 
 ## Events
 
@@ -84,6 +124,10 @@ The package dispatches events during different stages of the approval workflow t
 - `ProcessRejectedEvent` - Dispatched when an approvable model is rejected by an approver.
 - `ProcessApprovalCompletedEvent` - Dispatched when the full approval workflow is completed, either approved or
   discarded.
+
+## Command Line
+
+This package provides command-line options for creating approval flows and steps.
 
 ## Helper Methods
 
@@ -134,3 +178,7 @@ I'll let you know when you can contribute 😜.
 ## License
 
 Laravel Process Approval is open-source software released under the MIT License.
+
+## Contacts
+
+Follow me on <a href="https://x.com/ringunger">Twitter</a>: <a href="https://x.com/ringunger">@ringunger</a>
