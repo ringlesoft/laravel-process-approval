@@ -3,12 +3,12 @@
 namespace RingleSoft\LaravelProcessApproval\Console\Commands;
 
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use RingleSoft\LaravelProcessApproval\Models\ProcessApprovalFlow;
 use RingleSoft\LaravelProcessApproval\Models\ProcessApprovalFlowStep;
 use RingleSoft\LaravelProcessApproval\Models\Role;
-use function Laravel\Prompts\text;
+use function Laravel\Prompts\alert;
+use function Laravel\Prompts\info;
+use function Laravel\Prompts\select;
 
 class StepCommand extends Command
 {
@@ -33,7 +33,7 @@ class StepCommand extends Command
     {
         $flows = ProcessApprovalFlow::query()->get();
         if(!$flows->count()){
-            $this->alert('There are no flows defined');
+            alert('There are no flows defined');
             return;
         }
         $flowsArray = $flows->pluck('name', 'id')->toArray();
@@ -41,19 +41,22 @@ class StepCommand extends Command
             case 'add':
                 $model = $this->argument('params')
                     ??
-                    $model = $this->choice("Select the Model to which you want to add steps:", $flowsArray);
+                    $model = select("Select the Model to which you want to add steps:", $flowsArray);
                 $this->addStep($model);
                 break;
             case 'remove':
-                $stepsArray = ProcessApprovalFlowStep::query()->with('role')->orderBy('order')->orderBy('id')->get()
-                    ->only('id')
-                    ->map(static function($item, $index){ $item->name = "Step " . $index + 1; return $item;})
-                    ->toArray();
-                if(!count($stepsArray)){
-                   $this->info('No steps available!');
+                $steps = [];
+                $flows = ProcessApprovalFlow::query()->with(['steps', 'steps.role'])->whereHas('steps')->get();
+                foreach ($flows as $index => $flow) {
+                    foreach ($flow->steps as $index2 => $step) {
+                        $steps[$step->id] = $flow->name . ' '. $step->role->name . " - ". $step->action;
+                    }
+                }
+                if(!count($steps)){
+                   info('No steps available!');
                    return;
                 }
-                $step = $this->choice("Which step do you want to remove?", $stepsArray);
+                $step = select("Which step do you want to remove?", $steps);
                 $this->removeStep($step);
                 break;
             default:
@@ -63,35 +66,31 @@ class StepCommand extends Command
 
     /**
      * Create a new step
-     * @param $name
+     * @param $flowId
      * @return true
      */
-    private function addStep($name)
+    private function addStep($flowId)
     {
-        $flow = ProcessApprovalFlow::query()->where('name', $name)->first();
+        $flow = ProcessApprovalFlow::query()->find($flowId);
         $rolesModel = config('process_approval.roles_model');
         if(!class_exists($rolesModel)){
-           $this->alert("`roles_model` not configured");
+           alert("`roles_model` not configured");
         }
         $roleChoices = ($rolesModel)::query()->get()->pluck('name', 'id')->toArray();
-        $role = $this->choice(
+        $role = select(
             'Select the role to be that will approve this model',
             $roleChoices,
         );
-        $action = $this->choice(
-            "Select the type of action",
-            [1 => 'Approve', 2 => 'Check'],
-            'Approve'
-        );
+        $action = select("Select the type of action", ['Approve', 'Check'], 'Approve');
         $data = [
-            'role_id' => array_flip($roleChoices)[$role],
+            'role_id' => $role,
             'action' => $action,
             'active' => 1
         ];
         if($flow->steps()->create($data)){
-            $this->line('Step created Successfully');
+            info('Step created Successfully');
         } else {
-            $this->alert('Failed to create step', 'critical');
+            alert('Failed to create step');
         }
 
         return true;
@@ -99,23 +98,21 @@ class StepCommand extends Command
 
     /**
      * Remove a step
-     * @param $name
+     * @param $stepId
      * @return void
      */
-    public function removeStep($name)
+    public function removeStep($stepId)
     {
-        if (!Str::contains($name, '\\')) {
-            $name = "\App\\Models\\{$name}";
-        }
-        $flow = ProcessApprovalFlowStep::query()->where('approvable_type', $name)->first();
-        if ($flow) {
-            if ($flow->delete()) {
-                $this->line("{$name} removed successfully!");
+
+        $step = ProcessApprovalFlowStep::query()->find($stepId);
+        if ($step) {
+            if ($step->delete()) {
+                info("Step removed successfully!");
             } else {
-                $this->alert("Failed to remove {$name}", 'critical');
+                alert("Failed to remove step");
             }
         } else {
-            $this->alert("{$name} doesn't exist on the approval flows table");
+            alert("Step doesn't exist on the approval flow steps table");
         }
     }
 }

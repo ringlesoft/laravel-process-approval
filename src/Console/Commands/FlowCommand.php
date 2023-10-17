@@ -5,8 +5,10 @@ namespace RingleSoft\LaravelProcessApproval\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 use RingleSoft\LaravelProcessApproval\Models\ProcessApprovalFlow;
-use Symfony\Component\Console\Question\ChoiceQuestion;
+use function Laravel\Prompts\select;
 use function Laravel\Prompts\text;
+use function Laravel\Prompts\alert;
+use function Laravel\Prompts\info;
 
 class FlowCommand extends Command
 {
@@ -33,15 +35,15 @@ class FlowCommand extends Command
             case 'add':
                 $model = $this->argument('params')
                     ??
-                    $model = $this->ask("Enter the name of the model you want to make approvable");
+                    $model = text("Enter the name of the model you want to make approvable", 'ModelName');
                 $this->addFlow($model);
                 break;
             case 'remove':
                 $flowsArray = ProcessApprovalFlow::query()
                     ->get()
-                    ->pluck('id', "id")
+                    ->pluck('name', "id")
                     ->toArray();
-                $choice = $this->choice('Choose an option:', $flowsArray);
+                $choice = select('What Flow do you want to remove?', $flowsArray);
                 $this->removeFlow($choice);
                 break;
             default:
@@ -54,49 +56,48 @@ class FlowCommand extends Command
      * @param $name
      * @return true
      */
-    private function addFlow($name) {
-
+    private function addFlow($name): bool
+    {
             if(!Str::contains($name, '\\')){
                 $name = config('process_approval.models_path')."\\{$name}";
             }
             if(class_exists($name)){
                 try {
                     if(ProcessApprovalFlow::query()->where('approvable_type', $name)->exists()){
-                        $this->alert('This model already exists');
+                        alert('This model already exists');
                     } else {
                         ProcessApprovalFlow::query()->create([
                             'name' => Str::of($name)->afterLast( '\\')->snake(' ')->title()->toString(),
                             'approvable_type' => get_class(new $name()),
                         ]);
                     }
-                    $this->line("{$name} created successfully!");
-
+                    info("{$name} created successfully!");
                 } catch (\Exception $e) {
                     echo "Failed to create Flow: " . $e->getMessage();
                 }
             } else {
                 echo "The model `{$name}` you specified doesn't exist";
             }
-
         return true;
     }
 
     /**
      * Remove approval flow
-     * @param $name
-     * @return void
+     * @param $flow
+     * @return bool
      */
-    public function removeFlow($flow)
+    public function removeFlow($flow): bool
     {
         $flow = ProcessApprovalFlow::find($flow);
         if($flow){
             if($flow->delete()) {
-                $this->line("{$flow} removed successfully!");
-            } else {
-                $this->alert("Failed to remove {$flow}", 'critical');
+                info("{$flow} removed successfully!");
+                return true;
             }
+            alert("Failed to remove {$flow}");
         } else {
-            $this->alert("Flow doesn't exist on the approval flows table");
+            alert("Flow doesn't exist on the approval flows table");
         }
+        return false;
     }
 }
