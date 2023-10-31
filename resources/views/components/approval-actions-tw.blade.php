@@ -2,7 +2,7 @@
     <div class="card-body w-full p-3 overflow-x-auto  sm:rounded-lg border border-gray-300 ">
         <h6 class="text-center">Approvals</h6>
         @if($model->isSubmitted())
-            <div class="approvals relative">
+            <div class="approvals relative mt-3">
                 <table class="w-full text-sm text-left text-gray-800 dark:text-gray-400 mb-2 border border-collapse">
                     <thead>
                     <tr>
@@ -18,15 +18,16 @@
                             <td class="border p-2">
                                 <div class="text-center">
                                     @if($currentApproval = $item['approval'])
-                                        <div>
+                                        <div class="relative group">
+                                            <div class="absolute bottom-0 left-1/2 -translate-x-1/2 transform opacity-0 scale-75 origin-bottom group-hover:opacity-100 transition-all duration-300 z-10 px-3 py-2 text-sm text-white bg-gray-800 rounded-lg shadow-lg">
+                                                {{$currentApproval->comment ?? 'No comment!'}}
+                                            </div>
                                             @if($currentApproval->approval_action === \RingleSoft\LaravelProcessApproval\Enums\ApprovalActionEnum::APPROVED->value)
-                                                <div
-                                                    data-bs-toggle="popover"
-                                                    data-bs-placement="bottom"
-                                                    data-bs-custom-class="header-info"
-                                                    data-bs-content="{{$currentApproval->comment ?? 'No comment!'}}"
-                                                    data-bs-original-title="Comment">
-                                                    @if($signature = $currentApproval->getSignature() && false)
+                                                <div class="relative group">
+                                                    <div class="absolute bottom-0 left-1/2 -translate-x-1/2 transform opacity-0 scale-75 origin-bottom group-hover:opacity-100 transition-all duration-300 z-10 px-3 py-2 text-sm text-white bg-gray-800 rounded-lg shadow-lg">
+                                                        {{$currentApproval->comment ?? 'No comment!'}}
+                                                    </div>
+                                                    @if($signature = $currentApproval->getSignature())
                                                         <div class="flex justify-center">
                                                             <img src="{{$signature}}" class="img-fluid"
                                                                  style="max-height: 50px;" alt="Signature">
@@ -55,7 +56,6 @@
                                             @else
                                                 <div class="flex justify-center">
                                                     <div style="width: 40px; height: 40px;"
-                                                         title="{{$currentApproval->comment}}" data-toggle="tooltip"
                                                          class="rounded bg-red-400 flex justify-center items-center h-full">
                                                         <i class="icon">
                                                             <svg xmlns="http://www.w3.org/2000/svg" height="24"
@@ -73,7 +73,7 @@
                                         </div>
                                         <div> {{$currentApproval->user?->name}}</div>
                                         <div
-                                            class="small text-black-50">{{$currentApproval->created_at->format('d F, Y')}}</div>
+                                            class="small text-gray-500">{{$currentApproval->created_at->format('d F, Y')}}</div>
                                     @else
                                         <div class="py-8"></div>
                                     @endif
@@ -89,7 +89,7 @@
                     @if($userCanApprove)
                         <div class="flex justify-between">
                             <div class="col-12 md:col-7">
-                                <div class="text-black-50">
+                                <div class="text-gray-500">
                                     @if($model->isRejected())
                                         This request was rejected. You can re-approve this as
                                         <strong>{{$nextApprovalStep->role->name}}</strong>
@@ -115,9 +115,9 @@
                                         </button>
                                     @endif
                                     <button
-                                        class="block text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                                        class="block text-white bg-green-500 hover:bg-green-600 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800"
                                         type="button" data-modal-toggle="approve-modal">
-                                        Approve
+                                        {{$model->isRejected() ? 'Re-Approve' : ucfirst(strtolower($nextApprovalStep->action) ?? 'Approve')}}
                                     </button>
 
 
@@ -139,7 +139,7 @@
         @else
             <div class="row align-content-between align-items-md-center">
                 <div class="col-12 col-md-7">
-                    <div class="text-black-50">
+                    <div class="text-gray-500">
                         This document is not yet submitted.
                     </div>
                 </div>
@@ -190,7 +190,7 @@
                             <div class="modal-body">
                                 <div class="form-group">
                                     <textarea name="comment" id="approveComment" rows="3"
-                                              placeholder="Write your approval comment"
+                                              placeholder="Write a comment (optional)"
                                               class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"></textarea>
                                 </div>
                             </div>
@@ -202,7 +202,7 @@
                             </button>
                             <button data-modal-hide="approve-modal" type="submit"
                                     class="text-white bg-green-600 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 dark:focus:ring-green-800 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center mr-2">
-                                Approve
+                                {{ucfirst($nextApprovalStep->action ?? 'Approve')}}
                             </button>
                         </div>
                     </form>
@@ -312,4 +312,16 @@
         </div>
     </div>
 </div>
+
+
+
+<!-- Trigger element -->
+<button class="relative group">
+    Hover for Tooltip
+
+    <!-- Tooltip -->
+    <div class="absolute bottom-0 left-1/2 -translate-x-1/2 transform opacity-0 scale-75 origin-bottom group-hover:opacity-100 transition-all duration-300 z-10 px-3 py-2 text-sm text-white bg-gray-800 rounded-lg shadow-lg">
+        This is a tooltip message
+    </div>
+</button>
 

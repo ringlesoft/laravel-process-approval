@@ -104,7 +104,7 @@
                                     @endif
                                     <button class="btn btn-success" data-bs-toggle="modal"
                                             data-bs-target="#modalApprove">
-                                        Approve
+                                        {{$model->isRejected() ? 'Re-Approve' : ucfirst(strtolower($nextApprovalStep->action) ?? 'Approve')}}
                                     </button>
                                 </div>
                             </div>
