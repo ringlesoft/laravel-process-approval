@@ -19,4 +19,9 @@ class ProcessApprovalStatus extends Model
     {
         return $this->morphTo('approvable');
     }
+
+    public function creator()
+    {
+        return $this->belongsTo(config('process_approval.users_model'), 'creator_id');
+    }
 }

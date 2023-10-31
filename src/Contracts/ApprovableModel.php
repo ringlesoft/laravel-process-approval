@@ -46,6 +46,18 @@ interface ApprovableModel
      */
     public static function discarded(): Builder;
 
+    /**
+     * Get only non-submitted models
+     * @return Builder
+     */
+    public static function nonSubmitted(): Builder;
+
+    /**
+     * Get only submitted models
+     * @return Builder
+     */
+    public static function submitted(): Builder;
+
 
     /**
      * Returns a list of all approval(and rejections) done on this record

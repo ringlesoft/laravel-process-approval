@@ -137,22 +137,29 @@
                 @endif
             </div>
         @else
-            <div class="row align-content-between align-items-md-center">
-                <div class="col-12 col-md-7">
+            <div class="flex justify-between w-full mt-5">
+                <div class="col-12 md:col-7">
                     <div class="text-gray-500">
                         This document is not yet submitted.
+                        @if($model->creator?->id === \Illuminate\Support\Facades\Auth::id())
+                        <span>
+                            You can submit this document for approvals.
+                        </span>
+                        @endif
                     </div>
                 </div>
-                <div class="col-12 col-md-5">
+                <div class="col-12 md:col-5">
                     <div class="w-100 d-flex justify-content-end gap-2 align-items-md-center">
                         @if($model)
                             <form action="{{route('ringlesoft.process-approval.submit', $model)}}" method="post">
                                 @csrf
                                 <input type="hidden" name="user_id" value="{{auth()?->id()}}">
                                 <input type="hidden" name="model_name" value="{{$model->getApprovableType()}}">
-                                <button class="btn btn-success" type="submit">
+                                @if($model->creator?->id === \Illuminate\Support\Facades\Auth::id())
+                                <button class="block text-white bg-green-500 hover:bg-green-600 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800" type="submit">
                                     Submit
                                 </button>
+                                @endif
                             </form>
                         @endif
                     </div>

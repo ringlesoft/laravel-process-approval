@@ -126,6 +126,11 @@
                 <div class="col-12 col-md-7">
                     <div class="text-black-50">
                         This document is not yet submitted.
+                        @if($model->creator?->id === \Illuminate\Support\Facades\Auth::id())
+                            <span>
+                            You can submit this document for approvals.
+                        </span>
+                        @endif
                     </div>
                 </div>
                 <div class="col-12 col-md-5">
@@ -135,9 +140,11 @@
                                 @csrf
                                 <input type="hidden" name="user_id" value="{{auth()?->id()}}">
                                 <input type="hidden" name="model_name" value="{{$model->getApprovableType()}}">
-                                <button class="btn btn-success" type="submit">
-                                    Submit
-                                </button>
+                                @if($model->creator?->id === \Illuminate\Support\Facades\Auth::id())
+                                    <button class="btn btn-success" type="submit">
+                                        Submit
+                                    </button>
+                                @endif
                             </form>
                         @endif
                     </div>
