@@ -23,5 +23,5 @@ return [
     /**
      * The name of the css library to use
      */
-    'css_library' => 'tailwind',
+    'css_library' => 'tailwind', // tailwind | bootstrap
 ];
