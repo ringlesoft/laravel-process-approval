@@ -25,6 +25,6 @@ class InstallCommand extends Command
      */
     public function handle()
     {
-
+        // TODO implement in the future
     }
 }

@@ -12,6 +12,7 @@ class LaravelProcessApprovalServiceProvider extends ServiceProvider
 {
     public function register()
     {
+        $this->app->alias(Facades\ProcessApproval::class, 'ProcessApproval');
     }
 
     public function boot()
@@ -38,6 +39,8 @@ class LaravelProcessApprovalServiceProvider extends ServiceProvider
                 StepCommand::class,
             ]);
         }
+
+
     }
 
 }
