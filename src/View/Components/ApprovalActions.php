@@ -36,6 +36,9 @@ class ApprovalActions extends Component
 
     public function render(): View
     {
-        return view('ringlesoft::components.approval-actions');
+        if (config('process_approval.css_library') === 'bootstrap') {
+            return view('ringlesoft::components.approval-actions');
+        }
+        return view('ringlesoft::components.approval-actions-tw');
     }
 }
