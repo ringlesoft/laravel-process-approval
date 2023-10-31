@@ -451,11 +451,12 @@ trait Approvable
             ]
         ];
 
-        $html = "";
+        $html = "<div class='flex rounded'>";
         foreach (($this->approvalStatus->steps ?? []) as $index => $item) {
             $theme = $map[$item['process_approval_action'] ?? 'Default'];
             $html .= '<span class="badge" style="background-color: '.$theme['color'].'; padding: .1rem;" title="'.($item['role_name'] ?? $item['role_id']).': '.($item['process_approval_action'] ?? 'Pending').'" data-bs-toggle="tooltip">'.$theme['icon'].'</span>';
         }
+        $html .= "</div>";
         return $html;
     }
 

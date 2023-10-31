@@ -39,8 +39,6 @@ class LaravelProcessApprovalServiceProvider extends ServiceProvider
                 StepCommand::class,
             ]);
         }
-
-
     }
 
 }
