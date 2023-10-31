@@ -130,7 +130,9 @@ trait Approvable
      */
     public static function nonSubmitted(): Builder
     {
-        return self::query()->whereDoesntHave('approvalStatus');
+        return self::query()->whereHas('approvalStatus', static function ($q) {
+            return $q->where('status', ApprovalActionEnum::CREATED->value);
+        });
     }
 
     /**
