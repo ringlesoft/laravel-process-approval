@@ -19,4 +19,9 @@ return [
      * The path in which application models ar located
      */
     'models_path' => "\\App\Models",
+
+    /**
+     * The name of the css library to use
+     */
+    'css_library' => 'tailwind', // tailwind | bootstrap
 ];

@@ -20,8 +20,15 @@ class ProcessApprovalFlowStep extends Model
         return $this->hasOne(ProcessApproval::class)->latestOfMany();
     }
 
+
+    public function processApprovalFlow()
+    {
+        return $this->belongsTo(ProcessApprovalFlow::class);
+    }
+
     public function approvalForModel(ApprovableModel $model): Model|MorphMany|null
     {
         return $model->approvals()->where('process_approval_flow_step_id', $this->id)->latest()->first();
     }
+
 }

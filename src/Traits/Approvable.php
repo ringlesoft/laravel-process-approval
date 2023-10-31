@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use RingleSoft\LaravelProcessApproval\Contracts\ApprovableModel;
@@ -43,6 +44,7 @@ trait Approvable
                     return $set;
                 }),
                 'status' => (property_exists($model, 'autoSubmit') && $model->autoSubmit) ? ApprovalStatusEnum::SUBMITTED->value : ApprovalStatusEnum::CREATED->value,
+                'creator_id' => Auth::id(),
             ]);
         });
     }
@@ -124,6 +126,26 @@ trait Approvable
     }
 
     /**
+     * @return Builder
+     */
+    public static function nonSubmitted(): Builder
+    {
+        return self::query()->whereHas('approvalStatus', static function ($q) {
+            return $q->where('status', ApprovalActionEnum::CREATED->value);
+        });
+    }
+
+    /**
+     * @return Builder
+     */
+    public static function submitted(): Builder
+    {
+        return self::query()->whereHas('approvalStatus', static function ($q) {
+            return $q->where('status', ApprovalActionEnum::SUBMITTED->value);
+        });
+    }
+
+    /**
      * Load approvals for the model
      * @return Collection|void|null
      */
@@ -196,7 +218,7 @@ trait Approvable
     public function nextApprovalStep(): ProcessApprovalFlowStep|null
     {
         foreach (collect($this->approvalStatus->steps ?? []) as $index => $step) {
-            if($step['process_approval_id'] === null ){
+            if ($step['process_approval_id'] === null) {
                 return ProcessApprovalFlowStep::query()->with('role')->find($step['id']);
             }
             if ($step['process_approval_action'] !== ApprovalActionEnum::APPROVED->value && $step['process_approval_action'] !== ApprovalActionEnum::DISCARDED->value) {
@@ -451,11 +473,12 @@ trait Approvable
             ]
         ];
 
-        $html = "";
+        $html = "<div class='flex rounded'>";
         foreach (($this->approvalStatus->steps ?? []) as $index => $item) {
             $theme = $map[$item['process_approval_action'] ?? 'Default'];
-            $html .= '<span class="badge" style="background-color: '.$theme['color'].'; padding: .1rem;" title="'.($item['role_name'] ?? $item['role_id']).': '.($item['process_approval_action'] ?? 'Pending').'" data-bs-toggle="tooltip">'.$theme['icon'].'</span>';
+            $html .= '<span class="badge" style="background-color: ' . $theme['color'] . '; padding: .1rem;" title="' . ($item['role_name'] ?? $item['role_id']) . ': ' . ($item['process_approval_action'] ?? 'Pending') . '" data-bs-toggle="tooltip">' . $theme['icon'] . '</span>';
         }
+        $html .= "</div>";
         return $html;
     }
 
@@ -467,21 +490,34 @@ trait Approvable
     private function updateStatus($stepId, ProcessApproval $approval): int
     {
         $steps = collect($this->approvalStatus->steps);
-        $current = $steps->map(static function($step) use($stepId, $approval) {
-            if($step['id'] === $stepId){
+        $current = $steps->map(static function ($step) use ($stepId, $approval) {
+            if ($step['id'] === $stepId) {
                 $step['process_approval_id'] = $approval->id;
                 $step['process_approval_action'] = $approval->approval_action;
             }
             return $step;
         });
         $action = $approval->approval_action;
-        if($action === ApprovalStatusEnum::APPROVED->value && !$this->isApprovalCompleted()){
+        if ($action === ApprovalStatusEnum::APPROVED->value && !$this->isApprovalCompleted()) {
             $action = ApprovalStatusEnum::PENDING->value;
         }
         return $this->approvalStatus()->update([
             'steps' => $current->toArray(),
             'status' => $action
         ]);
+    }
+
+
+    public function getCreatorAttribute()
+    {
+        return $this->morphToMany(
+            config('process_approval.users_model'),
+            'approvable',
+            'process_approval_statuses',
+            'approvable_id',
+            'creator_id',
+            'id'
+        )->latest()?->first();
     }
 
 }

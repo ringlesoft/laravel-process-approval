@@ -4,8 +4,11 @@ namespace RingleSoft\LaravelProcessApproval\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
-use RingleSoft\LaravelProcessApproval\Models\ProcessApprovalFlow;
-use Symfony\Component\Console\Question\ChoiceQuestion;
+use RingleSoft\LaravelProcessApproval\Facades\ProcessApproval;
+use function Laravel\Prompts\alert;
+use function Laravel\Prompts\info;
+use function Laravel\Prompts\select;
+use function Laravel\Prompts\table;
 use function Laravel\Prompts\text;
 
 class FlowCommand extends Command
@@ -29,23 +32,25 @@ class FlowCommand extends Command
      */
     public function handle()
     {
-        switch($this->argument('action')){
+        switch ($this->argument('action')) {
             case 'add':
                 $model = $this->argument('params')
                     ??
-                    $model = $this->ask("Enter the name of the model you want to make approvable");
+                    $model = text("Enter the name of the model you want to make approvable", 'ModelName');
                 $this->addFlow($model);
                 break;
             case 'remove':
-                $flowsArray = ProcessApprovalFlow::query()
-                    ->get()
-                    ->pluck('id', "id")
+                $flowsArray = ProcessApproval::flows()
+                    ->pluck('name', "id")
                     ->toArray();
-                $choice = $this->choice('Choose an option:', $flowsArray);
+                $choice = select('What Flow do you want to remove?', $flowsArray);
                 $this->removeFlow($choice);
                 break;
+            case 'list':
+                $this->listFlows($this->arguments());
+                break;
             default:
-                print('Unknown action '. $this->argument('action'));
+                print('Unknown action ' . $this->argument('action'));
         }
     }
 
@@ -54,49 +59,73 @@ class FlowCommand extends Command
      * @param $name
      * @return true
      */
-    private function addFlow($name) {
-
-            if(!Str::contains($name, '\\')){
-                $name = config('process_approval.models_path')."\\{$name}";
+    private function addFlow($name): bool
+    {
+        if (!Str::contains($name, '\\')) {
+            $name = config('process_approval.models_path') . "\\{$name}";
+        }
+        if (class_exists($name)) {
+            try {
+                ProcessApproval::createFlow(
+                    name: Str::of($name)->afterLast('\\')->snake(' ')->title()->toString(),
+                    modelClass: get_class(new $name())
+                );
+                info("{$name} created successfully!");
+            } catch (\Exception $e) {
+                echo "Failed to create Flow: " . $e->getMessage();
             }
-            if(class_exists($name)){
-                try {
-                    if(ProcessApprovalFlow::query()->where('approvable_type', $name)->exists()){
-                        $this->alert('This model already exists');
-                    } else {
-                        ProcessApprovalFlow::query()->create([
-                            'name' => Str::of($name)->afterLast( '\\')->snake(' ')->title()->toString(),
-                            'approvable_type' => get_class(new $name()),
-                        ]);
-                    }
-                    $this->line("{$name} created successfully!");
-
-                } catch (\Exception $e) {
-                    echo "Failed to create Flow: " . $e->getMessage();
-                }
-            } else {
-                echo "The model `{$name}` you specified doesn't exist";
-            }
-
+        } else {
+            echo "The model `{$name}` you specified doesn't exist";
+        }
         return true;
     }
 
     /**
      * Remove approval flow
-     * @param $name
+     * @param $flow
+     * @return bool
+     */
+    public function removeFlow($flow): bool
+    {
+        try {
+            ProcessApproval::deleteFlow($flow);
+            info("{$flow} removed successfully!");
+        } catch (\Exception $e) {
+            alert("Failed to delete flow. ". $e->getMessage());
+            return false;
+        }
+        return true;
+    }
+
+
+    /**
+     * @param $args
      * @return void
      */
-    public function removeFlow($flow)
+    public function listFlows($args = null)
     {
-        $flow = ProcessApprovalFlow::find($flow);
-        if($flow){
-            if($flow->delete()) {
-                $this->line("{$flow} removed successfully!");
+        $flows = ProcessApproval::flows();
+        $items = [];
+        foreach ($flows as $index => $flow) {
+            if (count($flow->steps) > 0) {
+                foreach ($flow->steps as $index2 => $step) {
+                    $items[] = [
+                        $flow->name,
+                        $step->role->name,
+                        $step->action,
+                        $step->active ? 'True' : 'False'
+                    ];
+                }
             } else {
-                $this->alert("Failed to remove {$flow}", 'critical');
+                $items[] = [
+                    $flow->name,
+                    '--',
+                    '--',
+                    '--',
+                ];
             }
-        } else {
-            $this->alert("Flow doesn't exist on the approval flows table");
         }
+        $headers = ['Flow', 'Step (Role)', 'Action', 'Active'];
+        table($headers, $items);
     }
 }
