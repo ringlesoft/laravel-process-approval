@@ -59,24 +59,20 @@ class FlowCommand extends Command
      * @param $name
      * @return true
      */
-    private function addFlow($name): bool
+    private function addFlow($modelName): bool
     {
-        if (!Str::contains($name, '\\')) {
-            $name = config('process_approval.models_path') . "\\{$name}";
+        if (!Str::contains($modelName, '\\')) {
+            $modelName = config('process_approval.models_path') . "\\{$modelName}";
         }
-        if (class_exists($name)) {
             try {
                 ProcessApproval::createFlow(
-                    name: Str::of($name)->afterLast('\\')->snake(' ')->title()->toString(),
-                    modelClass: get_class(new $name())
+                    name: Str::of($modelName)->afterLast('\\')->snake(' ')->title()->toString(),
+                    modelClass: $modelName
                 );
-                info("{$name} created successfully!");
+                info("{$modelName} created successfully!");
             } catch (\Exception $e) {
                 echo "Failed to create Flow: " . $e->getMessage();
             }
-        } else {
-            echo "The model `{$name}` you specified doesn't exist";
-        }
         return true;
     }
 

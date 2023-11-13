@@ -134,7 +134,7 @@ php artisan vendor:publish --tag="Ringlesoft/LaravelProcessApproval"
 - `roles_model` - Specify the full class name of the model related to roles table. (for Spatie's laravel-permissions use
   the Spatie\Permissions\Models\Role)
 - `users_model` - Specify the model that represents the authenticated users. (default is `App\Models\User`).
-- `models_path` - Specify the default path for models in your application. (default is `App\Models`).
+- `models_path` - Specify the default namespace for models in your application. (default is `App\Models`).
 - `css_library` - Specify the css library for styling the UI component (bootstrap/tailwind). (default is `Tailwind CSS`).
 
 ### Model Submitting
@@ -146,7 +146,7 @@ you wish to keep newly created models hidden from approvers until the creator su
 If you want the model to be auto-submitted upon creation, you can add the following property to the model:
 
 ```php
-public autoSubmit:bool = true;
+public bool autoSubmit = true;
 ```
 Otherwise, the package will show a submit button on the show page of the model to enable the creator to submit the model.
 
