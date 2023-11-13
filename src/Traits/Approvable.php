@@ -162,8 +162,8 @@ trait Approvable
      */
     public function isApprovalCompleted(): bool
     {
-        foreach (collect($this->approvalStatus()->steps ?? []) as $index => $item) {
-            if ($item->approval_action === null || $item->process_approval_id === null) {
+        foreach (collect($this->approvalStatus->steps ?? []) as $index => $item) {
+            if ($item['process_approval_action'] === null || $item['process_approval_id'] === null) {
                 return false;
             }
         }
@@ -267,7 +267,7 @@ trait Approvable
                 'approvable_type' => $this->getApprovableType(),
                 'approvable_id' => $this->id,
                 'process_approval_flow_step_id' => $nextStep->id,
-                'approval_action' => ApprovalActionEnum::APPROVED,
+                'approval_action' => ApprovalActionEnum::SUBMITTED,
                 'comment' => '',
                 'user_id' => $user?->id,
                 'approver_name' => $user?->name ?? 'Unknown'
@@ -429,7 +429,7 @@ trait Approvable
     public function canBeApprovedBy(Authenticatable|null $user): bool|null
     {
         $nextStep = $this->nextApprovalStep();
-        return $nextStep && $user?->hasRole($nextStep->role);
+        return $this->isSubmitted() && $nextStep && $user?->hasRole($nextStep->role);
     }
 
     /**
