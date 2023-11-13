@@ -34,13 +34,23 @@ class ProcessApproval implements ProcessApprovalContract
 
     public function createFlow(string $name, string $modelClass): ProcessApprovalFlow
     {
-        if(ProcessApprovalFlow::query()->where('approvable_type', $modelClass)->exists()) {
-            throw ApprovalFlowExistsException::create($name, $modelClass);
+        if (!Str::contains($name, '\\')) {
+            $name = config('process_approval.models_path') . "\\{$name}";
         }
-        return ProcessApprovalFlow::query()->create([
-            'name' => $name,
-            'approvable_type' => $modelClass,
-        ]);
+        if (class_exists($name)) {
+            try {
+                ProcessApproval::createFlow(
+                    name: Str::of($name)->afterLast('\\')->snake(' ')->title()->toString(),
+                    modelClass: get_class(new $name())
+                );
+                info("{$name} created successfully!");
+            } catch (\Exception $e) {
+                echo "Failed to create Flow: " . $e->getMessage();
+            }
+        } else {
+            echo "The model `{$name}` you specified doesn't exist";
+        }
+        return true;
     }
 
     public function deleteFlow(int $flowId): bool|null
