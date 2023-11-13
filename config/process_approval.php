@@ -16,7 +16,7 @@ return [
 
 
     /**
-     * The path in which application models ar located
+     * The Namespace in which application models ar located
      */
     'models_path' => "\\App\Models",
 

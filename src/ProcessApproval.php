@@ -4,9 +4,11 @@ namespace RingleSoft\LaravelProcessApproval;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use RingleSoft\LaravelProcessApproval\Contracts\ProcessApprovalContract;
 use RingleSoft\LaravelProcessApproval\Exceptions\ApprovalFlowDoesNotExistsException;
 use RingleSoft\LaravelProcessApproval\Exceptions\ApprovalFlowExistsException;
+use RingleSoft\LaravelProcessApproval\Exceptions\ApprovalFlowModelDoesNotExistsException;
 use RingleSoft\LaravelProcessApproval\Exceptions\ApprovalFlowStepDoesNotExistsException;
 use RingleSoft\LaravelProcessApproval\Models\ProcessApprovalFlow;
 use RingleSoft\LaravelProcessApproval\Models\ProcessApprovalFlowStep;
@@ -34,12 +36,18 @@ class ProcessApproval implements ProcessApprovalContract
 
     public function createFlow(string $name, string $modelClass): ProcessApprovalFlow
     {
-        if(ProcessApprovalFlow::query()->where('approvable_type', $modelClass)->exists()) {
+        if (!Str::contains($modelClass, '\\')) {
+            $modelClass = config('process_approval.models_path') . "\\{$modelClass}";
+        }
+        if (!class_exists($modelClass)) {
+            throw ApprovalFlowModelDoesNotExistsException::create($modelClass);
+        }
+        if(ProcessApprovalFlow::query()->where('approvable_type', trim($modelClass, '\\'))->exists()) {
             throw ApprovalFlowExistsException::create($name, $modelClass);
         }
         return ProcessApprovalFlow::query()->create([
             'name' => $name,
-            'approvable_type' => $modelClass,
+            'approvable_type' => get_class(new $modelClass()),
         ]);
     }
 
