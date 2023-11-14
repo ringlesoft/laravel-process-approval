@@ -2,7 +2,7 @@
 
 namespace RingleSoft\LaravelProcessApproval;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use RingleSoft\LaravelProcessApproval\Contracts\ProcessApprovalContract;
@@ -19,21 +19,32 @@ class ProcessApproval implements ProcessApprovalContract
     {
     }
 
-    public function flows(): \Illuminate\Database\Eloquent\Collection|array
+    /**
+     * @inheritDoc
+     */
+    public function flows(): Collection|array
     {
         return ProcessApprovalFlow::query()->with('steps.role')->get();
     }
 
-    public function flowsWithSteps(): \Illuminate\Database\Eloquent\Collection|array
+    public function flowsWithSteps(): Collection|array
     {
         return  ProcessApprovalFlow::query()->with(['steps', 'steps.role'])->whereHas('steps')->get();
     }
 
-    public function steps(): \Illuminate\Database\Eloquent\Collection|array
+    /**
+     * @inheritDoc
+     */
+    public function steps(): Collection|array
     {
         return ProcessApprovalFlowStep::query()->with('role')->get();
     }
 
+    /**
+     * @inheritDoc
+     * @throws ApprovalFlowExistsException
+     * @throws ApprovalFlowModelDoesNotExistsException
+     */
     public function createFlow(string $name, string $modelClass): ProcessApprovalFlow
     {
         if (!Str::contains($modelClass, '\\')) {
@@ -51,6 +62,10 @@ class ProcessApproval implements ProcessApprovalContract
         ]);
     }
 
+    /**
+     * @inheritDoc
+     * @throws ApprovalFlowDoesNotExistsException
+     */
     public function deleteFlow(int $flowId): bool|null
     {
         $approvalFlow = ProcessApprovalFlow::find($flowId);
@@ -69,6 +84,10 @@ class ProcessApproval implements ProcessApprovalContract
         return true;
     }
 
+    /**
+     * @inheritDoc
+     * @throws ApprovalFlowStepDoesNotExistsException
+     */
     public function deleteStep(int $stepId): ?bool
     {
         $step = ProcessApprovalFlowStep::find($stepId);
@@ -79,17 +98,20 @@ class ProcessApproval implements ProcessApprovalContract
     }
 
 
+    /**
+     * @inheritDoc
+     * @throws ApprovalFlowDoesNotExistsException
+     */
     public function createStep(int $flowId, int $roleId, string|null $action = 'APPROVE'): ProcessApprovalFlowStep
     {
         $flow = ProcessApprovalFlow::find($flowId);
         if(!$flow){
             throw ApprovalFlowDoesNotExistsException::create();
         }
-        $step = $flow->steps()->create([
+        return $flow->steps()->create([
             'role_id' => $roleId,
             'action' => $action,
             'active' => 1
         ]);
-        return $step;
     }
 }
