@@ -135,6 +135,7 @@ php artisan vendor:publish --tag="Ringlesoft/LaravelProcessApproval"
   the Spatie\Permissions\Models\Role)
 - `users_model` - Specify the model that represents the authenticated users. (default is `App\Models\User`).
 - `models_path` - Specify the default namespace for models in your application. (default is `App\Models`).
+- `approval_controller_middlewares` - Specify any middlewares you want to apply to the ApprovalController. (Normally it should be  `['auth']`).
 - `css_library` - Specify the css library for styling the UI component (bootstrap/tailwind). (default is `Tailwind CSS`).
 
 ### Model Submitting
