@@ -21,6 +21,12 @@ return [
     'models_path' => "\\App\Models",
 
     /**
+     * The middlewares that will be applied to the routes pointing to the approval controller
+     * Normally ['auth']
+     */
+    'approval_controller_middlewares' => [],
+
+    /**
      * The name of the css library to use
      */
     'css_library' => 'tailwind', // tailwind | bootstrap
