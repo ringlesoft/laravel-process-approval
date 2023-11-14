@@ -180,8 +180,7 @@ trait Approvable
      */
     public function isRejected(): bool
     {
-        $next = $this->nextApprovalStep();
-        return $next->approval?->approval_action === ApprovalActionEnum::REJECTED->value;
+        return $this->approvalStatus?->status === ApprovalActionEnum::REJECTED->value;
 
     }
 
@@ -191,8 +190,7 @@ trait Approvable
      */
     public function isDiscarded(): bool
     {
-        $next = $this->nextApprovalStep();
-        return $next->approval?->approval_action === ApprovalActionEnum::DISCARDED->value;
+        return $this->approvalStatus?->status === ApprovalActionEnum::DISCARDED->value;
 
     }
 

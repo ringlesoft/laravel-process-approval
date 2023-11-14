@@ -139,7 +139,13 @@
                             </div>
                         @endif
                     @else
-                        <div>Approval completed!</div>
+                        <div>
+                            @if($model->isDiscarded())
+                                Discarded!
+                            @else
+                                Approval completed!
+                            @endif
+                        </div>
                     @endif
                 </div>
                 @endif
