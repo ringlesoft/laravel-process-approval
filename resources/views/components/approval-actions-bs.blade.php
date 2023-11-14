@@ -1,3 +1,4 @@
+@if($model->approvalsPaused !== true)
 <div {{ $attributes->class(['card']) }}>
     <div class="card-body">
         <h6 class="text-center">Approvals</h6>
@@ -73,8 +74,9 @@
                     </thead>
                 </table>
             </div>
-            <div class="approval-actions">
 
+            @if($model->approvalsPaused !== 'ONLY_ACTIONS')
+            <div class="approval-actions">
                 @if($nextApprovalStep)
                     @if($userCanApprove)
                         <div class="row align-content-between align-items-md-center">
@@ -118,9 +120,16 @@
                         </div>
                     @endif
                 @else
-                    <div>Approval completed!</div>
+                    <div>
+                        @if($model->isDiscarded())
+                            Discarded!
+                        @else
+                            Approval completed!
+                        @endif
+                    </div>
                 @endif
             </div>
+            @endif
         @else
             <div class="row align-content-between align-items-md-center">
                 <div class="col-12 col-md-7">
@@ -232,3 +241,4 @@
         </form>
     </div>
 </div>
+@endif
