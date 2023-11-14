@@ -29,31 +29,31 @@ interface ApprovableModel
 
 
     /**
-     * Get only approved models
+     * Get only approved records
      * @return Builder
      */
     public static function approved(): Builder;
 
     /**
-     * Get only rejected models
+     * Get only rejected records
      * @return Builder
      */
     public static function rejected(): Builder;
 
     /**
-     * Get only rejected models
+     * Get only rejected records
      * @return Builder
      */
     public static function discarded(): Builder;
 
     /**
-     * Get only non-submitted models
+     * Get only non-submitted records
      * @return Builder
      */
     public static function nonSubmitted(): Builder;
 
     /**
-     * Get only submitted models
+     * Get only submitted records
      * @return Builder
      */
     public static function submitted(): Builder;
