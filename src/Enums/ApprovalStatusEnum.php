@@ -6,7 +6,7 @@ enum ApprovalStatusEnum: string
 {
     case CREATED = 'Created';
     case SUBMITTED = 'Submitted';
-    case PENDING = 'PENDING';
+    case PENDING = 'Pending';
     case APPROVED = 'Approved';
     case REJECTED = 'Rejected';
     case DISCARDED = 'Discarded';
