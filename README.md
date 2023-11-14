@@ -150,6 +150,18 @@ public bool autoSubmit = true;
 ```
 Otherwise, the package will show a submit button on the show page of the model to enable the creator to submit the model.
 
+### Pausing Approval process
+Sometimes you may wish to interrupt the approval procedure by adding your own actions before continuing with approvals. 
+You can pause approvals by adding a `pauseApprovals(): mixed` method to your Approvable Model. 
+
+```php
+public function pauseApprovals() {
+    return true;
+}
+```
+If this method returns true, the approval actions UI will disappear, and you will be able to implement your other logics.
+If the method returns `'ONLY_ACTIONS'` the existing approvals will be displayed but approval actions will be hidden and disabled.
+
 ### Approval Signatures
 If you want to use signatures for users, add the `getSignature()` method to your User model and make it return the signature of the user as image url.
 
