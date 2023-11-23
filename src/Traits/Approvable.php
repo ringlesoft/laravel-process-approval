@@ -156,12 +156,13 @@ trait Approvable
      */
     public function isApprovalCompleted(): bool
     {
-        foreach (collect($this->approvalStatus->steps ?? []) as $index => $item) {
+        $registeredSteps = collect($this->approvalStatus->steps ?? []);
+        foreach ($registeredSteps as $index => $item) {
             if ($item['process_approval_action'] === null || $item['process_approval_id'] === null) {
                 return false;
             }
         }
-        return true;
+        return $registeredSteps->last()['process_approval_action'] !== ApprovalActionEnum::REJECTED->value;
     }
 
 
