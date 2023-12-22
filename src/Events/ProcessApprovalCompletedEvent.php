@@ -13,12 +13,10 @@ class ProcessApprovalCompletedEvent
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public Model $approvable;
-
     /**
      * Create a new event instance.
      */
-    public function __construct(Model $approvable)
+    public function __construct(public Model $approvable)
     {
     }
 

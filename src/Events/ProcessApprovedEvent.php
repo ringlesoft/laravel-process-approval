@@ -2,7 +2,6 @@
 
 namespace RingleSoft\LaravelProcessApproval\Events;
 
-use App\Models\RequestApproval;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
@@ -14,12 +13,10 @@ class ProcessApprovedEvent
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public RequestApproval $approval;
-
     /**
      * Create a new event instance.
      */
-    public function __construct(ProcessApproval $approval)
+    public function __construct(public ProcessApproval $approval)
     {
     }
 
