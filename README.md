@@ -4,7 +4,8 @@
 
 This package enables multi-level approval workflows for Eloquent models in your Laravel application. If you have models
 that require review and approval from multiple approvers before execution, this package provides a flexible approval
-process to meet that need.
+process to meet that need. 
+> Laravel 10.0 or later
 
 The package relies on an existing `Role` management. This can be a custom role management or another package such as
 Spatie's `laravel permissions`.
@@ -245,6 +246,11 @@ This package adds multiple helper methods to the approvable models. These includ
   This method must be implemented and must return true for the last approval to be successful. Otherwise, the last
   approval will be rolled back.
 - `getNextApprovers(): Collection`: Returns a list of users that are capable of approving the model at its current step.
+
+#### relations
+- `approvals(): morphMany` - Returns all approvals of the model
+- `lastApproval(): morphOne` - Returns the last approval (`Models\ProcessApproval`) of the model
+- `approvalStatus(): morphOne` - Returns the status object (`Models\ProcessApprovalStatus`) of the model
 
 ## Contributing
 
