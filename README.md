@@ -4,7 +4,7 @@
 
 This package enables multi-level approval workflows for Eloquent models in your Laravel application. If you have models
 that require review and approval from multiple approvers before execution, this package provides a flexible approval
-process to meet that need. 
+process to meet that need.
 > Laravel 10.0 or later
 
 The package relies on an existing `Role` management. This can be a custom role management or another package such as
@@ -20,17 +20,34 @@ Spatie's `laravel permissions`.
 composer require ringlesoft/laravel-process-approval
 ```
 
-#### 2. Run migration:
+#### 2. Publish Files (Optional)
 
-The package comes with four migrations. Run artisan migrate command before you start using the package.
+This package provides publishable files that include configuration, migrations and views. You can publish these files
+using the following command:
+
+```bash
+php artisan vendor:publish --provider="RingleSoft\LaravelProcessApproval\LaravelProcessApprovalServiceProvider" 
+```
+
+You can publish specific files by providing the ```--tag``` option within the publish command. Available options
+are ```approvals-migrations```, ```approvals-config```, ```approvals-views```. <br> For example:
+
+```bash
+php artisan vendor:publish --provider="RingleSoft\LaravelProcessApproval\LaravelProcessApprovalServiceProvider" --tag="approvals-migrations" 
+```
+
+#### 3. Run migration:
+
+The package comes with four migration files. Run artisan migrate command before you start using the package.
 
 ```bash
 php artisan migrate
 ```
 
-#### 3. Create Approval flows and Steps
+#### 4. Create Approval flows and Steps
 
-The package relies on Approval flows and steps on your default database. This is to enable multiple approval flows within the system. Yuo can
+The package relies on Approval flows and steps on your default database. This is to enable multiple approval flows
+within the system. Yuo can
 implement your own way of creating and managing the flows. However, there are available command-line functions to help
 you get started easily.
 
@@ -47,13 +64,16 @@ To create a new flow, Run the following command on your terminal.
 ```bash
 php artisan process-approval:step add  
 ```
-This will show a list of available Flows. Select the flow yow want to add steps to and then select the role and approval action.
+
+This will show a list of available Flows. Select the flow yow want to add steps to and then select the role and approval
+action.
 
 #### iii. Deleting a flow
 
 ```bash
 php artisan process-approval:flow remove  
 ```
+
 This will show a list of available flows. Select the step you want to delete and hit enter.
 
 #### iv. Deleting a step
@@ -61,6 +81,7 @@ This will show a list of available flows. Select the step you want to delete and
 ```bash
 php artisan process-approval:step remove  
 ```
+
 This will show a list of available steps. Select the step you want to delete and hit enter.
 
 #### v. Listing all flows
@@ -68,6 +89,7 @@ This will show a list of available steps. Select the step you want to delete and
 ```bash
 php artisan process-approval:flow list  
 ```
+
 This will show a list of all available flows and steps
 
 ## Usage
@@ -100,7 +122,6 @@ This package relies on one callback method in your model to commit the last appr
 completed. You should implement this method and return `true` to finalize the approval or `false` to roll back the last
 approval. This is useful in the case of performing specific tasks when the approval procedure is completed.
 
-
 ```php
 class FundRequest extends Model implements ApprovableModel
 {
@@ -121,23 +142,29 @@ use \RingleSoft\ProcessApproval\Traits\Approvable;
     <x-ringlesoft-approval-actions :model="$fundRequest" />
 ```
 
-Currently, the UI is implemented using `tailwind` or `bootstrap`. Support for vanilla CSS and JS will be available soon. You can switch between the two by modifying the `css_library` setting in the configuration file. Additionally, you have the option to publish the views and customize them to meet your specific requirements.
-
+Currently, the UI is implemented using `tailwind` or `bootstrap`. Support for vanilla CSS and JS will be available soon.
+You can switch between the two by modifying the `css_library` setting in the configuration file. Additionally, you have
+the option to publish the views and customize them to meet your specific requirements.
 
 ## Configuration
 
 You can publish the configuration file of this package, `process_approval.php`, and modify the variables to align with
 your specific requirements. If you wish to publish the files, use the following command:
+
 ```bash
 php artisan vendor:publish --tag="Ringlesoft/LaravelProcessApproval"  
 ```
+
 ### Configurable parameters
+
 - `roles_model` - Specify the full class name of the model related to roles table. (for Spatie's laravel-permissions use
   the Spatie\Permissions\Models\Role)
 - `users_model` - Specify the model that represents the authenticated users. (default is `App\Models\User`).
 - `models_path` - Specify the default namespace for models in your application. (default is `App\Models`).
-- `approval_controller_middlewares` - Specify any middlewares you want to apply to the ApprovalController. (Normally it should be  `['auth']`).
-- `css_library` - Specify the css library for styling the UI component (bootstrap/tailwind). (default is `Tailwind CSS`).
+- `approval_controller_middlewares` - Specify any middlewares you want to apply to the ApprovalController. (Normally it
+  should be  `['auth']`).
+- `css_library` - Specify the css library for styling the UI component (bootstrap/tailwind). (default
+  is `Tailwind CSS`).
 
 ### Model Submitting
 
@@ -150,22 +177,30 @@ If you want the model to be auto-submitted upon creation, you can add the follow
 ```php
 public bool autoSubmit = true;
 ```
-Otherwise, the package will show a submit button on the show page of the model to enable the creator to submit the model.
+
+Otherwise, the package will show a submit button on the show page of the model to enable the creator to submit the
+model.
 
 ### Pausing Approval process
-Sometimes you may wish to interrupt the approval procedure by adding your own actions before continuing with approvals. 
-You can pause approvals by adding a `pauseApprovals(): mixed` method to your Approvable Model. 
+
+Sometimes you may wish to interrupt the approval procedure by adding your own actions before continuing with approvals.
+You can pause approvals by adding a `pauseApprovals(): mixed` method to your Approvable Model.
 
 ```php
 public function pauseApprovals() {
     return true;
 }
 ```
-If this method returns true, the approval actions UI will disappear, and you will be able to implement your other logics.
-If the method returns `'ONLY_ACTIONS'` the existing approvals will be displayed but approval actions will be hidden and disabled.
+
+If this method returns true, the approval actions UI will disappear, and you will be able to implement your other
+logics.
+If the method returns `'ONLY_ACTIONS'` the existing approvals will be displayed but approval actions will be hidden and
+disabled.
 
 ### Approval Signatures
-If you want to use signatures for users, add the `getSignature()` method to your User model and make it return the signature of the user as image url.
+
+If you want to use signatures for users, add the `getSignature()` method to your User model and make it return the
+signature of the user as image url.
 
 ```php
 Class User extends Model {
@@ -176,16 +211,19 @@ Class User extends Model {
     }
 }
 ```
+
 If not specified, the package will display `check` icon for approval and `times` icon for rejection.
 
 ### Approval Summary
-If you want to display a summary of the approval process (normally when listing the models) you can use the `getApprovalSummaryUI()` method. 
-This method returns html code with icons representing every approval step, `check` icon representing `Approved`, `times` icon representing `Rejected` and `exclamation` icon representing `Pending`.
+
+If you want to display a summary of the approval process (normally when listing the models) you can use
+the `getApprovalSummaryUI()` method.
+This method returns html code with icons representing every approval step, `check` icon representing `Approved`, `times`
+icon representing `Rejected` and `exclamation` icon representing `Pending`.
 
 ```php
     $fundRequest->getApprovalSummaryUI();
 ```
-
 
 ## Events
 
@@ -201,7 +239,9 @@ The package dispatches events during different stages of the approval workflow t
 ## Helper Methods
 
 This package adds multiple helper methods to the approvable models. These include:
+
 ### Filters
+
 - `approved()` [Static]: This returns a builder that filters the model entries that are only approved (
   returns `Illuminate\Database\Eloquent\Builder`)
   Example:
@@ -227,7 +267,9 @@ This package adds multiple helper methods to the approvable models. These includ
     ```php
         FundRequest::submitted()->get();
     ```
+
 ### Misc
+
 - `isApprovalCompleted(): bool`: Checks if the approval process for the model is completed
 - `isSubmitted(): bool`: Checks if the model has been submitted
 - `isRejected(): bool`: Checks if the model has been rejected
@@ -248,6 +290,7 @@ This package adds multiple helper methods to the approvable models. These includ
 - `getNextApprovers(): Collection`: Returns a list of users that are capable of approving the model at its current step.
 
 #### relations
+
 - `approvals(): morphMany` - Returns all approvals of the model
 - `lastApproval(): morphOne` - Returns the last approval (`Models\ProcessApproval`) of the model
 - `approvalStatus(): morphOne` - Returns the status object (`Models\ProcessApprovalStatus`) of the model
