@@ -19,18 +19,14 @@ class LaravelProcessApprovalServiceProvider extends ServiceProvider
     {
         Blade::component('approval-actions', ApprovalActions::class, 'ringlesoft');
 
-        $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
-        $this->loadViewsFrom(__DIR__.'/../resources/views', 'ringlesoft');
-        $this->loadRoutesFrom(__DIR__.'/../routes/web.php');
-        $this->publishes([
-            __DIR__.'/../resources/views' => resource_path('views/vendor/ringlesoft/process_approval'),
-            __DIR__.'/../config/process_approval.php' => config_path('process_approval.php'),
-        ]);
+        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+        $this->loadViewsFrom(__DIR__ . '/../resources/views', 'ringlesoft');
+        $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
+        $this->publishItems();
 
         $this->mergeConfigFrom(
-            __DIR__.'/../config/process_approval.php', 'process_approval'
+            __DIR__ . '/../config/process_approval.php', 'process_approval'
         );
-
 
         if ($this->app->runningInConsole()) {
             $this->commands([
@@ -41,4 +37,23 @@ class LaravelProcessApprovalServiceProvider extends ServiceProvider
         }
     }
 
+    private function publishItems(): void
+    {
+        if (!function_exists('config_path') || !$this->app->runningInConsole()) {
+            return;
+        }
+
+        $this->publishes([
+            __DIR__ . '/../config/process_approval.php' => config_path('process_approval.php'),
+        ], 'approvals-config');
+
+        $this->publishes([
+            __DIR__ . '/../database/migrations' => database_path('migrations'),
+        ], 'approvals-migrations');
+
+        $this->publishes([
+            __DIR__ . '/../resources/views' => resource_path('views/vendor/ringlesoft/process_approval'),
+        ], 'approvals-views');
+
+    }
 }
