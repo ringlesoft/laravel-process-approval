@@ -303,6 +303,10 @@ I'll let you know when you can contribute 😜.
 
 Laravel Process Approval is open-source software released under the MIT License.
 
+## Package Listing
+- [Packagist](https://packagist.org/packages/ringlesoft/laravel-process-approval)
+
 ## Contacts
 
-Follow me on <a href="https://x.com/ringunger">Twitter</a>: <a href="https://x.com/ringunger">@ringunger</a>
+Follow me on <a href="https://x.com/ringunger">X</a>: <a href="https://x.com/ringunger">@ringunger</a><br>
+Email me: <a href="mailto:ringunger@gmail.com">ringunger@gmail.com</a>
