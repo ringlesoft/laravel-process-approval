@@ -2,6 +2,7 @@
 
 namespace RingleSoft\LaravelProcessApproval\Console\Commands;
 
+use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 use RingleSoft\LaravelProcessApproval\Facades\ProcessApproval;
@@ -30,13 +31,13 @@ class FlowCommand extends Command
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function handle(): void
     {
         switch ($this->argument('action')) {
             case 'add':
                 $model = $this->argument('params')
                     ??
-                    $model = text("Enter the name of the model you want to make approvable", 'ModelName');
+                    text("Enter the name of the model you want to make approvable", 'ModelName');
                 $this->addFlow($model);
                 break;
             case 'remove':
@@ -56,8 +57,8 @@ class FlowCommand extends Command
 
     /**
      * Create a new approval flow
-     * @param $name
-     * @return true
+     * @param $modelName
+     * @return bool
      */
     private function addFlow($modelName): bool
     {
@@ -70,8 +71,9 @@ class FlowCommand extends Command
                     modelClass: $modelName
                 );
                 info("{$modelName} created successfully!");
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 echo "Failed to create Flow: " . $e->getMessage();
+                return false;
             }
         return true;
     }
@@ -86,7 +88,7 @@ class FlowCommand extends Command
         try {
             ProcessApproval::deleteFlow($flow);
             info("{$flow} removed successfully!");
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             alert("Failed to delete flow. ". $e->getMessage());
             return false;
         }
@@ -98,13 +100,13 @@ class FlowCommand extends Command
      * @param $args
      * @return void
      */
-    public function listFlows($args = null)
+    public function listFlows($args = null): void
     {
         $flows = ProcessApproval::flows();
         $items = [];
-        foreach ($flows as $index => $flow) {
+        foreach ($flows as $flow) {
             if (count($flow->steps) > 0) {
-                foreach ($flow->steps as $index2 => $step) {
+                foreach ($flow->steps as $step) {
                     $items[] = [
                         $flow->name,
                         $step->role->name,

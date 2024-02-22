@@ -2,6 +2,7 @@
 
 namespace RingleSoft\LaravelProcessApproval\Enums;
 
+
 enum ApprovalStatusEnum: string
 {
     case CREATED = 'Created';

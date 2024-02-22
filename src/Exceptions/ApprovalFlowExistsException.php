@@ -2,9 +2,9 @@
 
 namespace RingleSoft\LaravelProcessApproval\Exceptions;
 
-use RingleSoft\LaravelProcessApproval\Models\ProcessApprovalFlow;
+use Exception;
 
-class ApprovalFlowExistsException extends \Exception
+class ApprovalFlowExistsException extends Exception
 {
     public static function create(string $name, string $flow): static
     {

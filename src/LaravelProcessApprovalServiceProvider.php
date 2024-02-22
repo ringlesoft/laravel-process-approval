@@ -10,12 +10,12 @@ use RingleSoft\LaravelProcessApproval\View\Components\ApprovalActions;
 
 class LaravelProcessApprovalServiceProvider extends ServiceProvider
 {
-    public function register()
+    public function register(): void
     {
         $this->app->alias(Facades\ProcessApproval::class, 'ProcessApproval');
     }
 
-    public function boot()
+    public function boot(): void
     {
         Blade::component('approval-actions', ApprovalActions::class, 'ringlesoft');
 

@@ -2,6 +2,7 @@
 
 namespace RingleSoft\LaravelProcessApproval;
 
+use Exception;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -65,6 +66,7 @@ class ProcessApproval implements ProcessApprovalContract
     /**
      * @inheritDoc
      * @throws ApprovalFlowDoesNotExistsException
+     * @throws Exception
      */
     public function deleteFlow(int $flowId): bool|null
     {
@@ -76,7 +78,7 @@ class ProcessApproval implements ProcessApprovalContract
         try {
             $approvalFlow->steps()->delete();
             $approvalFlow->delete();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             DB::rollBack();
             throw $e;
         }
