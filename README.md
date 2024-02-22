@@ -10,7 +10,7 @@ process to meet that need.
 The package relies on an existing `Role` management. This can be a custom role management or another package such as
 Spatie's `laravel permissions`.
 
-<img src="https://ringlesoft.com/images/packages/approvals2.png" />
+<img src="https://ringlesoft.com/images/packages/approvals2.png" alt="Approvals Screenshot" />
 
 ## Installation
 
@@ -152,7 +152,7 @@ You can publish the configuration file of this package, `process_approval.php`, 
 your specific requirements. If you wish to publish the files, use the following command:
 
 ```bash
-php artisan vendor:publish --tag="Ringlesoft/LaravelProcessApproval"  
+php artisan vendor:publish --provider="RingleSoft\LaravelProcessApproval\LaravelProcessApprovalServiceProvider" --tag="config"
 ```
 
 ### Configurable parameters
