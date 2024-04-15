@@ -47,7 +47,7 @@ php artisan migrate
 #### 4. Create Approval flows and Steps
 
 The package relies on Approval flows and steps on your default database. This is to enable multiple approval flows
-within the system. Yuo can
+within the system. You can
 implement your own way of creating and managing the flows. However, there are available command-line functions to help
 you get started easily.
 
