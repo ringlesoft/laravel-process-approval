@@ -13,9 +13,11 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use RingleSoft\LaravelProcessApproval\Contracts\ApprovableModel;
 use RingleSoft\LaravelProcessApproval\Enums\ApprovalActionEnum;
 use RingleSoft\LaravelProcessApproval\Enums\ApprovalStatusEnum;
+use RingleSoft\LaravelProcessApproval\Enums\ApprovalTypeEnum;
 use RingleSoft\LaravelProcessApproval\Events\ApprovalNotificationEvent;
 use RingleSoft\LaravelProcessApproval\Events\ProcessApprovalCompletedEvent;
 use RingleSoft\LaravelProcessApproval\Events\ProcessApprovedEvent;
@@ -301,7 +303,7 @@ trait Approvable
      */
     public function approve($comment = null, Authenticatable|null $user = null): ProcessApproval|bool|RedirectResponse // TODO remove the redirectResponse
     {
-        if(!$this->isSubmitted()){
+        if (!$this->isSubmitted()) {
             throw RequestNotSubmittedException::create($this);
         }
         $nextStep = $this->nextApprovalStep();
@@ -350,7 +352,7 @@ trait Approvable
      */
     public function reject($comment = null, Authenticatable|null $user = null): ProcessApproval|bool
     {
-        if(!$this->isSubmitted()){
+        if (!$this->isSubmitted()) {
             throw RequestNotSubmittedException::create($this);
         }
         DB::beginTransaction();
@@ -387,7 +389,7 @@ trait Approvable
      */
     public function discard($comment = null, Authenticatable|null $user = null): ProcessApproval|bool
     {
-        if(!$this->isSubmitted()){
+        if (!$this->isSubmitted()) {
             throw RequestNotSubmittedException::create($this);
         }
         $nextStep = $this->nextApprovalStep();
@@ -550,10 +552,46 @@ trait Approvable
      */
     public function getApprovalsPausedAttribute(): mixed
     {
-        if(method_exists($this, 'pauseApprovals')){
+        if (method_exists($this, 'pauseApprovals')) {
             return $this->pauseApprovals();
         }
         return false;
+    }
+
+    /**
+     * Create approval flow for this record
+     * @param string|null $name
+     * @param array|null $steps lit of roles that should be used as approval steps
+     * @return  bool
+     * @throws Exception
+     */
+    public static function makeApprovable(string|null $name = null, array|null $steps = null): bool
+    {
+        $p = new \RingleSoft\LaravelProcessApproval\ProcessApproval();
+        DB::BeginTransaction();
+        try {
+            $flow = $p->createFlow($name ?? Str::title(self::class), self::class);
+            if ($steps && count($steps) > 0) {
+                $rolesModel = config('process_approval.roles_model');
+                foreach ($steps as $key => $step) {
+                    if (is_numeric($key) && is_numeric($step)) { // Associative
+                        $roleId = ($rolesModel)::find($step)?->id;
+                        $approvalActionType = ApprovalTypeEnum::APPROVE->value;
+                    } else {
+                        $roleId = ($rolesModel)::where((is_numeric($key) ? 'id' : 'name'), $key)->first()?->id;
+                        $approvalActionType = ApprovalTypeEnum::from($step)->value ?? ApprovalTypeEnum::APPROVE->value;
+                    }
+                    if ($roleId) {
+//                        $actualStep = $p->createStep($flow->id, $roleId, $approvalActionType)($step);
+                    }
+                }
+            }
+        } catch (Exception $e) {
+            DB::rollBack();
+            throw $e;
+        }
+        DB::commit();
+        return true;
     }
 
 }
