@@ -2,6 +2,7 @@
 
 namespace RingleSoft\LaravelProcessApproval\Console\Commands;
 
+use Exception;
 use Illuminate\Console\Command;
 use RingleSoft\LaravelProcessApproval\Facades\ProcessApproval;
 use function Laravel\Prompts\alert;
@@ -27,7 +28,7 @@ class StepCommand extends Command
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function handle(): void
     {
         $flows = ProcessApproval::flows();
         if(!$flows->count()){
@@ -39,14 +40,14 @@ class StepCommand extends Command
             case 'add':
                 $model = $this->argument('params')
                     ??
-                    $model = select("Select the Model to which you want to add steps:", $flowsArray);
+                    select("Select the Model to which you want to add steps:", $flowsArray);
                 $this->addStep($model);
                 break;
             case 'remove':
                 $steps = [];
                 $flows = ProcessApproval::flowsWithSteps();
-                foreach ($flows as $index => $flow) {
-                    foreach ($flow->steps as $index2 => $step) {
+                foreach ($flows as $flow) {
+                    foreach ($flow->steps as $step) {
                         $steps[$step->id] = $flow->name . ' '. $step->role->name . " - ". $step->action;
                     }
                 }
@@ -65,9 +66,8 @@ class StepCommand extends Command
     /**
      * Create a new step
      * @param $flowId
-     * @return true
      */
-    private function addStep($flowId)
+    private function addStep($flowId): void
     {
         $rolesModel = config('process_approval.roles_model');
         if(!class_exists($rolesModel)){
@@ -82,11 +82,10 @@ class StepCommand extends Command
         try {
             ProcessApproval::createStep(flowId: $flowId, roleId: $role, action: $action );
             info('Step created Successfully');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             alert('Failed to create step. '. $e->getMessage());
-            return false;
+            return;
         }
-        return true;
     }
 
     /**
@@ -94,12 +93,12 @@ class StepCommand extends Command
      * @param $stepId
      * @return void
      */
-    public function removeStep($stepId)
+    public function removeStep($stepId): void
     {
         try {
             ProcessApproval::deleteStep($stepId);
             info("Step removed successfully!");
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             alert("Failed to remove step. ". $e->getMessage());
         }
 

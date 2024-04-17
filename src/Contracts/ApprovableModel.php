@@ -148,5 +148,12 @@ interface ApprovableModel
      */
     public function getNextApprovers(): Collection;
 
+    /**
+     * Create approval flow for this record
+     * @param String|null $name
+     * @param array|null $steps
+     * @return bool
+     */
+    public static function makeApprovable(String|null $name = null, Array|null $steps = null):bool;
 }
 

@@ -3,12 +3,13 @@
 namespace RingleSoft\LaravelProcessApproval\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ProcessApproval extends Model
 {
     public $guarded = ['id'];
 
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(config('process_approval.users_model'));
     }

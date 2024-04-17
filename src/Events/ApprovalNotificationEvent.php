@@ -2,14 +2,12 @@
 
 namespace RingleSoft\LaravelProcessApproval\Events;
 
-use App\Models\RequestApproval;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 use RingleSoft\LaravelProcessApproval\Contracts\ApprovableModel;
-use RingleSoft\LaravelProcessApproval\Models\ProcessApproval;
 
 class ApprovalNotificationEvent
 {

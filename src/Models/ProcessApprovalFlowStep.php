@@ -3,6 +3,7 @@
 namespace RingleSoft\LaravelProcessApproval\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use RingleSoft\LaravelProcessApproval\Contracts\ApprovableModel;
@@ -10,7 +11,7 @@ use RingleSoft\LaravelProcessApproval\Contracts\ApprovableModel;
 class ProcessApprovalFlowStep extends Model
 {
     protected $guarded = ['id'];
-    public function role()
+    public function role(): BelongsTo
     {
         return $this->belongsTo(config('process_approval.roles_model'));
     }
@@ -21,7 +22,7 @@ class ProcessApprovalFlowStep extends Model
     }
 
 
-    public function processApprovalFlow()
+    public function processApprovalFlow(): BelongsTo
     {
         return $this->belongsTo(ProcessApprovalFlow::class);
     }

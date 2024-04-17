@@ -2,10 +2,10 @@
 
 namespace RingleSoft\LaravelProcessApproval\Exceptions;
 
+use Exception;
 use RingleSoft\LaravelProcessApproval\Contracts\ApprovableModel;
-use RingleSoft\LaravelProcessApproval\Models\ProcessApprovalFlow;
 
-class RequestNotSubmittedException extends \Exception
+class RequestNotSubmittedException extends Exception
 {
     public static function create(ApprovableModel $model): static
     {

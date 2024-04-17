@@ -2,9 +2,9 @@
 
 namespace RingleSoft\LaravelProcessApproval\Exceptions;
 
-use RingleSoft\LaravelProcessApproval\Models\ProcessApprovalFlow;
+use Exception;
 
-class ApprovalFlowModelDoesNotExistsException extends \Exception
+class ApprovalFlowModelDoesNotExistsException extends Exception
 {
     public static function create($modelName): static
     {

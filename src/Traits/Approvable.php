@@ -2,6 +2,7 @@
 
 namespace RingleSoft\LaravelProcessApproval\Traits;
 
+use Exception;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -12,9 +13,11 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use RingleSoft\LaravelProcessApproval\Contracts\ApprovableModel;
 use RingleSoft\LaravelProcessApproval\Enums\ApprovalActionEnum;
 use RingleSoft\LaravelProcessApproval\Enums\ApprovalStatusEnum;
+use RingleSoft\LaravelProcessApproval\Enums\ApprovalTypeEnum;
 use RingleSoft\LaravelProcessApproval\Events\ApprovalNotificationEvent;
 use RingleSoft\LaravelProcessApproval\Events\ProcessApprovalCompletedEvent;
 use RingleSoft\LaravelProcessApproval\Events\ProcessApprovedEvent;
@@ -29,13 +32,14 @@ use RingleSoft\LaravelProcessApproval\Models\ProcessApproval;
 use RingleSoft\LaravelProcessApproval\Models\ProcessApprovalFlow;
 use RingleSoft\LaravelProcessApproval\Models\ProcessApprovalFlowStep;
 use RingleSoft\LaravelProcessApproval\Models\ProcessApprovalStatus;
+use RuntimeException;
 
 trait Approvable
 {
     private Collection|null $_approvalSteps = null;
 
 
-    protected static function boot()
+    protected static function boot(): void
     {
         parent::boot();
         static::created(static function ($model) {
@@ -94,7 +98,7 @@ trait Approvable
         return $this->morphOne(ProcessApproval::class, 'approvable')->latest();
     }
 
-    public function approvalFlowSteps()
+    public function approvalFlowSteps(): array|Collection
     {
         return ProcessApprovalFlowStep::query()
             ->join('process_approval_flows', 'process_approval_flows.id', 'process_approval_flow_steps.process_approval_flow_id')
@@ -157,7 +161,7 @@ trait Approvable
     public function isApprovalCompleted(): bool
     {
         $registeredSteps = collect($this->approvalStatus->steps ?? []);
-        foreach ($registeredSteps as $index => $item) {
+        foreach ($registeredSteps as $item) {
             if ($item['process_approval_action'] === null || $item['process_approval_id'] === null) {
                 return false;
             }
@@ -210,11 +214,9 @@ trait Approvable
      */
     public function nextApprovalStep(): ProcessApprovalFlowStep|null
     {
-        foreach (collect($this->approvalStatus->steps ?? []) as $index => $step) {
-            if ($step['process_approval_id'] === null) {
-                if ($realStep = ProcessApprovalFlowStep::query()->with('role')->find($step['id'])) {
-                    return $realStep;
-                }
+        foreach (collect($this->approvalStatus->steps ?? []) as $step) {
+            if ($step['process_approval_id'] === null && $realStep = ProcessApprovalFlowStep::query()->with('role')->find($step['id'])) {
+                return $realStep;
             }
             if ($step['process_approval_action'] !== ApprovalActionEnum::APPROVED->value && $step['process_approval_action'] !== ApprovalActionEnum::DISCARDED->value) {
                 return ProcessApprovalFlowStep::query()->with('role')->find($step['id']);
@@ -233,12 +235,11 @@ trait Approvable
     public function previousApprovalStep(): ProcessApprovalFlowStep|null
     {
         $previous_id = null;
-        foreach (collect($this->approvalStatus->steps ?? []) as $index => $step) {
+        foreach (collect($this->approvalStatus->steps ?? []) as $step) {
             if ($step['process_approval_id'] === null) {
                 return ProcessApprovalFlowStep::query()->find($previous_id);
-            } else {
-                $previous_id = $step->id;
             }
+            $previous_id = $step->id;
         }
         return null;
     }
@@ -249,6 +250,7 @@ trait Approvable
      * @param Authenticatable|null $user
      * @return ProcessApproval|bool|RedirectResponse
      * @throws RequestAlreadySubmittedException
+     * @throws Exception
      */
     public function submit(Authenticatable|null $user = null): ProcessApproval|bool|RedirectResponse
     {
@@ -259,7 +261,7 @@ trait Approvable
         DB::beginTransaction();
         try {
             $approval = ProcessApproval::query()->updateOrCreate([
-                'approvable_type' => $this->getApprovableType(),
+                'approvable_type' => self::getApprovableType(),
                 'approvable_id' => $this->id,
                 'process_approval_flow_step_id' => $this->approvalFlowSteps()?->first()?->id ?? null, // Backward compatibility
                 'approval_action' => ApprovalActionEnum::SUBMITTED->value,
@@ -275,11 +277,11 @@ trait Approvable
                     if ($this->onApprovalCompleted($approval)) {
                         // Approval went well
                     } else {
-                        throw new \Exception('Callback action after approval failed');
+                        throw new RuntimeException('Callback action after approval failed');
                     }
                 }
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::debug('Process approval failure: ', [$e]);
             DB::rollBack();
             throw $e;
@@ -301,7 +303,7 @@ trait Approvable
      */
     public function approve($comment = null, Authenticatable|null $user = null): ProcessApproval|bool|RedirectResponse // TODO remove the redirectResponse
     {
-        if(!$this->isSubmitted()){
+        if (!$this->isSubmitted()) {
             throw RequestNotSubmittedException::create($this);
         }
         $nextStep = $this->nextApprovalStep();
@@ -311,7 +313,7 @@ trait Approvable
         DB::beginTransaction();
         try {
             $approval = ProcessApproval::query()->updateOrCreate([
-                'approvable_type' => $this->getApprovableType(),
+                'approvable_type' => self::getApprovableType(),
                 'approvable_id' => $this->id,
                 'process_approval_flow_step_id' => $nextStep->id,
                 'approval_action' => ApprovalActionEnum::APPROVED,
@@ -323,14 +325,12 @@ trait Approvable
                 $this->updateStatus($nextStep->id, $approval);
                 ProcessApprovedEvent::dispatch($approval);
                 if ($this->isApprovalCompleted()) {
-                    if ($this->onApprovalCompleted($approval)) {
-                        // Approval went well
-                    } else {
+                    if (!$this->onApprovalCompleted($approval)) {
                         throw ApprovalCompletedCallbackFailedException::create($this);
                     }
                 }
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Process approval failure: ', [$e]);
             DB::rollBack();
             throw $e;
@@ -348,30 +348,30 @@ trait Approvable
      * @param null $comment
      * @param Authenticatable|null $user
      * @return ProcessApproval|bool
-     * @throws \Exception
+     * @throws Exception
      */
     public function reject($comment = null, Authenticatable|null $user = null): ProcessApproval|bool
     {
-        if(!$this->isSubmitted()){
+        if (!$this->isSubmitted()) {
             throw RequestNotSubmittedException::create($this);
         }
         DB::beginTransaction();
         try {
             $nextStep = $this->nextApprovalStep();
             $approval = ProcessApproval::query()->create([
-                'approvable_type' => $this->getApprovableType(),
+                'approvable_type' => self::getApprovableType(),
                 'approvable_id' => $this->id,
-                'process_approval_flow_step_id' => $nextStep->id,
+                'process_approval_flow_step_id' => $nextStep?->id,
                 'approval_action' => ApprovalActionEnum::REJECTED,
                 'comment' => $comment,
                 'user_id' => $user?->id,
                 'approver_name' => $user?->name ?? 'Unknown'
             ]);
             if ($approval) {
-                $this->updateStatus($nextStep->id, $approval);
+                $this->updateStatus($nextStep?->id, $approval);
                 ProcessRejectedEvent::dispatch($approval);
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Process Approval - reject: ', [$e]);
             DB::rollBack();
             throw $e;
@@ -385,30 +385,30 @@ trait Approvable
      * @param $comment
      * @param Authenticatable|null $user
      * @return ApprovableModel|bool
-     * @throws \Exception
+     * @throws Exception
      */
     public function discard($comment = null, Authenticatable|null $user = null): ProcessApproval|bool
     {
-        if(!$this->isSubmitted()){
+        if (!$this->isSubmitted()) {
             throw RequestNotSubmittedException::create($this);
         }
         $nextStep = $this->nextApprovalStep();
         DB::beginTransaction();
         try {
             $approval = ProcessApproval::query()->create([
-                'approvable_type' => $this->getApprovableType(),
+                'approvable_type' => self::getApprovableType(),
                 'approvable_id' => $this->id,
-                'process_approval_flow_step_id' => $nextStep->id,
+                'process_approval_flow_step_id' => $nextStep?->id,
                 'approval_action' => ApprovalActionEnum::DISCARDED,
                 'comment' => $comment,
                 'user_id' => $user?->id,
                 'approver_name' => $user?->name ?? 'Unknown'
             ]);
             if ($approval) {
-                $this->updateStatus($nextStep->id, $approval);
+                $this->updateStatus($nextStep?->id, $approval);
                 ProcessDiscardedEvent::dispatch($approval);
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Process Approval - discard: ', [$e]);
             DB::rollBack();
             throw $e;
@@ -430,7 +430,7 @@ trait Approvable
     /**
      * Check if this request can be approved by a user
      * @param Authenticatable|null $user
-     * @return bool
+     * @return bool|null
      */
     public function canBeApprovedBy(Authenticatable|null $user): bool|null
     {
@@ -439,7 +439,7 @@ trait Approvable
     }
 
 
-    public function undoLastApproval()
+    public function undoLastApproval(): void
     {
         $lastApproval = $this->approvals()->latest()->get()->first();
         if ($lastApproval) {
@@ -470,7 +470,7 @@ trait Approvable
         return null;
     }
 
-    public function getApprovalSummaryUI()
+    public function getApprovalSummaryUI(): string
     {
         $check = '<svg clip-rule="evenodd" fill-rule="evenodd" stroke-linejoin="round" stroke-miterlimit="2" width="12" height="12" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="m2.25 12.321 7.27 6.491c.143.127.321.19.499.19.206 0 .41-.084.559-.249l11.23-12.501c.129-.143.192-.321.192-.5 0-.419-.338-.75-.749-.75-.206 0-.411.084-.559.249l-10.731 11.945-6.711-5.994c-.144-.127-.322-.19-.5-.19-.417 0-.75.336-.75.749 0 .206.084.412.25.56" fill-rule="nonzero" fill="#fff"/></svg>';
         $rejected = '<svg clip-rule="evenodd" fill-rule="evenodd" stroke-linejoin="round" stroke-miterlimit="2" width="12" height="12" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="m12.002 21.534c5.518 0 9.998-4.48 9.998-9.998s-4.48-9.997-9.998-9.997c-5.517 0-9.997 4.479-9.997 9.997s4.48 9.998 9.997 9.998zm0-1.5c-4.69 0-8.497-3.808-8.497-8.498s3.807-8.497 8.497-8.497 8.498 3.807 8.498 8.497-3.808 8.498-8.498 8.498zm0-6.5c-.414 0-.75-.336-.75-.75v-5.5c0-.414.336-.75.75-.75s.75.336.75.75v5.5c0 .414-.336.75-.75.75zm-.002 3c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1z" fill-rule="nonzero" fill="#fff"/></svg>';
@@ -500,7 +500,7 @@ trait Approvable
         ];
 
         $html = "<div class='flex rounded'>";
-        foreach (($this->approvalStatus->steps ?? []) as $index => $item) {
+        foreach (($this->approvalStatus->steps ?? []) as $item) {
             $theme = $map[$item['process_approval_action'] ?? 'Default'];
             $html .= '<span class="badge" style="background-color: ' . $theme['color'] . '; padding: .1rem;" title="' . ($item['role_name'] ?? $item['role_id']) . ': ' . ($item['process_approval_action'] ?? 'Pending') . '" data-bs-toggle="tooltip">' . $theme['icon'] . '</span>';
         }
@@ -552,10 +552,46 @@ trait Approvable
      */
     public function getApprovalsPausedAttribute(): mixed
     {
-        if(method_exists($this, 'pauseApprovals')){
+        if (method_exists($this, 'pauseApprovals')) {
             return $this->pauseApprovals();
         }
         return false;
+    }
+
+    /**
+     * Create approval flow for this record
+     * @param string|null $name
+     * @param array|null $steps lit of roles that should be used as approval steps
+     * @return  bool
+     * @throws Exception
+     */
+    public static function makeApprovable(string|null $name = null, array|null $steps = null): bool
+    {
+        $p = new \RingleSoft\LaravelProcessApproval\ProcessApproval();
+        DB::BeginTransaction();
+        try {
+            $flow = $p->createFlow($name ?? Str::title(self::class), self::class);
+            if ($steps && count($steps) > 0) {
+                $rolesModel = config('process_approval.roles_model');
+                foreach ($steps as $key => $step) {
+                    if (is_numeric($key) && is_numeric($step)) { // Associative
+                        $roleId = ($rolesModel)::find($step)?->id;
+                        $approvalActionType = ApprovalTypeEnum::APPROVE->value;
+                    } else {
+                        $roleId = ($rolesModel)::where((is_numeric($key) ? 'id' : 'name'), $key)->first()?->id;
+                        $approvalActionType = ApprovalTypeEnum::from($step)->value ?? ApprovalTypeEnum::APPROVE->value;
+                    }
+                    if ($roleId) {
+//                        $actualStep = $p->createStep($flow->id, $roleId, $approvalActionType)($step);
+                    }
+                }
+            }
+        } catch (Exception $e) {
+            DB::rollBack();
+            throw $e;
+        }
+        DB::commit();
+        return true;
     }
 
 }

@@ -2,6 +2,7 @@
 
 namespace RingleSoft\LaravelProcessApproval\Http\Controllers;
 
+use Exception;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Http\JsonResponse;
@@ -24,6 +25,7 @@ class ApprovalController extends Controller
      * Submit a process that is still pending
      * @param Request $request
      * @param $id
+     * @return RedirectResponse|JsonResponse
      */
     public function submit(Request $request, $id): RedirectResponse|JsonResponse
     {
@@ -41,7 +43,7 @@ class ApprovalController extends Controller
             } else {
                 ApprovalNotificationEvent::dispatch('Failed to submit document', $model, 'ERROR');
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $error = $e->getMessage();
         }
         if ($request->wantsJson()) {
@@ -57,7 +59,7 @@ class ApprovalController extends Controller
      * Approve or Reject request
      * @param Request $request
      * @param $id
-     * @return RedirectResponse
+     * @return RedirectResponse|JsonResponse
      */
     public function approve(Request $request, $id): RedirectResponse|JsonResponse
     {
@@ -76,7 +78,7 @@ class ApprovalController extends Controller
             } else {
                 ApprovalNotificationEvent::dispatch('Failed to approve document', $model, 'ERROR');
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $error = $e->getMessage();
         }
 
@@ -93,7 +95,7 @@ class ApprovalController extends Controller
      * Approve or Reject request
      * @param Request $request
      * @param $id
-     * @return RedirectResponse
+     * @return RedirectResponse|JsonResponse
      */
     public function reject(Request $request, $id): RedirectResponse|JsonResponse
     {
@@ -112,7 +114,7 @@ class ApprovalController extends Controller
             } else {
                 ApprovalNotificationEvent::dispatch('Failed to approve document', $model, 'ERROR');
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
            $error =  $e->getMessage();
         }
         if ($request->wantsJson()) {
@@ -128,7 +130,7 @@ class ApprovalController extends Controller
      * Discard The model
      * @param Request $request
      * @param $id
-     * @return RedirectResponse
+     * @return RedirectResponse|JsonResponse
      */
     public function discard(Request $request, $id): RedirectResponse|JsonResponse
     {
@@ -147,7 +149,7 @@ class ApprovalController extends Controller
             } else {
                 ApprovalNotificationEvent::dispatch('Failed to discard document', $model, 'ERROR');
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $error =  $e->getMessage();
         }
         if ($request->wantsJson()) {
