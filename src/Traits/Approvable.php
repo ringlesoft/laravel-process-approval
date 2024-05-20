@@ -34,6 +34,9 @@ use RingleSoft\LaravelProcessApproval\Models\ProcessApprovalFlowStep;
 use RingleSoft\LaravelProcessApproval\Models\ProcessApprovalStatus;
 use RuntimeException;
 
+/**
+ *
+ */
 trait Approvable
 {
     private Collection|null $_approvalSteps = null;
@@ -153,6 +156,18 @@ trait Approvable
         });
     }
 
+
+    public static function waitingForStep(ProcessApprovalFlowStep $step): Builder
+    {
+        return self::query()->whereHas('approvalStatus', static function ($q) use ($step) {
+            return $q->whereJsonContains('json_column_name', [
+                'id' => 3,
+                'process_approval_id' => null,
+            ])
+                ->whereJsonDoesntContain('json_column_name->$[0]', 'process_approval_id')
+                ->get();
+        });
+    }
 
     /**
      * Check if Approval process is completed
