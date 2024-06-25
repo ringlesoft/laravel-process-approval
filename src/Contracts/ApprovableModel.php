@@ -154,6 +154,6 @@ interface ApprovableModel
      * @param array|null $steps
      * @return bool
      */
-    public static function makeApprovable(String|null $name = null, Array|null $steps = null):bool;
+    public static function makeApprovable(array|null $steps = null, string|null $name = null):bool;
 }
 

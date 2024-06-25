@@ -575,17 +575,17 @@ trait Approvable
 
     /**
      * Create approval flow for this record
-     * @param string|null $name
      * @param array|null $steps lit of roles that should be used as approval steps
+     * @param string|null $name
      * @return  bool
      * @throws Exception
      */
-    public static function makeApprovable(string|null $name = null, array|null $steps = null): bool
+    public static function makeApprovable(array|null $steps = null, string|null $name = null): bool
     {
-        $p = new \RingleSoft\LaravelProcessApproval\ProcessApproval();
-        DB::BeginTransaction();
+        $processApproval = new \RingleSoft\LaravelProcessApproval\ProcessApproval();
         try {
-            $flow = $p->createFlow($name ?? Str::title(self::class), self::class);
+            DB::BeginTransaction();
+            $flow = $processApproval->createFlow($name ?? Str::title(self::class), self::class);
             if ($steps && count($steps) > 0) {
                 $rolesModel = config('process_approval.roles_model');
                 foreach ($steps as $key => $step) {
@@ -597,15 +597,15 @@ trait Approvable
                         $approvalActionType = ApprovalTypeEnum::from($step)->value ?? ApprovalTypeEnum::APPROVE->value;
                     }
                     if ($roleId) {
-//                        $actualStep = $p->createStep($flow->id, $roleId, $approvalActionType)($step);
+                        $processApproval->createStep($flow->id, $roleId, $approvalActionType);
                     }
                 }
             }
+            DB::commit();
         } catch (Exception $e) {
             DB::rollBack();
             throw $e;
         }
-        DB::commit();
         return true;
     }
 
