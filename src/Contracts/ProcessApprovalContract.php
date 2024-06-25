@@ -42,9 +42,10 @@ interface ProcessApprovalContract
      * @param int $flowId
      * @param int $roleId
      * @param String|null $action
+     * @param string|int|null $tenantId
      * @return ProcessApprovalFlowStep
      */
-    public function createStep(int $flowId, int $roleId, String|null $action = 'APPROVE'): ProcessApprovalFlowStep;
+    public function createStep(int $flowId, int $roleId, String|null $action = 'APPROVE', string|int|null $tenantId = null): ProcessApprovalFlowStep;
 
     /**
      * Delete an approval flow step

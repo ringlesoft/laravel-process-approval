@@ -4,9 +4,11 @@ namespace RingleSoft\LaravelProcessApproval\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use RingleSoft\LaravelProcessApproval\Traits\MultiTenant;
 
 class ProcessApproval extends Model
 {
+    use MultiTenant;
     public $guarded = ['id'];
 
     public function user(): BelongsTo

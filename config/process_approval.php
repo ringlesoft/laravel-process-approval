@@ -22,7 +22,7 @@ return [
 
     /**
      * The middlewares that will be applied to the routes pointing to the approval controller
-     * Normally ['auth']
+     * 'web' is already applied by default
      */
     'approval_controller_middlewares' => [],
 
@@ -30,4 +30,9 @@ return [
      * The name of the css library to use
      */
     'css_library' => 'tailwind', // tailwind | bootstrap
+
+    /**
+     * The name of the multi tenancy field in the users table
+     */
+    'multi_tenancy_field' => 'tenant_id',
 ];

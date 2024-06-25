@@ -17,6 +17,7 @@ class ApprovalController extends Controller
 {
     public function __construct(protected Redirector $redirector, protected Guard $auth)
     {
+        $this->middleware('web'); // This is important for multi-tenancy
         $this->middleware(config('process_approval.approval_controller_middlewares'));
     }
 

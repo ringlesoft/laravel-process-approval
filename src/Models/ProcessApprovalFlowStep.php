@@ -7,9 +7,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use RingleSoft\LaravelProcessApproval\Contracts\ApprovableModel;
+use RingleSoft\LaravelProcessApproval\Traits\MultiTenant;
 
 class ProcessApprovalFlowStep extends Model
 {
+    use MultiTenant;
     protected $guarded = ['id'];
     public function role(): BelongsTo
     {
