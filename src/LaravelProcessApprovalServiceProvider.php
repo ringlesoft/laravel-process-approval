@@ -55,5 +55,8 @@ class LaravelProcessApprovalServiceProvider extends ServiceProvider
             __DIR__ . '/../resources/views' => resource_path('views/vendor/ringlesoft/process_approval'),
         ], 'approvals-views');
 
+        $this->publishes([
+            __DIR__.'/../resources/lang' => resource_path('lang/vendor/ringlesoft/process_approval'),
+        ], 'approvals-translations');
     }
 }
