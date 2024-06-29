@@ -19,6 +19,8 @@ class ApprovalNotificationEvent
      */
     public mixed $type;
 
+    public string $message;
+
     /**
      * Create a new event instance.
      */
@@ -26,6 +28,7 @@ class ApprovalNotificationEvent
     {
         $this->model = $model;
         $this->type = $type;
+        $this->message = $message;
     }
 
     /**
