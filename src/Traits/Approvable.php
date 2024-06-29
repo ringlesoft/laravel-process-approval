@@ -94,7 +94,9 @@ trait Approvable
      */
     public function lastApproval(): MorphOne
     {
-        return $this->morphOne(ProcessApproval::class, 'approvable')->latest();
+        return $this->morphOne(ProcessApproval::class, 'approvable')
+            ->where('approval_action', '!=', ApprovalStatusEnum::RETURNED->value)
+            ->latest();
     }
 
     public function approvalFlowSteps(): array|Collection
