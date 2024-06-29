@@ -128,6 +128,41 @@ class ApprovalController extends Controller
     }
 
     /**
+     * Return the model to the previous step
+     * @param Request $request
+     * @param $id
+     * @return RedirectResponse|JsonResponse
+     */
+    public function return(Request $request, $id): RedirectResponse|JsonResponse
+    {
+        $rules = [
+            'model_name' => ['string', 'required'],
+            'comment' => ['string', 'required', 'min:1'],
+            'user_id' => ['sometimes', 'exists:users,id']
+        ];
+        $request->validate($rules);
+        try {
+            $className = $request->input('model_name');
+            $model = $className::findOrFail($id);
+            $comment = $request->input('comment');
+            if ($approval = $model->return($comment, $this->getUser($request->get('user_id')))) {
+                ApprovalNotificationEvent::dispatch('Document returned successfully', $model);
+            } else {
+                ApprovalNotificationEvent::dispatch('Failed to return document', $model, 'ERROR');
+            }
+        } catch (Exception $e) {
+           $error =  $e->getMessage();
+        }
+        if ($request->wantsJson()) {
+            if((empty($approval) || !is_object($approval)) && empty($error)){
+                $error = 'Failed to return document';
+            }
+            return $this->jsonResponse($approval ?? null, $error ?? null,(empty($error) && ($approval ?? null)) ? 200 : 400);
+        }
+        return $this->redirector->back();
+    }
+
+    /**
      * Discard The model
      * @param Request $request
      * @param $id

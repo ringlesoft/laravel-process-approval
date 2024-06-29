@@ -23,6 +23,7 @@ use RingleSoft\LaravelProcessApproval\Events\ProcessApprovalCompletedEvent;
 use RingleSoft\LaravelProcessApproval\Events\ProcessApprovedEvent;
 use RingleSoft\LaravelProcessApproval\Events\ProcessDiscardedEvent;
 use RingleSoft\LaravelProcessApproval\Events\ProcessRejectedEvent;
+use RingleSoft\LaravelProcessApproval\Events\ProcessReturnedEvent;
 use RingleSoft\LaravelProcessApproval\Events\ProcessSubmittedEvent;
 use RingleSoft\LaravelProcessApproval\Exceptions\ApprovalCompletedCallbackFailedException;
 use RingleSoft\LaravelProcessApproval\Exceptions\NoFurtherApprovalStepsException;
@@ -33,6 +34,7 @@ use RingleSoft\LaravelProcessApproval\Models\ProcessApprovalFlow;
 use RingleSoft\LaravelProcessApproval\Models\ProcessApprovalFlowStep;
 use RingleSoft\LaravelProcessApproval\Models\ProcessApprovalStatus;
 use RuntimeException;
+use Throwable;
 
 /**
  *
@@ -434,6 +436,67 @@ trait Approvable
         DB::commit();
         return $approval ?? false;
     }
+
+
+    /**
+     * Send the record back to the previous step or a specific step
+     * @param null $comment
+     * @param Authenticatable|null $user
+     * @return ProcessApproval|bool
+     * @throws RequestNotSubmittedException
+     * @throws Throwable
+     */
+    public function return($comment = null, Authenticatable|null $user = null): ProcessApproval|bool
+    {
+        if (!$this->isSubmitted()) {
+            throw RequestNotSubmittedException::create($this);
+        }
+        if($this->isReturned()){
+            throw new RuntimeException('The record has already been returned');
+        }
+        $previousStep = $this->previousApprovalStep();
+        $nextStep = $this->nextApprovalStep();
+        try {
+            DB::beginTransaction();
+            $approval = ProcessApproval::query()->create([
+                'approvable_type' => self::getApprovableType(),
+                'approvable_id' => $this->id,
+                'process_approval_flow_step_id' => $nextStep?->id,
+                'approval_action' => ApprovalActionEnum::RETURNED->value,
+                'comment' => $comment,
+                'user_id' => $user?->id,
+                'approver_name' => $user?->name ?? 'Unknown'
+            ]);
+            if($previousStep){
+                $approvalStatusSteps = collect($this->approvalStatus->steps);
+                $approvalStatusSteps->transform(function ($item) use ($previousStep) {
+                    if ((int) $item['id'] === (int) $previousStep->id) {
+                        $item['process_approval_action'] = ApprovalStatusEnum::RETURNED->value;
+                        ProcessApproval::query()->where('process_approval_flow_step_id', $item['id'])->update(['approval_action' => ApprovalStatusEnum::OVERRIDDEN->value]);
+                    }
+                    return $item;
+                });
+                $this->approvalStatus()->update([
+                    'steps' => $approvalStatusSteps->toArray(),
+                    'status' => ApprovalStatusEnum::RETURNED->value,
+                ]);
+            } else {
+                $this->approvalStatus()->update([
+                    'status' => ApprovalStatusEnum::CREATED->value,
+                ]);
+            }
+            DB::commit();
+            if ($approval) {
+                Event::dispatch(new ProcessReturnedEvent($approval));
+            }
+            return $approval;
+        } catch (Throwable $e) {
+            Log::error('Process Approval - return: ', [$e]);
+            DB::rollBack();
+            throw $e;
+        }
+    }
+
 
     /**
      * Get list of users capable of approving this request next
