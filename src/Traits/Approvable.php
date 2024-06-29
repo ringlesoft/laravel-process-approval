@@ -212,6 +212,11 @@ trait Approvable
 
     }
 
+    public function isReturned()
+    {
+        return $this->approvalStatus?->status === ApprovalActionEnum::RETURNED->value;
+    }
+
     /**
      * Check if approval has started
      * @return bool
