@@ -34,4 +34,11 @@ class ProcessApprovalFlowStep extends Model
         return $model->approvals()->where('process_approval_flow_step_id', $this->id)->latest()->first();
     }
 
+    public function toApprovalStatusArray(){
+        $set = $this->only(['id', 'role_id', 'action']);
+        $set['process_approval_id'] = null;
+        $set['role_name'] = $this->role?->name ?? $this->role_id;
+        $set['process_approval_action'] = null;
+        return $set;
+    }
 }

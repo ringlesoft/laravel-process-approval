@@ -48,11 +48,7 @@ trait Approvable
         static::created(static function ($model) {
             $model->approvalStatus()->create([
                 'steps' => $model->approvalFlowSteps()->map(function ($item) {
-                    $set = $item->only(['id', 'role_id', 'action']);
-                    $set['process_approval_id'] = null;
-                    $set['role_name'] = $item->role?->name ?? $item->role_id;
-                    $set['process_approval_action'] = null;
-                    return $set;
+                    return $item->toApprovalStatusArray();
                 }),
                 'status' => (property_exists($model, 'autoSubmit') && $model->autoSubmit) ? ApprovalStatusEnum::SUBMITTED->value : ApprovalStatusEnum::CREATED->value,
                 'creator_id' => Auth::id(),
