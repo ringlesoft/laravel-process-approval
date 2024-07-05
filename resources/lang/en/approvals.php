@@ -34,4 +34,5 @@ return [
     'write_comment' => 'Write your approval comment',
     'you_can_approve_this' => 'You Can approve this as',
     'you_can_submit' => 'You can submit this document for approvals.',
+    'optional' => 'optional',
 ];

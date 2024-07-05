@@ -15,7 +15,7 @@
                             @endforeach
                         </tr>
                         <tr>
-                            <th class="p-2">{{ __('ringlesoft::approvals.Date') }}</th>
+                            <th class="p-2">{{ __('ringlesoft::approvals.date') }}</th>
                             @foreach($modelApprovalSteps as $item)
                                 <td class="border p-2">
                                     <div class="text-center">
@@ -136,7 +136,7 @@
                                             <button
                                                     class="block text-white bg-green-500 hover:bg-green-600 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-4 py-2.5 text-center dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800"
                                                     type="button" data-modal-toggle="approve-modal">
-                                                {{$model->isRejected() ? __('ringlesoft::approvals.re_approve') : ucfirst(strtolower($nextApprovalStep->action) ?? 'Approve')}}
+                                                {{$model->isRejected() ? __('ringlesoft::approvals.re_approve') : ucfirst(__('ringlesoft::approvals.'. strtolower($nextApprovalStep->action)) ?? __('ringlesoft::approvals.approve'))}}
                                             </button>
 
 
@@ -203,9 +203,9 @@
              class="hidden overflow-x-hidden overflow-y-auto fixed h-modal md:h-full top-4 left-0 right-0 md:inset-0 z-50 justify-center items-center">
 
             <div class="relative w-full max-w-md max-h-full">
-                <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+                <div class="relative bg-white rounded-lg shadow dark:bg-gray-700 pt-2">
                     <button type="button"
-                            class="absolute top-3 right-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ml-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
+                            class="absolute top-3 right-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ml-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white z-10"
                             data-modal-toggle="approve-modal">
                         <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
                              viewBox="0 0 14 14">
@@ -217,7 +217,7 @@
                     <div class="p-6 text-center">
                         <form method="post" class="modal-content"
                               action="{{route('ringlesoft.process-approval.approve', $model)}}">
-                            <h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">Approve Request</h3>
+                            <h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">{{ __('ringlesoft::approvals.approve_request') }}</h3>
                             <div>
                                 @csrf
                                 <input type="hidden" name="user_id" value="{{auth()?->id()}}">
@@ -225,7 +225,7 @@
                                 <div class="modal-body">
                                     <div class="form-group">
                                     <textarea name="comment" id="approveComment" rows="3"
-                                              placeholder="Write a comment (optional)"
+                                              placeholder="{{ __('ringlesoft::approvals.write_comment') }} ({{ __('ringlesoft::approvals.optional') }})"
                                               class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"></textarea>
                                     </div>
                                 </div>
@@ -239,7 +239,7 @@
                                 </button>
                                 <button data-modal-hide="approve-modal" type="submit"
                                         class="text-white bg-green-600 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 dark:focus:ring-green-800 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center mr-2">
-                                    {{ucfirst($nextApprovalStep->action ?? __('ringlesoft::approvals.approve'))}}
+                                    {{ucfirst(__('ringlesoft::approvals.'. strtolower($nextApprovalStep->action ?? 'Approve') ?? __('ringlesoft::approvals.approve')))}}
                                 </button>
                             </div>
                         </form>
@@ -257,7 +257,7 @@
             <div class="relative w-full max-w-md max-h-full">
                 <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
                     <button type="button"
-                            class="absolute top-3 right-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ml-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
+                            class="absolute top-3 right-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ml-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white z-10"
                             data-modal-toggle="reject-modal">
                         <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
                              viewBox="0 0 14 14">
@@ -312,7 +312,7 @@
             <div class="relative w-full max-w-md max-h-full">
                 <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
                     <button type="button"
-                            class="absolute top-3 right-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ml-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
+                            class="absolute top-3 right-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ml-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white z-10"
                             data-modal-toggle="return-modal">
                         <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
                              viewBox="0 0 14 14">
@@ -324,7 +324,7 @@
                     <div class="p-6 text-center">
                         <form method="post" class="modal-content"
                               action="{{route('ringlesoft.process-approval.return', $model)}}">
-                            <h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">{{ __('ringlesoft::approvals.reject_request') }}</h3>
+                            <h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">{{ __('ringlesoft::approvals.return_request') }}</h3>
                             <div>
                                 @csrf
                                 <input type="hidden" name="user_id" value="{{auth()?->id()}}">
@@ -365,7 +365,7 @@
             <div class="relative w-full max-w-md max-h-full">
                 <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
                     <button type="button"
-                            class="absolute top-3 right-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ml-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
+                            class="absolute top-3 right-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ml-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white z-10"
                             data-modal-toggle="discard-modal">
                         <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
                              viewBox="0 0 14 14">
@@ -377,7 +377,7 @@
                     <div class="p-6 text-center">
                         <form method="post" class="modal-content"
                               action="{{route('ringlesoft.process-approval.discard', $model)}}">
-                            <h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">Discard Request</h3>
+                            <h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">{{ __('ringlesoft::approvals.discard_request') }}</h3>
                             <div>
                                 @csrf
                                 <input type="hidden" name="user_id" value="{{auth()?->id()}}">

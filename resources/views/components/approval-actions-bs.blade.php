@@ -193,7 +193,7 @@
                 <div class="modal-body">
                     <div class="form-group">
                         <label for="comment">{{ __('ringlesoft::approvals.comment') }}</label>
-                        <textarea name="comment" id="approveComment" rows="3" class="form-control"></textarea>
+                        <textarea name="comment" id="approveComment" rows="3" placeholder="{{ __('ringlesoft::approvals.write_comment') }}" class="form-control"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
