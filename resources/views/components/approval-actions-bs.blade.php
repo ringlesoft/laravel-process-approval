@@ -1,20 +1,20 @@
 @if($model->approvalsPaused !== true)
     <div {{ $attributes->class(['card']) }}>
         <div class="card-body">
-            <h6 class="text-center">Approvals</h6>
+            <h6 class="text-center">{{ __('ringlesoft::approvals.approvals') }}</h6>
             @if($model->isSubmitted())
                 <div class="approvals">
                     <table class="table table-sm table-bordered table-condensed mb-2">
                         <thead>
                         <tr>
-                            <th style="width: 50px;">By:</th>
+                            <th style="width: 50px;">{{ __('ringlesoft::approvals.by') }}:</th>
                             @foreach($modelApprovalSteps as $item)
                                 <th style="width: {{(100 / count($modelApprovalSteps))}}%;"
                                     class="text-center">{{$item['step']->role?->name ?? 'Step '. $loop->iteration}}</th>
                             @endforeach
                         </tr>
                         <tr>
-                            <th>{{ __('ringlesoft::approvals.Date') }}</th>
+                            <th>{{ __('ringlesoft::approvals.date') }}</th>
                             @foreach($modelApprovalSteps as $item)
                                 <td>
                                     <div class="d-flex flex-column justify-content-center align-items-center">
@@ -25,11 +25,11 @@
                                                         data-bs-toggle="popover"
                                                         data-bs-placement="bottom"
                                                         data-bs-custom-class="header-info"
-                                                        data-bs-content="{{$currentApproval->comment ?? 'No comment!'}}"
-                                                        data-bs-original-title="Comment">
+                                                        data-bs-content="{{$currentApproval->comment ??  __('ringlesoft::approvals.no_comment')}}"
+                                                        data-bs-original-title="{{ __('ringlesoft::approvals.comment') }}">
                                                         @if($signature = $currentApproval->getSignature())
                                                             <img src="{{$signature}}" class="img-fluid"
-                                                                 style="max-height: 50px;" alt="Signature">
+                                                                 style="max-height: 50px;" alt="{{ __('ringlesoft::approvals.signature') }}">
                                                         @else
                                                             <div style="width: 40px; height: 40px;"
                                                                  title="{{$currentApproval->comment}}"
@@ -86,15 +86,15 @@
                                     <div class="col-12 col-md-7">
                                         <div class="text-black-50">
                                             @if($model->isRejected())
-                                                This request was rejected. You can re-approve this as
+                                                {{ __('ringlesoft::approvals.request_rejected_re_approve') }}
                                                 <strong>{{$nextApprovalStep->role->name}}</strong>
                                             @elseif($model->isReturned())
-                                                This request was returned back. You can re-approve this as
+                                                {{ __('ringlesoft::approvals.request_returned_re_approve') }}
                                                 <strong>{{$nextApprovalStep->role->name}}</strong>
                                             @elseif($model->isDiscarded())
-                                                This request was discarded.
+                                                {{ __('ringlesoft::approvals.request_was_discarded') }}
                                             @else
-                                                You Can approve this as
+                                                {{ __('ringlesoft::approvals.you_can_approve_this') }}
                                                 <strong>{{$nextApprovalStep->role->name}}</strong>
                                             @endif
 
@@ -105,24 +105,24 @@
                                             @if($model->isRejected())
                                                 <button class="btn btn-danger" data-bs-toggle="modal"
                                                         data-bs-target="#modalDiscard">
-                                                    Discard
+                                                    {{ __('ringlesoft::approvals.discard') }}
                                                 </button>
                                             @else
                                                 <button class="btn btn-danger" data-bs-toggle="modal"
                                                         data-bs-target="#modalReject">
-                                                    Reject
+                                                    {{ __('ringlesoft::approvals.reject') }}
                                                 </button>
                                             @endif
 
                                             @if(!$model->isRejected())
                                                 <button class="btn btn-danger" data-bs-toggle="modal"
                                                         data-bs-target="#modalReturn">
-                                                    Return
+                                                    {{ __('ringlesoft::approvals.return') }}
                                                 </button>
                                             @endif
                                             <button class="btn btn-success" data-bs-toggle="modal"
                                                     data-bs-target="#modalApprove">
-                                                {{$model->isRejected() ? 'Re-Approve' : ucfirst(strtolower($nextApprovalStep->action) ?? 'Approve')}}
+                                                {{$model->isRejected() ? __('ringlesoft::approvals.re_approve') : ucfirst(__('ringlesoft::approvals.'. strtolower($nextApprovalStep->action)) ?? __('ringlesoft::approvals.approve'))}}
                                             </button>
                                         </div>
                                     </div>
@@ -131,16 +131,16 @@
                                 <div class="row align-content-between">
                                     <div class="text-end flex-grow-1">
                                     </div>
-                                    <div class="text-end">Waiting for approval from
+                                    <div class="text-end">{{ __('ringlesoft::approvals.waiting_for_approval_from') }}
                                         <strong>{{$nextApprovalStep->role->name}}</strong></div>
                                 </div>
                             @endif
                         @else
                             <div>
                                 @if($model->isDiscarded())
-                                    Discarded!
+                                    {{ __('ringlesoft::approvals.discarded') }}!
                                 @else
-                                    Approval completed!
+                                    {{ __('ringlesoft::approvals.approval_completed') }}!
                                 @endif
                             </div>
                         @endif
@@ -153,7 +153,7 @@
                             This document is not yet submitted.
                             @if($model->creator?->id === \Illuminate\Support\Facades\Auth::id())
                                 <span>
-                            You can submit this document for approvals.
+                            {{ __('ringlesoft::approvals.you_can_submit') }}
                         </span>
                             @endif
                         </div>
@@ -167,7 +167,7 @@
                                     <input type="hidden" name="model_name" value="{{$model->getApprovableType()}}">
                                     @if($model->creator?->id === \Illuminate\Support\Facades\Auth::id())
                                         <button class="btn btn-success" type="submit">
-                                            Submit
+                                            {{ __('ringlesoft::approvals.submit') }}
                                         </button>
                                     @endif
                                 </form>
@@ -187,18 +187,18 @@
                 <input type="hidden" name="user_id" value="{{auth()?->id()}}">
                 <input type="hidden" name="model_name" value="{{$model->getApprovableType()}}">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="modalApproveLabel">Approve Request</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h5 class="modal-title" id="modalApproveLabel">{{ __('ringlesoft::approvals.approve_request') }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ __('ringlesoft::approvals.close') }}"></button>
                 </div>
                 <div class="modal-body">
                     <div class="form-group">
-                        <label for="comment">Comment</label>
+                        <label for="comment">{{ __('ringlesoft::approvals.comment') }}</label>
                         <textarea name="comment" id="approveComment" rows="3" class="form-control"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-success">Approve</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('ringlesoft::approvals.close') }}</button>
+                    <button type="submit" class="btn btn-success">{{ __('ringlesoft::approvals.approve') }}</button>
                 </div>
             </form>
         </div>
@@ -212,18 +212,18 @@
                 <input type="hidden" name="user_id" value="{{auth()?->id()}}">
                 <input type="hidden" name="model_name" value="{{$model->getApprovableType()}}">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="modalRejectLabel">Reject Request</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h5 class="modal-title" id="modalRejectLabel">{{ __('ringlesoft::approvals.reject_request') }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ __('ringlesoft::approvals.close') }}"></button>
                 </div>
                 <div class="modal-body">
                     <div class="form-group">
-                        <label for="approveComment">Comment</label>
+                        <label for="approveComment">{{ __('ringlesoft::approvals.comment') }}</label>
                         <textarea required name="comment" id="approveComment" rows="3" class="form-control"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-danger">Reject</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('ringlesoft::approvals.close') }}</button>
+                    <button type="submit" class="btn btn-danger">{{ __('ringlesoft::approvals.reject') }}</button>
                 </div>
             </form>
         </div>
@@ -237,22 +237,22 @@
                 <input type="hidden" name="user_id" value="{{auth()?->id()}}">
                 <input type="hidden" name="model_name" value="{{$model->getApprovableType()}}">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="modalDiscardLabel">Discard Request</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h5 class="modal-title" id="modalDiscardLabel">{{ __('ringlesoft::approvals.discard_request') }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ __('ringlesoft::approvals.close') }}"></button>
                 </div>
                 <div class="modal-body">
 
                     <div class="alert alert-warning">
-                        Discarding  a process will end the approval process and mark it as discarded.
+                        {{ __('ringlesoft::approvals.discarding_info') }}
                     </div>
                     <div class="form-group">
-                        <label for="approveComment">Comment</label>
+                        <label for="approveComment">{{ __('ringlesoft::approvals.comment') }}</label>
                         <textarea required name="comment" id="approveComment" rows="3" class="form-control"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-danger">Discard</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('ringlesoft::approvals.close') }}</button>
+                    <button type="submit" class="btn btn-danger">{{ __('ringlesoft::approvals.discard') }}</button>
                 </div>
             </form>
         </div>
@@ -266,22 +266,22 @@
                 <input type="hidden" name="user_id" value="{{auth()?->id()}}">
                 <input type="hidden" name="model_name" value="{{$model->getApprovableType()}}">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="modalReturnLabel">Return Request</h5>
+                    <h5 class="modal-title" id="modalReturnLabel">{{ __('ringlesoft::approvals.return_request') }}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
 
                     <div class="alert alert-warning">
-                        Returning a process will send the document back to the previous approver.
+                        {{ __('ringlesoft::approvals.returning_info') }}
                     </div>
                     <div class="form-group">
-                        <label for="approveComment">Comment</label>
+                        <label for="approveComment">{{ __('ringlesoft::approvals.comment') }}</label>
                         <textarea required name="comment" id="approveComment" rows="3" class="form-control"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-danger">Return</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('ringlesoft::approvals.close') }}</button>
+                    <button type="submit" class="btn btn-danger">{{ __('ringlesoft::approvals.return') }}</button>
                 </div>
             </form>
         </div>

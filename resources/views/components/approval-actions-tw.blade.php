@@ -1,21 +1,21 @@
 @if($model->approvalsPaused !== true)
     <div {{ $attributes->class(['flex w-full justify-center p-3']) }} >
         <div class="card-body w-full p-3 overflow-x-auto  sm:rounded-lg border border-gray-300 ">
-            <h6 class="text-center">Approvals</h6>
+            <h6 class="text-center">{{ __('ringlesoft::approvals.approvals') }}</h6>
             @if($model->isSubmitted())
                 <div class="approvals relative mt-3">
                     <table
                             class="w-full text-sm text-left text-gray-800 dark:text-gray-400 mb-2 border border-collapse">
                         <thead>
                         <tr>
-                            <th class="border p-2" style="width: 50px;">By:</th>
+                            <th class="border p-2" style="width: 50px;">{{ __('ringlesoft::approvals.by') }}:</th>
                             @foreach($modelApprovalSteps as $item)
                                 <th style="width: {{(100 / count($modelApprovalSteps))}}%;"
-                                    class="text-center border">{{$item['step']->role?->name ?? 'Step '. $loop->iteration}}</th>
+                                    class="text-center border">{{$item['step']->role?->name ?? __('approvals.step') . ' '. $loop->iteration }}</th>
                             @endforeach
                         </tr>
                         <tr>
-                            <th class="p-2">Date</th>
+                            <th class="p-2">{{ __('ringlesoft::approvals.Date') }}</th>
                             @foreach($modelApprovalSteps as $item)
                                 <td class="border p-2">
                                     <div class="text-center">
@@ -23,18 +23,18 @@
                                             <div class="relative group">
                                                 <div
                                                         class="absolute bottom-0 left-1/2 -translate-x-1/2 transform opacity-0 scale-75 origin-bottom group-hover:opacity-100 transition-all duration-300 z-10 px-3 py-2 text-sm text-white bg-gray-800 rounded-lg shadow-lg">
-                                                    {{$currentApproval->comment ?? 'No comment!'}}
+                                                    {{$currentApproval->comment ?? __('ringlesoft::approvals.no_comment') .'!' }}
                                                 </div>
                                                 @if($currentApproval->approval_action === \RingleSoft\LaravelProcessApproval\Enums\ApprovalActionEnum::APPROVED->value)
                                                     <div class="relative group">
                                                         <div
                                                                 class="absolute bottom-0 left-1/2 -translate-x-1/2 transform opacity-0 scale-75 origin-bottom group-hover:opacity-100 transition-all duration-300 z-10 px-3 py-2 text-sm text-white bg-gray-800 rounded-lg shadow-lg">
-                                                            {{$currentApproval->comment ?? 'No comment!'}}
+                                                            {{$currentApproval->comment ?? __('ringlesoft::approvals.no_comment') .'!'}}
                                                         </div>
                                                         @if($signature = $currentApproval->getSignature())
                                                             <div class="flex justify-center">
                                                                 <img src="{{$signature}}" class="img-fluid"
-                                                                     style="max-height: 50px;" alt="Signature">
+                                                                     style="max-height: 50px;" alt="{{ __('ringlesoft::approvals.signature') }}">
                                                             </div>
                                                         @else
                                                             <div class="flex justify-center">
@@ -97,15 +97,15 @@
                                     <div class="md:col-7">
                                         <div class="text-gray-500">
                                             @if($model->isRejected())
-                                                This request was rejected. You can re-approve this as
+                                                {{ __('ringlesoft::approvals.request_rejected_re_approve') }}
                                                 <strong>{{$nextApprovalStep->role->name}}</strong>
                                             @elseif($model->isReturned())
-                                                This request was returned back. You can re-approve this as
+                                                {{ __('ringlesoft::approvals.request_returned_re_approve') }}
                                                 <strong>{{$nextApprovalStep->role->name}}</strong>
                                             @elseif($model->isDiscarded())
-                                                This request was discarded.
+                                                {{ __('ringlesoft::approvals.request_was_discarded') }}
                                             @else
-                                                You Can approve this as
+                                                {{ __('ringlesoft::approvals.you_can_approve_this') }}
                                                 <strong>{{$nextApprovalStep->role->name}}</strong>
                                             @endif
 
@@ -117,26 +117,26 @@
                                                 <button
                                                         class="block text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-4 py-2.5 text-center dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-800"
                                                         type="button" data-modal-toggle="discard-modal">
-                                                    Discard
+                                                    {{ __('ringlesoft::approvals.discard') }}
                                                 </button>
                                             @else
                                                 <button
                                                         class="block text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-4 py-2.5 text-center dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-800"
                                                         type="button" data-modal-toggle="reject-modal">
-                                                    Reject
+                                                    {{ __('ringlesoft::approvals.reject') }}
                                                 </button>
                                             @endif
                                             @if(!$model->isRejected())
                                                 <button
                                                         class="block text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-4 py-2.5 text-center dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-800"
                                                         type="button" data-modal-toggle="return-modal">
-                                                    Return
+                                                    {{ __('ringlesoft::approvals.return') }}
                                                 </button>
                                             @endif
                                             <button
                                                     class="block text-white bg-green-500 hover:bg-green-600 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-4 py-2.5 text-center dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800"
                                                     type="button" data-modal-toggle="approve-modal">
-                                                {{$model->isRejected() ? 'Re-Approve' : ucfirst(strtolower($nextApprovalStep->action) ?? 'Approve')}}
+                                                {{$model->isRejected() ? __('ringlesoft::approvals.re_approve') : ucfirst(strtolower($nextApprovalStep->action) ?? 'Approve')}}
                                             </button>
 
 
@@ -147,16 +147,16 @@
                                 <div class="row align-content-between">
                                     <div class="text-end flex-grow-1">
                                     </div>
-                                    <div class="text-end">Waiting for approval from
+                                    <div class="text-end">{{ __('ringlesoft::approvals.waiting_for_approval_from') }}
                                         <strong>{{$nextApprovalStep->role->name}}</strong></div>
                                 </div>
                             @endif
                         @else
                             <div>
                                 @if($model->isDiscarded())
-                                    Discarded!
+                                    {{ __('ringlesoft::approvals.discarded') }}!
                                 @else
-                                    Approval completed!
+                                    {{ __('ringlesoft::approvals.approval_completed') }}!
                                 @endif
                             </div>
                         @endif
@@ -169,7 +169,7 @@
                             This document is not yet submitted.
                             @if($model->creator?->id === \Illuminate\Support\Facades\Auth::id())
                                 <span>
-                            You can submit this document for approvals.
+                            {{ __('ringlesoft::approvals.you_can_submit') }}
                         </span>
                             @endif
                         </div>
@@ -185,7 +185,7 @@
                                         <button
                                                 class="block text-white bg-green-500 hover:bg-green-600 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-4 py-2.5 text-center dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800"
                                                 type="submit">
-                                            Submit
+                                            {{ __('ringlesoft::approvals.submit') }}
                                         </button>
                                     @endif
                                 </form>
@@ -212,7 +212,7 @@
                             <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                   d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
                         </svg>
-                        <span class="sr-only">Close modal</span>
+                        <span class="sr-only">{{ __('ringlesoft::approvals.close_modal') }}</span>
                     </button>
                     <div class="p-6 text-center">
                         <form method="post" class="modal-content"
@@ -235,11 +235,11 @@
                                         class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-200 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-500 dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-gray-600"
                                         data-modal-toggle="approve-modal"
                                 >
-                                    No, cancel
+                                    {{ __('ringlesoft::approvals.no_cancel') }}
                                 </button>
                                 <button data-modal-hide="approve-modal" type="submit"
                                         class="text-white bg-green-600 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 dark:focus:ring-green-800 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center mr-2">
-                                    {{ucfirst($nextApprovalStep->action ?? 'Approve')}}
+                                    {{ucfirst($nextApprovalStep->action ?? __('ringlesoft::approvals.approve'))}}
                                 </button>
                             </div>
                         </form>
@@ -264,12 +264,12 @@
                             <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                   d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
                         </svg>
-                        <span class="sr-only">Close modal</span>
+                        <span class="sr-only">{{ __('ringlesoft::approvals.close_modal') }}</span>
                     </button>
                     <div class="p-6 text-center">
                         <form method="post" class="modal-content"
                               action="{{route('ringlesoft.process-approval.reject', $model)}}">
-                            <h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">Reject Request</h3>
+                            <h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">{{ __('ringlesoft::approvals.reject_request') }}</h3>
                             <div>
                                 @csrf
                                 <input type="hidden" name="user_id" value="{{auth()?->id()}}">
@@ -277,7 +277,7 @@
                                 <div class="modal-body">
                                     <div class="form-group">
                                     <textarea name="comment" id="rejectComment" rows="3"
-                                              placeholder="Write your approval comment"
+                                              placeholder="{{ __('ringlesoft::approvals.write_comment') }}"
                                               class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                               required
                                     ></textarea>
@@ -289,11 +289,11 @@
                                         class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-200 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-500 dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-gray-600"
                                         data-modal-toggle="reject-modal"
                                 >
-                                    No, cancel
+                                    {{ __('ringlesoft::approvals.no_cancel') }}
                                 </button>
                                 <button data-modal-hide="reject-modal" type="submit"
                                         class="text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center mr-2">
-                                    Reject
+                                    {{ __('ringlesoft::approvals.reject') }}
                                 </button>
                             </div>
                         </form>
@@ -319,12 +319,12 @@
                             <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                   d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
                         </svg>
-                        <span class="sr-only">Close modal</span>
+                        <span class="sr-only">{{ __('ringlesoft::approvals.close_modal') }}</span>
                     </button>
                     <div class="p-6 text-center">
                         <form method="post" class="modal-content"
                               action="{{route('ringlesoft.process-approval.return', $model)}}">
-                            <h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">Reject Request</h3>
+                            <h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">{{ __('ringlesoft::approvals.reject_request') }}</h3>
                             <div>
                                 @csrf
                                 <input type="hidden" name="user_id" value="{{auth()?->id()}}">
@@ -332,7 +332,7 @@
                                 <div class="modal-body">
                                     <div class="form-group">
                                     <textarea name="comment" id="returnComment" rows="3"
-                                              placeholder="Write your approval comment"
+                                              placeholder="{{ __('ringlesoft::approvals.write_comment') }}"
                                               class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                               required
                                     ></textarea>
@@ -344,11 +344,11 @@
                                         class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-200 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-500 dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-gray-600"
                                         data-modal-toggle="return-modal"
                                 >
-                                    No, cancel
+                                    {{ __('ringlesoft::approvals.no_cancel') }}
                                 </button>
                                 <button data-modal-hide="return-modal" type="submit"
                                         class="text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center mr-2">
-                                    Return
+                                    {{ __('ringlesoft::approvals.return') }}
                                 </button>
                             </div>
                         </form>
@@ -372,7 +372,7 @@
                             <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                   d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
                         </svg>
-                        <span class="sr-only">Close modal</span>
+                        <span class="sr-only">{{ __('ringlesoft::approvals.close_modal') }}</span>
                     </button>
                     <div class="p-6 text-center">
                         <form method="post" class="modal-content"
@@ -385,7 +385,7 @@
                                 <div class="modal-body">
                                     <div class="form-group">
                                     <textarea name="comment" id="discardComment" rows="3"
-                                              placeholder="Write your approval comment"
+                                              placeholder="{{ __('ringlesoft::approvals.write_comment') }}"
                                               class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"></textarea>
                                     </div>
                                 </div>
@@ -395,11 +395,11 @@
                                         class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-200 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-500 dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-gray-600"
                                         data-modal-toggle="discard-modal"
                                 >
-                                    No, cancel
+                                    {{ __('ringlesoft::approvals.no_cancel') }}
                                 </button>
                                 <button data-modal-hide="discard-modal" type="submit"
                                         class="text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center mr-2">
-                                    Discard
+                                    {{ __('ringlesoft::approvals.discard') }}
                                 </button>
                             </div>
                         </form>

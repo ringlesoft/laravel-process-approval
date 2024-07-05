@@ -40,16 +40,16 @@ class ApprovalController extends Controller
             $className = $request->input('model_name');
             $model = $className::findOrFail($id);
             if ($approval = $model->submit($this->getUser($request->get('user_id')))) {
-                ApprovalNotificationEvent::dispatch('Document Submitted', $model);
+                ApprovalNotificationEvent::dispatch(__('ringlesoft::messages.document_submitted'), $model);
             } else {
-                ApprovalNotificationEvent::dispatch('Failed to submit document', $model, 'ERROR');
+                ApprovalNotificationEvent::dispatch(__('ringlesoft::messages.failed_to_submit_document'), $model, 'ERROR');
             }
         } catch (Exception $e) {
             $error = $e->getMessage();
         }
         if ($request->wantsJson()) {
             if((empty($approval) || !is_object($approval)) && empty($error)){
-                $error = 'Failed to submit document';
+                $error = __('ringlesoft::messages.failed_to_submit_document');
             }
             return $this->jsonResponse($approval ?? null , $error ?? null,(empty($error) && ($approval ?? null)) ? 200 : 400);
         }
@@ -75,9 +75,9 @@ class ApprovalController extends Controller
             $model = $className::findOrFail($id);
             $comment = $request->input('comment');
             if ($approval = $model->approve($comment, $this->getUser($request->get('user_id')))) {
-                ApprovalNotificationEvent::dispatch('Document approved successfully', $model);
+                ApprovalNotificationEvent::dispatch(__('ringlesoft::messages.document_approved'), $model);
             } else {
-                ApprovalNotificationEvent::dispatch('Failed to approve document', $model, 'ERROR');
+                ApprovalNotificationEvent::dispatch(__('ringlesoft::messages.failed_to_approve_document'), $model, 'ERROR');
             }
         } catch (Exception $e) {
             $error = $e->getMessage();
@@ -85,7 +85,7 @@ class ApprovalController extends Controller
 
         if ($request->wantsJson()) {
             if((empty($approval) || !is_object($approval)) && empty($error)){
-                $error = 'Failed to approve document';
+                $error = __('ringlesoft::messages.failed_to_approve_document');
             }
             return $this->jsonResponse($approval ?? null , $error ?? null,(empty($error) && ($approval ?? null)) ? 200 : 400);
         }
@@ -111,16 +111,16 @@ class ApprovalController extends Controller
             $model = $className::findOrFail($id);
             $comment = $request->input('comment');
             if ($approval = $model->reject($comment, $this->getUser($request->get('user_id')))) {
-                ApprovalNotificationEvent::dispatch('Document approved successfully', $model);
+                ApprovalNotificationEvent::dispatch(__('messages.document_rejected'), $model);
             } else {
-                ApprovalNotificationEvent::dispatch('Failed to approve document', $model, 'ERROR');
+                ApprovalNotificationEvent::dispatch(__('messages.failed_to_reject_document'), $model, 'ERROR');
             }
         } catch (Exception $e) {
            $error =  $e->getMessage();
         }
         if ($request->wantsJson()) {
             if((empty($approval) || !is_object($approval)) && empty($error)){
-                $error = 'Failed to reject document';
+                $error = __('ringlesoft::messages.failed_to_reject_document');
             }
             return $this->jsonResponse($approval ?? null, $error ?? null,(empty($error) && ($approval ?? null)) ? 200 : 400);
         }
@@ -146,16 +146,16 @@ class ApprovalController extends Controller
             $model = $className::findOrFail($id);
             $comment = $request->input('comment');
             if ($approval = $model->return($comment, $this->getUser($request->get('user_id')))) {
-                ApprovalNotificationEvent::dispatch('Document returned successfully', $model);
+                ApprovalNotificationEvent::dispatch(__('ringlesoft::messages.document_returned'), $model);
             } else {
-                ApprovalNotificationEvent::dispatch('Failed to return document', $model, 'ERROR');
+                ApprovalNotificationEvent::dispatch( __('ringlesoft::messages.failed_to_return_document'), $model, 'ERROR');
             }
         } catch (Exception $e) {
            $error =  $e->getMessage();
         }
         if ($request->wantsJson()) {
             if((empty($approval) || !is_object($approval)) && empty($error)){
-                $error = 'Failed to return document';
+                $error = __('ringlesoft::messages.failed_to_return_document');
             }
             return $this->jsonResponse($approval ?? null, $error ?? null,(empty($error) && ($approval ?? null)) ? 200 : 400);
         }
@@ -181,16 +181,16 @@ class ApprovalController extends Controller
             $model = $className::findOrFail($id);
             $comment = $request->input('comment');
             if ($approval = $model->discard($comment, $this->getUser($request->get('user_id')))) {
-                ApprovalNotificationEvent::dispatch('Document discarded successfully', $model);
+                ApprovalNotificationEvent::dispatch(__('ringlesoft::messages.document_discarded'), $model);
             } else {
-                ApprovalNotificationEvent::dispatch('Failed to discard document', $model, 'ERROR');
+                ApprovalNotificationEvent::dispatch(__('ringlesoft::messages.failed_to_discard_document'), $model, 'ERROR');
             }
         } catch (Exception $e) {
             $error =  $e->getMessage();
         }
         if ($request->wantsJson()) {
             if((empty($approval) || !is_object($approval)) && empty($error)){
-                $error = 'Failed to discard document';
+                $error = __('ringlesoft::messages.failed_to_discard_document');
             }
             return $this->jsonResponse($approval ?? null , $error ?? null,(empty($error) && ($approval ?? null)) ? 200 : 400);
         }
