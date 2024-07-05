@@ -139,6 +139,16 @@ trait Approvable
     /**
      * @return Builder
      */
+    public static function returned(): Builder
+    {
+        return self::query()->whereHas('approvalStatus', static function ($q) {
+            return $q->where('status', ApprovalActionEnum::RETURNED->value);
+        });
+    }
+
+    /**
+     * @return Builder
+     */
     public static function nonSubmitted(): Builder
     {
         return self::query()->whereHas('approvalStatus', static function ($q) {
@@ -214,7 +224,7 @@ trait Approvable
 
     }
 
-    public function isReturned()
+    public function isReturned(): bool
     {
         return $this->approvalStatus?->status === ApprovalActionEnum::RETURNED->value;
     }
@@ -277,7 +287,7 @@ trait Approvable
         if ($this->isSubmitted()) {
             throw RequestAlreadySubmittedException::create($this);
         }
-        if($this->approvalStatus->creator_id && $this->approvalStatus->creator_id !== Auth::id()){
+        if ($this->approvalStatus->creator_id && $this->approvalStatus->creator_id !== Auth::id()) {
             throw new RuntimeException('Only the creator can submit the record');
         }
         try {
@@ -291,19 +301,17 @@ trait Approvable
                 'user_id' => $user?->id,
                 'approver_name' => $user?->name ?? 'Unknown'
             ]);
-            if ($approval) {
-                $this->approvalStatus()->update(['status' => ApprovalStatusEnum::SUBMITTED]);
-                ProcessSubmittedEvent::dispatch($this);
-                if ($this->isApprovalCompleted()) {
-                    if (method_exists($this, 'onApprovalCompleted') && $this->onApprovalCompleted($approval)) {
-                        // Approval went well, no need to rollback
-                    } else {
-                        throw new RuntimeException('Callback action after approval failed');
-                    }
+            $this->approvalStatus()->update(['status' => ApprovalStatusEnum::SUBMITTED]);
+            ProcessSubmittedEvent::dispatch($this);
+            if ($this->isApprovalCompleted()) {
+                if (method_exists($this, 'onApprovalCompleted') && $this->onApprovalCompleted($approval)) {
+                    // Approval went well, no need to rollback
+                } else {
+                    throw new RuntimeException('Callback action after approval failed');
                 }
             }
             DB::commit();
-            if($approval){
+            if ($approval) {
                 ProcessSubmittedEvent::dispatch($this);
             }
             return $approval;
@@ -351,7 +359,7 @@ trait Approvable
                 }
             }
             DB::commit();
-            if($approval){
+            if ($approval) {
                 ProcessApprovedEvent::dispatch($approval);
             }
             if ($this->isApprovalCompleted()) {
@@ -467,15 +475,15 @@ trait Approvable
                 'user_id' => $user?->id,
                 'approver_name' => $user?->name ?? 'Unknown'
             ]);
-            if($previousStep){
+            if ($previousStep) {
                 $approvalStatusSteps = collect($this->approvalStatus->steps);
                 $flag = false;
                 $approvalStatusSteps->transform(function ($item) use ($previousStep, &$flag) {
-                    if ((int) $item['id'] === (int) $previousStep->id) {
+                    if ((int)$item['id'] === (int)$previousStep->id) {
                         $item['process_approval_action'] = ApprovalStatusEnum::RETURNED->value;
                         ProcessApproval::query()->where('process_approval_flow_step_id', $item['id'])->update(['approval_action' => ApprovalStatusEnum::OVERRIDDEN->value]);
                         $flag = true;
-                    } else if($flag && $item['process_approval_action'] === ApprovalStatusEnum::RETURNED->value) {
+                    } else if ($flag && $item['process_approval_action'] === ApprovalStatusEnum::RETURNED->value) {
                         $item['process_approval_action'] = null;
                         $item['process_approval_id'] = null;
                     }
@@ -660,7 +668,7 @@ trait Approvable
     /**
      * Create approval flow for this record
      * @param array|null $steps lit of roles that should be used as approval steps
-     * @param string|null $name
+     * @param string|null $name Name of the flow
      * @return  bool
      * @throws Exception
      */
