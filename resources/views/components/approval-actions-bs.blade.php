@@ -237,13 +237,13 @@
                 <input type="hidden" name="user_id" value="{{auth()?->id()}}">
                 <input type="hidden" name="model_name" value="{{$model->getApprovableType()}}">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="modalDiscardLabel">Return Request</h5>
+                    <h5 class="modal-title" id="modalDiscardLabel">Discard Request</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
 
                     <div class="alert alert-warning">
-                        Returning  a process will end the approval process and mark it as discarded.
+                        Discarding  a process will end the approval process and mark it as discarded.
                     </div>
                     <div class="form-group">
                         <label for="approveComment">Comment</label>
@@ -252,7 +252,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-danger">Return</button>
+                    <button type="submit" class="btn btn-danger">Discard</button>
                 </div>
             </form>
         </div>
