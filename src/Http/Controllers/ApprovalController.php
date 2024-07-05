@@ -46,12 +46,13 @@ class ApprovalController extends Controller
             }
         } catch (Exception $e) {
             $error = $e->getMessage();
+            ApprovalNotificationEvent::dispatch(__('ringlesoft::messages.failed_to_submit_document') . $error, $model, 'ERROR');
         }
         if ($request->wantsJson()) {
-            if((empty($approval) || !is_object($approval)) && empty($error)){
+            if ((empty($approval) || !is_object($approval)) && empty($error)) {
                 $error = __('ringlesoft::messages.failed_to_submit_document');
             }
-            return $this->jsonResponse($approval ?? null , $error ?? null,(empty($error) && ($approval ?? null)) ? 200 : 400);
+            return $this->jsonResponse($approval ?? null, $error ?? null, (empty($error) && ($approval ?? null)) ? 200 : 400);
         }
         return $this->redirector->back();
     }
@@ -81,13 +82,14 @@ class ApprovalController extends Controller
             }
         } catch (Exception $e) {
             $error = $e->getMessage();
+            ApprovalNotificationEvent::dispatch(__('ringlesoft::messages.failed_to_approve_document') . $error, $model, 'ERROR');
         }
 
         if ($request->wantsJson()) {
-            if((empty($approval) || !is_object($approval)) && empty($error)){
+            if ((empty($approval) || !is_object($approval)) && empty($error)) {
                 $error = __('ringlesoft::messages.failed_to_approve_document');
             }
-            return $this->jsonResponse($approval ?? null , $error ?? null,(empty($error) && ($approval ?? null)) ? 200 : 400);
+            return $this->jsonResponse($approval ?? null, $error ?? null, (empty($error) && ($approval ?? null)) ? 200 : 400);
         }
         return $this->redirector->back();
     }
@@ -111,18 +113,19 @@ class ApprovalController extends Controller
             $model = $className::findOrFail($id);
             $comment = $request->input('comment');
             if ($approval = $model->reject($comment, $this->getUser($request->get('user_id')))) {
-                ApprovalNotificationEvent::dispatch(__('messages.document_rejected'), $model);
+                ApprovalNotificationEvent::dispatch(__('ringlesoft::messages.document_rejected'), $model);
             } else {
                 ApprovalNotificationEvent::dispatch(__('messages.failed_to_reject_document'), $model, 'ERROR');
             }
         } catch (Exception $e) {
-           $error =  $e->getMessage();
+            $error = $e->getMessage();
+            ApprovalNotificationEvent::dispatch(__('ringlesoft::messages.failed_to_reject_document') . $error, $model, 'ERROR');
         }
         if ($request->wantsJson()) {
-            if((empty($approval) || !is_object($approval)) && empty($error)){
+            if ((empty($approval) || !is_object($approval)) && empty($error)) {
                 $error = __('ringlesoft::messages.failed_to_reject_document');
             }
-            return $this->jsonResponse($approval ?? null, $error ?? null,(empty($error) && ($approval ?? null)) ? 200 : 400);
+            return $this->jsonResponse($approval ?? null, $error ?? null, (empty($error) && ($approval ?? null)) ? 200 : 400);
         }
         return $this->redirector->back();
     }
@@ -148,16 +151,17 @@ class ApprovalController extends Controller
             if ($approval = $model->return($comment, $this->getUser($request->get('user_id')))) {
                 ApprovalNotificationEvent::dispatch(__('ringlesoft::messages.document_returned'), $model);
             } else {
-                ApprovalNotificationEvent::dispatch( __('ringlesoft::messages.failed_to_return_document'), $model, 'ERROR');
+                ApprovalNotificationEvent::dispatch(__('ringlesoft::messages.failed_to_return_document'), $model, 'ERROR');
             }
         } catch (Exception $e) {
-           $error =  $e->getMessage();
+            $error = $e->getMessage();
+            ApprovalNotificationEvent::dispatch(__('ringlesoft::messages.failed_to_return_document') . $error, $model, 'ERROR');
         }
         if ($request->wantsJson()) {
-            if((empty($approval) || !is_object($approval)) && empty($error)){
+            if ((empty($approval) || !is_object($approval)) && empty($error)) {
                 $error = __('ringlesoft::messages.failed_to_return_document');
             }
-            return $this->jsonResponse($approval ?? null, $error ?? null,(empty($error) && ($approval ?? null)) ? 200 : 400);
+            return $this->jsonResponse($approval ?? null, $error ?? null, (empty($error) && ($approval ?? null)) ? 200 : 400);
         }
         return $this->redirector->back();
     }
@@ -186,13 +190,14 @@ class ApprovalController extends Controller
                 ApprovalNotificationEvent::dispatch(__('ringlesoft::messages.failed_to_discard_document'), $model, 'ERROR');
             }
         } catch (Exception $e) {
-            $error =  $e->getMessage();
+            $error = $e->getMessage();
+            ApprovalNotificationEvent::dispatch(__('ringlesoft::messages.failed_to_discard_document') . $error, $model, 'ERROR');
         }
         if ($request->wantsJson()) {
-            if((empty($approval) || !is_object($approval)) && empty($error)){
+            if ((empty($approval) || !is_object($approval)) && empty($error)) {
                 $error = __('ringlesoft::messages.failed_to_discard_document');
             }
-            return $this->jsonResponse($approval ?? null , $error ?? null,(empty($error) && ($approval ?? null)) ? 200 : 400);
+            return $this->jsonResponse($approval ?? null, $error ?? null, (empty($error) && ($approval ?? null)) ? 200 : 400);
         }
         return $this->redirector->back();
     }
@@ -208,7 +213,7 @@ class ApprovalController extends Controller
             'data' => $data ?? null,
             'success' => (bool)$data,
         ];
-        if($error) {
+        if ($error) {
             $response['error'] = $error;
         }
         return response()->json($response, $status ?? 200);
