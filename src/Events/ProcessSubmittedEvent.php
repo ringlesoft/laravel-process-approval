@@ -7,6 +7,7 @@ use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
+use RingleSoft\LaravelProcessApproval\Contracts\ApprovableModel;
 
 class ProcessSubmittedEvent
 {
@@ -15,7 +16,7 @@ class ProcessSubmittedEvent
     /**
      * Create a new event instance.
      */
-    public function __construct()
+    public function __construct(public ApprovableModel $approvable)
     {
         //
     }
