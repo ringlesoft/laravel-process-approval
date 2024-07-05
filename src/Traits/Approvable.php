@@ -19,7 +19,6 @@ use RingleSoft\LaravelProcessApproval\Contracts\ApprovableModel;
 use RingleSoft\LaravelProcessApproval\Enums\ApprovalActionEnum;
 use RingleSoft\LaravelProcessApproval\Enums\ApprovalStatusEnum;
 use RingleSoft\LaravelProcessApproval\Enums\ApprovalTypeEnum;
-use RingleSoft\LaravelProcessApproval\Events\ApprovalNotificationEvent;
 use RingleSoft\LaravelProcessApproval\Events\ProcessApprovalCompletedEvent;
 use RingleSoft\LaravelProcessApproval\Events\ProcessApprovedEvent;
 use RingleSoft\LaravelProcessApproval\Events\ProcessDiscardedEvent;
@@ -178,7 +177,7 @@ trait Approvable
     {
         $registeredSteps = collect($this->approvalStatus->steps ?? []);
         foreach ($registeredSteps as $item) {
-            if ($item['process_approval_action'] === null || $item['process_approval_id'] === null) {
+            if ($item['process_approval_action'] === null || $item['process_approval_id'] === null || $item['process_approval_action'] === ApprovalStatusEnum::RETURNED->value) {
                 return false;
             }
         }
@@ -295,7 +294,6 @@ trait Approvable
             if ($approval) {
                 $this->approvalStatus()->update(['status' => ApprovalStatusEnum::SUBMITTED]);
                 ProcessSubmittedEvent::dispatch($this);
-                ApprovalNotificationEvent::dispatch('Approvable record submitted', $this);
                 if ($this->isApprovalCompleted()) {
                     if (method_exists($this, 'onApprovalCompleted') && $this->onApprovalCompleted($approval)) {
                         // Approval went well, no need to rollback
@@ -306,7 +304,7 @@ trait Approvable
             }
             DB::commit();
             if($approval){
-                ProcessApprovalCompletedEvent::dispatch($approval);
+                ProcessSubmittedEvent::dispatch($this);
             }
             return $approval;
         } catch (Exception $e) {
@@ -456,9 +454,6 @@ trait Approvable
         if (!$this->isSubmitted()) {
             throw RequestNotSubmittedException::create($this);
         }
-//        if($this->isReturned()){
-//            throw new RuntimeException('The record has already been returned');
-//        }
         $previousStep = $this->previousApprovalStep();
         $nextStep = $this->nextApprovalStep();
         try {
@@ -581,6 +576,14 @@ trait Approvable
                 'icon' => $rejected,
                 'color' => "rgba(220, 20, 60, 0.5)"
             ],
+            'Returned' => [
+                'icon' => $rejected,
+                'color' => "rgba(220, 20, 60, 0.5)"
+            ],
+            'Overridden' => [
+                'icon' => $rejected,
+                'color' => "rgba(220, 20, 60, 0.5)"
+            ],
             'Pending' => [
                 'icon' => $pending,
                 'color' => "rgba(255, 165, 0, 0.5)"
@@ -646,7 +649,7 @@ trait Approvable
      * Enables pausing the approval process for intermediate actions
      * @return mixed
      */
-    public function getApprovalsPausedAttribute(): bool
+    public function getApprovalsPausedAttribute(): mixed
     {
         if (method_exists($this, 'pauseApprovals')) {
             return (bool)$this->pauseApprovals();

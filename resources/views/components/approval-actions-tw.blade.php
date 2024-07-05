@@ -166,7 +166,7 @@
                 <div class="flex justify-between w-full mt-5">
                     <div class="md:col-7">
                         <div class="text-gray-500">
-                            This document is not yet submitted.
+                            {{ __('ringlesoft::approvals.document_not_submitted') }}
                             @if($model->creator?->id === \Illuminate\Support\Facades\Auth::id())
                                 <span>
                             {{ __('ringlesoft::approvals.you_can_submit') }}

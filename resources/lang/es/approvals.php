@@ -15,6 +15,7 @@ return [
     'discard_request' => 'Descartar solicitud',
     'discarded' => 'Descartado',
     'discarding_info' => 'Descartar un proceso terminará el proceso de aprobación y lo marcará como descartado.',
+    'document_not_submitted' => 'Este documento aún no ha sido enviado.',
     'no_cancel' => 'No, cancelar',
     'no_comment' => 'Sin comentario',
     're_approve' => 'Reaprobar',

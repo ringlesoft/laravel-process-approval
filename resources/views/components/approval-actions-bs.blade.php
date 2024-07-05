@@ -150,7 +150,7 @@
                 <div class="row align-content-between align-items-md-center">
                     <div class="col-12 col-md-7">
                         <div class="text-black-50">
-                            This document is not yet submitted.
+                            {{ __('ringlesoft::approvals.document_not_submitted') }}
                             @if($model->creator?->id === \Illuminate\Support\Facades\Auth::id())
                                 <span>
                             {{ __('ringlesoft::approvals.you_can_submit') }}

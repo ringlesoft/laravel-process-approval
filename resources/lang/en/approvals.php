@@ -15,6 +15,7 @@ return [
     'discard_request' => 'Discard Request',
     'discarded' => 'Discarded',
     'discarding_info' => 'Discarding a process will end the approval process and mark it as discarded.',
+    'document_not_submitted' => 'This document is not yet submitted.',
     'no_cancel' => 'No, cancel',
     'no_comment' => 'No comment',
     're_approve' => 'Re-Approve',

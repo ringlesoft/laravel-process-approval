@@ -15,6 +15,7 @@ return [
     'discard_request' => 'Antrag verwerfen',
     'discarded' => 'Verworfen',
     'discarding_info' => 'Das Verwerfen eines Prozesses beendet den Genehmigungsprozess und markiert ihn als verworfen.',
+    'document_not_submitted' => 'Dieses Dokument wurde noch nicht eingereicht.',
     'no_cancel' => 'Nein, abbrechen',
     'no_comment' => 'Kein Kommentar',
     're_approve' => 'Erneut genehmigen',

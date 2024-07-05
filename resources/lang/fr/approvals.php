@@ -15,6 +15,7 @@ return [
     'discard_request' => 'Annuler la demande',
     'discarded' => 'Annulé',
     'discarding_info' => 'Annuler un processus mettra fin au processus d\'approbation et le marquera comme annulé.',
+    'document_not_submitted' => 'Ce document n\'a pas encore été soumis.',
     'no_cancel' => 'Non, annuler',
     'no_comment' => 'Pas de commentaire',
     're_approve' => 'Réapprouver',

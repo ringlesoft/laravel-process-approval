@@ -15,6 +15,7 @@ return [
     'discard_request' => 'Tupa Ombi',
     'discarded' => 'Imetupwa',
     'discarding_info' => 'Kutupa mchakato kutamaliza mchakato wa idhini na kuutaja kama umetupwa.',
+    'document_not_submitted' => 'Hati hii bado haijasilishwa.',
     'no_cancel' => 'Hapana, acha',
     'no_comment' => 'Hakuna maoni',
     're_approve' => 'Idhinisha Tena',

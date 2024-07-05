@@ -15,6 +15,7 @@ return [
     'discard_request' => '丢弃请求',
     'discarded' => '已丢弃',
     'discarding_info' => '丢弃流程将结束审批过程并将其标记为已丢弃。',
+    'document_not_submitted' => '此文件尚未提交。',
     'no_cancel' => '不，取消',
     'no_comment' => '无评论',
     're_approve' => '重新批准',
