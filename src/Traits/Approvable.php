@@ -236,7 +236,7 @@ trait Approvable
     public function nextApprovalStep(): ProcessApprovalFlowStep|null
     {
         foreach (collect($this->approvalStatus->steps ?? []) as $step) {
-            if ($step['process_approval_id'] === null && $realStep = ProcessApprovalFlowStep::query()->with('role')->find($step['id'])) {
+            if (($step['process_approval_id'] === null || $step['process_approval_action'] === ApprovalStatusEnum::RETURNED->value) && $realStep = ProcessApprovalFlowStep::query()->with('role')->find($step['id'])) {
                 return $realStep;
             }
             if ($step['process_approval_action'] !== ApprovalActionEnum::APPROVED->value && $step['process_approval_action'] !== ApprovalActionEnum::DISCARDED->value) {
@@ -257,7 +257,7 @@ trait Approvable
     {
         $previous_id = null;
         foreach (collect($this->approvalStatus->steps ?? []) as $step) {
-            if ($step['process_approval_id'] === null) {
+            if ($step['process_approval_id'] === null || $step['process_approval_action'] === ApprovalStatusEnum::RETURNED->value) {
                 return ProcessApprovalFlowStep::query()->find($previous_id);
             }
             $previous_id = $step['id'];
@@ -456,9 +456,9 @@ trait Approvable
         if (!$this->isSubmitted()) {
             throw RequestNotSubmittedException::create($this);
         }
-        if($this->isReturned()){
-            throw new RuntimeException('The record has already been returned');
-        }
+//        if($this->isReturned()){
+//            throw new RuntimeException('The record has already been returned');
+//        }
         $previousStep = $this->previousApprovalStep();
         $nextStep = $this->nextApprovalStep();
         try {
@@ -474,10 +474,15 @@ trait Approvable
             ]);
             if($previousStep){
                 $approvalStatusSteps = collect($this->approvalStatus->steps);
-                $approvalStatusSteps->transform(function ($item) use ($previousStep) {
+                $flag = false;
+                $approvalStatusSteps->transform(function ($item) use ($previousStep, &$flag) {
                     if ((int) $item['id'] === (int) $previousStep->id) {
                         $item['process_approval_action'] = ApprovalStatusEnum::RETURNED->value;
                         ProcessApproval::query()->where('process_approval_flow_step_id', $item['id'])->update(['approval_action' => ApprovalStatusEnum::OVERRIDDEN->value]);
+                        $flag = true;
+                    } else if($flag && $item['process_approval_action'] === ApprovalStatusEnum::RETURNED->value) {
+                        $item['process_approval_action'] = null;
+                        $item['process_approval_id'] = null;
                     }
                     return $item;
                 });

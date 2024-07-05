@@ -14,7 +14,7 @@
                             @endforeach
                         </tr>
                         <tr>
-                            <th>{{ __('approvals.Date') }}</th>
+                            <th>{{ __('ringlesoft::approvals.Date') }}</th>
                             @foreach($modelApprovalSteps as $item)
                                 <td>
                                     <div class="d-flex flex-column justify-content-center align-items-center">
@@ -114,7 +114,7 @@
                                                 </button>
                                             @endif
 
-                                            @if(!$model->isReturned() && !$model->isRejected())
+                                            @if(!$model->isRejected())
                                                 <button class="btn btn-danger" data-bs-toggle="modal"
                                                         data-bs-target="#modalReturn">
                                                     Return
@@ -243,7 +243,7 @@
                 <div class="modal-body">
 
                     <div class="alert alert-warning">
-                        Returning a process will send the document back to the previous approver.
+                        Returning  a process will end the approval process and mark it as discarded.
                     </div>
                     <div class="form-group">
                         <label for="approveComment">Comment</label>
@@ -272,7 +272,7 @@
                 <div class="modal-body">
 
                     <div class="alert alert-warning">
-                        Returning a process will end the approval process and mark it as discarded.
+                        Returning a process will send the document back to the previous approver.
                     </div>
                     <div class="form-group">
                         <label for="approveComment">Comment</label>
