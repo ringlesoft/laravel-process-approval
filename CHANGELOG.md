@@ -13,6 +13,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 - Deprecated `getApprovalSummaryUI()` method in favor of `<x-ringlesoft-approval-status-summary>` component
+- `web` middleware is applied to the ApprovalController by default
 
 
 ## [1.0.7] - 2024-04-17
