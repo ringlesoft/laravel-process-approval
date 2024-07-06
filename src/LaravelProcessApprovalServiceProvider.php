@@ -7,6 +7,7 @@ use Illuminate\Support\ServiceProvider;
 use RingleSoft\LaravelProcessApproval\Console\Commands\FlowCommand;
 use RingleSoft\LaravelProcessApproval\Console\Commands\StepCommand;
 use RingleSoft\LaravelProcessApproval\View\Components\ApprovalActions;
+use RingleSoft\LaravelProcessApproval\View\Components\ApprovalStatusSummary;
 
 class LaravelProcessApprovalServiceProvider extends ServiceProvider
 {
@@ -18,6 +19,7 @@ class LaravelProcessApprovalServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Blade::component('approval-actions', ApprovalActions::class, 'ringlesoft');
+        Blade::component('approval-status-summary', ApprovalStatusSummary::class, 'ringlesoft');
 
         $this->loadTranslationsFrom(__DIR__.'/../resources/lang', 'ringlesoft');
         $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');

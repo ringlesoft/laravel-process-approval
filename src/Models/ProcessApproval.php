@@ -15,6 +15,12 @@ class ProcessApproval extends Model
     {
         return $this->belongsTo(config('process_approval.users_model'));
     }
+
+    public function processApprovalFlowStep(): BelongsTo
+    {
+        return $this->belongsTo(ProcessApprovalFlowStep::class);
+    }
+
     public function getSignature()
     {
         if(method_exists($this->user, 'getSignature')) {

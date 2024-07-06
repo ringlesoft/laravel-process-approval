@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use RingleSoft\LaravelProcessApproval\Contracts\ApprovableModel;
+use RingleSoft\LaravelProcessApproval\DataObjects\ApprovalStatusStepData;
 use RingleSoft\LaravelProcessApproval\Enums\ApprovalActionEnum;
 use RingleSoft\LaravelProcessApproval\Enums\ApprovalStatusEnum;
 use RingleSoft\LaravelProcessApproval\Enums\ApprovalTypeEnum;
@@ -33,11 +34,12 @@ use RingleSoft\LaravelProcessApproval\Models\ProcessApproval;
 use RingleSoft\LaravelProcessApproval\Models\ProcessApprovalFlow;
 use RingleSoft\LaravelProcessApproval\Models\ProcessApprovalFlowStep;
 use RingleSoft\LaravelProcessApproval\Models\ProcessApprovalStatus;
+use RingleSoft\LaravelProcessApproval\View\Components\ApprovalStatusSummary;
 use RuntimeException;
 use Throwable;
 
 /**
- *
+ * @mixin ApprovableModel
  */
 trait Approvable
 {
@@ -168,15 +170,21 @@ trait Approvable
     }
 
 
+    /**
+     * @param ProcessApprovalFlowStep $step
+     * @return Builder
+     * @removed This method is not fully functional. Reserved for future updates
+     */
     public static function waitingForStep(ProcessApprovalFlowStep $step): Builder
     {
-        return self::query()->whereHas('approvalStatus', static function ($q) use ($step) {
-            return $q->whereJsonContains('json_column_name', [
-                'id' => 3,
+        return self::query()
+            ->whereHas('approvalStatus', static function ($q) use ($step) {
+            return $q
+                ->where('status', '!=', ApprovalActionEnum::APPROVED->value)
+                ->whereJsonContains('steps', [
+                'id' => $step->id,
                 'process_approval_id' => null,
-            ])
-                ->whereJsonDoesntContain('json_column_name->$[0]', 'process_approval_id')
-                ->get();
+            ]);
         });
     }
 
@@ -477,21 +485,21 @@ trait Approvable
                 'approver_name' => $user?->name ?? 'Unknown'
             ]);
             if ($previousStep) {
-                $approvalStatusSteps = collect($this->approvalStatus->steps);
                 $flag = false;
-                $approvalStatusSteps->transform(function ($item) use ($previousStep, &$flag) {
-                    if ((int)$item['id'] === (int)$previousStep->id) {
-                        $item['process_approval_action'] = ApprovalStatusEnum::RETURNED->value;
-                        ProcessApproval::query()->where('process_approval_flow_step_id', $item['id'])->update(['approval_action' => ApprovalStatusEnum::OVERRIDDEN->value]);
+                $approvalStatusSteps = ApprovalStatusStepData::collectionFromProcessApprovalStatus($this->approvalStatus);
+                $approvalStatusSteps->map(function (ApprovalStatusStepData $item) use($previousStep, &$flag) {
+                    if($item->belongsToStep($previousStep->id)) {
+                        $item->makeReturned();
                         $flag = true;
-                    } else if ($flag && $item['process_approval_action'] === ApprovalStatusEnum::RETURNED->value) {
-                        $item['process_approval_action'] = null;
-                        $item['process_approval_id'] = null;
+                    } else if ($flag && $item->isReturned()) {
+                        $item->reset();
                     }
                     return $item;
                 });
+                unset($flag);
+
                 $this->approvalStatus()->update([
-                    'steps' => $approvalStatusSteps->toArray(),
+                    'steps' => ApprovalStatusStepData::collectionToArray($approvalStatusSteps),
                     'status' => ApprovalStatusEnum::RETURNED->value,
                 ]);
             } else {
@@ -541,15 +549,14 @@ trait Approvable
             try {
                 DB::beginTransaction();
                 $lastApproval->delete();
-                $statusesArray = collect($this->approvalStatus->steps);
-                $updatedArray = $statusesArray->map(function ($i) use ($lastApproval) {
-                    if ((int)$i['process_approval_id'] === $lastApproval->id) {
-                        $i['process_approval_id'] = null;
-                        $i['process_approval_action'] = null;
+                $statusesCollection = ApprovalStatusStepData::collectionFromApprovable($this);
+                $updatedStatuses = $statusesCollection->map(function (ApprovalStatusStepData $item) use ($lastApproval) {
+                    if ($item->belongsToApproval($lastApproval)) {
+                        $item->reset();
                     }
-                    return $i;
+                    return $item;
                 });
-                $this->approvalStatus()->update(['steps' => $updatedArray->toArray(), 'status' => ApprovalStatusEnum::PENDING->value]);// Todo Improve
+                $this->approvalStatus()->update(['steps' => ApprovalStatusStepData::collectionToArray($updatedStatuses), 'status' => ApprovalStatusEnum::PENDING->value]);// Todo Improve
                 DB::commit();
             } catch (Throwable $e) {
                 Log::error('Process Approval - discard: ', [$e]);
@@ -596,11 +603,10 @@ trait Approvable
      */
     private function updateStatus($stepId, ProcessApproval $approval): int
     {
-        $steps = collect($this->approvalStatus->steps);
-        $current = $steps->map(static function ($step) use ($stepId, $approval) {
-            if ($step['id'] === $stepId) {
-                $step['process_approval_id'] = $approval->id;
-                $step['process_approval_action'] = $approval->approval_action;
+        $steps = ApprovalStatusStepData::collectionFromProcessApprovalStatus($this->approvalStatus);
+        $current = $steps->map(static function (ApprovalStatusStepData $step) use ($stepId, $approval) {
+            if ($step->belongsToStep($stepId)) {
+                return $step->updateApproval($approval);
             }
             return $step;
         });
@@ -609,7 +615,7 @@ trait Approvable
             $action = ApprovalStatusEnum::PENDING->value;
         }
         return $this->approvalStatus()->update([
-            'steps' => $current->toArray(),
+            'steps' => ApprovalStatusStepData::collectionToArray($current),
             'status' => $action
         ]);
     }
