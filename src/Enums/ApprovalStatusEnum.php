@@ -11,4 +11,6 @@ enum ApprovalStatusEnum: string
     case APPROVED = 'Approved';
     case REJECTED = 'Rejected';
     case DISCARDED = 'Discarded';
+    case RETURNED = 'Returned';
+    case OVERRIDDEN = 'Overridden';
 }

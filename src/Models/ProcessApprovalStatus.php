@@ -4,13 +4,12 @@ namespace RingleSoft\LaravelProcessApproval\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
-use RingleSoft\LaravelProcessApproval\Contracts\ApprovableModel;
+use RingleSoft\LaravelProcessApproval\Traits\MultiTenant;
 
 class ProcessApprovalStatus extends Model
 {
+    use MultiTenant;
     protected $guarded = ['id'];
 
     protected $casts = [

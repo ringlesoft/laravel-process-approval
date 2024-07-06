@@ -17,6 +17,7 @@ class ApprovalController extends Controller
 {
     public function __construct(protected Redirector $redirector, protected Guard $auth)
     {
+        $this->middleware('web'); // This is important for multi-tenancy
         $this->middleware(config('process_approval.approval_controller_middlewares'));
     }
 
@@ -39,18 +40,19 @@ class ApprovalController extends Controller
             $className = $request->input('model_name');
             $model = $className::findOrFail($id);
             if ($approval = $model->submit($this->getUser($request->get('user_id')))) {
-                ApprovalNotificationEvent::dispatch('Document Submitted', $model);
+                ApprovalNotificationEvent::dispatch(__('ringlesoft::messages.document_submitted'), $model);
             } else {
-                ApprovalNotificationEvent::dispatch('Failed to submit document', $model, 'ERROR');
+                ApprovalNotificationEvent::dispatch(__('ringlesoft::messages.failed_to_submit_document'), $model, 'ERROR');
             }
         } catch (Exception $e) {
             $error = $e->getMessage();
+            ApprovalNotificationEvent::dispatch(__('ringlesoft::messages.failed_to_submit_document') . $error, $model, 'ERROR');
         }
         if ($request->wantsJson()) {
-            if((empty($approval) || !is_object($approval)) && empty($error)){
-                $error = 'Failed to submit document';
+            if ((empty($approval) || !is_object($approval)) && empty($error)) {
+                $error = __('ringlesoft::messages.failed_to_submit_document');
             }
-            return $this->jsonResponse($approval ?? null , $error ?? null,(empty($error) && ($approval ?? null)) ? 200 : 400);
+            return $this->jsonResponse($approval ?? null, $error ?? null, (empty($error) && ($approval ?? null)) ? 200 : 400);
         }
         return $this->redirector->back();
     }
@@ -74,19 +76,20 @@ class ApprovalController extends Controller
             $model = $className::findOrFail($id);
             $comment = $request->input('comment');
             if ($approval = $model->approve($comment, $this->getUser($request->get('user_id')))) {
-                ApprovalNotificationEvent::dispatch('Document approved successfully', $model);
+                ApprovalNotificationEvent::dispatch(__('ringlesoft::messages.document_approved'), $model);
             } else {
-                ApprovalNotificationEvent::dispatch('Failed to approve document', $model, 'ERROR');
+                ApprovalNotificationEvent::dispatch(__('ringlesoft::messages.failed_to_approve_document'), $model, 'ERROR');
             }
         } catch (Exception $e) {
             $error = $e->getMessage();
+            ApprovalNotificationEvent::dispatch(__('ringlesoft::messages.failed_to_approve_document') . $error, $model, 'ERROR');
         }
 
         if ($request->wantsJson()) {
-            if((empty($approval) || !is_object($approval)) && empty($error)){
-                $error = 'Failed to approve document';
+            if ((empty($approval) || !is_object($approval)) && empty($error)) {
+                $error = __('ringlesoft::messages.failed_to_approve_document');
             }
-            return $this->jsonResponse($approval ?? null , $error ?? null,(empty($error) && ($approval ?? null)) ? 200 : 400);
+            return $this->jsonResponse($approval ?? null, $error ?? null, (empty($error) && ($approval ?? null)) ? 200 : 400);
         }
         return $this->redirector->back();
     }
@@ -110,18 +113,55 @@ class ApprovalController extends Controller
             $model = $className::findOrFail($id);
             $comment = $request->input('comment');
             if ($approval = $model->reject($comment, $this->getUser($request->get('user_id')))) {
-                ApprovalNotificationEvent::dispatch('Document approved successfully', $model);
+                ApprovalNotificationEvent::dispatch(__('ringlesoft::messages.document_rejected'), $model);
             } else {
-                ApprovalNotificationEvent::dispatch('Failed to approve document', $model, 'ERROR');
+                ApprovalNotificationEvent::dispatch(__('messages.failed_to_reject_document'), $model, 'ERROR');
             }
         } catch (Exception $e) {
-           $error =  $e->getMessage();
+            $error = $e->getMessage();
+            ApprovalNotificationEvent::dispatch(__('ringlesoft::messages.failed_to_reject_document') . $error, $model, 'ERROR');
         }
         if ($request->wantsJson()) {
-            if((empty($approval) || !is_object($approval)) && empty($error)){
-                $error = 'Failed to reject document';
+            if ((empty($approval) || !is_object($approval)) && empty($error)) {
+                $error = __('ringlesoft::messages.failed_to_reject_document');
             }
-            return $this->jsonResponse($approval ?? null, $error ?? null,(empty($error) && ($approval ?? null)) ? 200 : 400);
+            return $this->jsonResponse($approval ?? null, $error ?? null, (empty($error) && ($approval ?? null)) ? 200 : 400);
+        }
+        return $this->redirector->back();
+    }
+
+    /**
+     * Return the model to the previous step
+     * @param Request $request
+     * @param $id
+     * @return RedirectResponse|JsonResponse
+     */
+    public function return(Request $request, $id): RedirectResponse|JsonResponse
+    {
+        $rules = [
+            'model_name' => ['string', 'required'],
+            'comment' => ['string', 'required', 'min:1'],
+            'user_id' => ['sometimes', 'exists:users,id']
+        ];
+        $request->validate($rules);
+        try {
+            $className = $request->input('model_name');
+            $model = $className::findOrFail($id);
+            $comment = $request->input('comment');
+            if ($approval = $model->return($comment, $this->getUser($request->get('user_id')))) {
+                ApprovalNotificationEvent::dispatch(__('ringlesoft::messages.document_returned'), $model);
+            } else {
+                ApprovalNotificationEvent::dispatch(__('ringlesoft::messages.failed_to_return_document'), $model, 'ERROR');
+            }
+        } catch (Exception $e) {
+            $error = $e->getMessage();
+            ApprovalNotificationEvent::dispatch(__('ringlesoft::messages.failed_to_return_document') . $error, $model, 'ERROR');
+        }
+        if ($request->wantsJson()) {
+            if ((empty($approval) || !is_object($approval)) && empty($error)) {
+                $error = __('ringlesoft::messages.failed_to_return_document');
+            }
+            return $this->jsonResponse($approval ?? null, $error ?? null, (empty($error) && ($approval ?? null)) ? 200 : 400);
         }
         return $this->redirector->back();
     }
@@ -145,18 +185,19 @@ class ApprovalController extends Controller
             $model = $className::findOrFail($id);
             $comment = $request->input('comment');
             if ($approval = $model->discard($comment, $this->getUser($request->get('user_id')))) {
-                ApprovalNotificationEvent::dispatch('Document discarded successfully', $model);
+                ApprovalNotificationEvent::dispatch(__('ringlesoft::messages.document_discarded'), $model);
             } else {
-                ApprovalNotificationEvent::dispatch('Failed to discard document', $model, 'ERROR');
+                ApprovalNotificationEvent::dispatch(__('ringlesoft::messages.failed_to_discard_document'), $model, 'ERROR');
             }
         } catch (Exception $e) {
-            $error =  $e->getMessage();
+            $error = $e->getMessage();
+            ApprovalNotificationEvent::dispatch(__('ringlesoft::messages.failed_to_discard_document') . $error, $model, 'ERROR');
         }
         if ($request->wantsJson()) {
-            if((empty($approval) || !is_object($approval)) && empty($error)){
-                $error = 'Failed to discard document';
+            if ((empty($approval) || !is_object($approval)) && empty($error)) {
+                $error = __('ringlesoft::messages.failed_to_discard_document');
             }
-            return $this->jsonResponse($approval ?? null , $error ?? null,(empty($error) && ($approval ?? null)) ? 200 : 400);
+            return $this->jsonResponse($approval ?? null, $error ?? null, (empty($error) && ($approval ?? null)) ? 200 : 400);
         }
         return $this->redirector->back();
     }
@@ -172,7 +213,7 @@ class ApprovalController extends Controller
             'data' => $data ?? null,
             'success' => (bool)$data,
         ];
-        if($error) {
+        if ($error) {
             $response['error'] = $error;
         }
         return response()->json($response, $status ?? 200);

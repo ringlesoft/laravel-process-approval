@@ -1,5 +1,9 @@
 # Laravel Process Approval
-
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/ringlesoft/laravel-process-approval.svg)](https://packagist.org/packages/ringlesoft/laravel-process-approval)
+[![Total Downloads](https://img.shields.io/packagist/dt/ringlesoft/laravel-process-approval.svg)](https://packagist.org/packages/ringlesoft/laravel-process-approval)
+[![PHP Version Require](http://poser.pugx.org/ringlesoft/laravel-process-approval/require/php)](https://packagist.org/ringlesoft/laravel-process-approval)
+[![Dependents](http://poser.pugx.org/ringlesoft/laravel-process-approval/dependents)](https://packagist.org/packages/ringlesoft/laravel-process-approval)
+***
 ## Introduction
 
 This package enables multi-level approval workflows for Eloquent models in your Laravel application. If you have models
@@ -165,6 +169,7 @@ php artisan vendor:publish --provider="RingleSoft\LaravelProcessApproval\Laravel
   should be  `['auth']`).
 - `css_library` - Specify the css library for styling the UI component (bootstrap/tailwind). (default
   is `Tailwind CSS`).
+- `multi_tenancy_field` - Specify the multi-tenancy field in the users table. (default is `tenant_id`)
 
 ### Model Submitting
 
@@ -234,7 +239,75 @@ The package dispatches events during different stages of the approval workflow t
 - `ProcessRejectedEvent` - Dispatched when an approvable model is rejected by an approver.
 - `ProcessDiscardedEvent` - Dispatched when an approvable model is discarded by an approver.
 - `ProcessApprovalCompletedEvent` - Dispatched when the full approval workflow is completed, either approved or
+- `ApprovalNotificationEvent` - Dispatches during approval actions with the notification message about what happened.
   discarded.
+- 
+### Showing Notifications
+
+To display approval notifications, subscribe to the `ApprovalNotificationEvent` event.
+
+#### 1. Create a Listener:
+
+Generate a listener for the event using artisan command:
+
+```bash
+php artisan make:listener ApprovalNotificationListener --event=\\RingleSoft\\LaravelProcessApproval\\Events\\ApprovalNotificationEvent
+```
+
+#### 2. Implement Listener Logic:
+Inside the generated ApprovalNotificationListener class, implement the logic within the `handle()` method. 
+This method will execute whenever the ApprovalNotificationEvent event is triggered. Customize the notification content and delivery method as per your application's requirements.
+
+Example listener implementation:
+
+```php
+class ApprovalNotificationListener
+{
+    /**
+     * Create the event listener.
+     */
+    public function __construct()
+    {
+    }
+
+    /**
+     * Handle the event.
+     */
+    public function handle(ApprovalNotificationEvent $event): void
+    {
+        session()->flash('success', $event->message);
+    }
+}
+```
+
+#### 3. Register Listener:
+Register the listener in your `EventServiceProvider` class to link the `ApprovalNotificationEvent` event with your `ApprovalNotificationListener`:
+
+```php
+protected $listen = [
+    ApprovalNotificationEvent::class => [
+        ApprovalNotificationListener::class,
+    ],
+];
+```
+Use your own approach to display notification from `session()`
+
+
+### Notifying Approvers
+To notify approvers when a document is awaiting their approval, you can subscribe to the `ProcessSubmittedEvent` and `ProcessApprovedEvent` events and send notifications to them.
+
+Here is an example of how to send notifications to the next approvers within the `ProcessSubmittedListener` listener:
+```php
+    public function handle(ProcessSubmittedEvent $event): void
+    {
+        $nextApprovers = $event->approvable->getNextApprovers();
+        foreach ($nextApprovers as $nextApprover) {
+            $nextApprover->notify(new AwaitingApprovalNotification($event->approvable));
+        }
+    }
+```
+
+
 
 ## Helper Methods
 
@@ -260,6 +333,12 @@ This package adds multiple helper methods to the approvable models. These includ
     ```php
         FundRequest::discarded()->get();
     ```
+- `returned()` [Static]:This returns a builder that filters the model entries that are only returned (
+  returns `Illuminate\Database\Eloquent\Builder`)
+  Example:
+    ```php
+        FundRequest::returned()->get();
+    ```
 
 - `submitted()` [Static]:This returns a builder that filters the model entries that are only submitted (
   returns `Illuminate\Database\Eloquent\Builder`)
@@ -267,20 +346,24 @@ This package adds multiple helper methods to the approvable models. These includ
     ```php
         FundRequest::submitted()->get();
     ```
-
-### Misc
-
-- `isApprovalCompleted(): bool`: Checks if the approval process for the model is completed
-- `isSubmitted(): bool`: Checks if the model has been submitted
-- `isRejected(): bool`: Checks if the model has been rejected
-- `isDiscarded(): bool`: Checks if the model has been discarded
-- `nextApprovalStep(): null|ProcessApprovalFlowStep`: Returns the next approval step for the model
-- `previousApprovalStep(): null|ProcessApprovalFlowStep`: Returns the previous approval step for the model
+  
+### Actions
 - `submit([user: Authenticatable|null = null]): bool|RedirectResponse|ProcessApproval`: Submits the model
 - `approve([comment = null], [user: Authenticatable|null = null]): bool|RedirectResponse|ProcessApproval`: Approves the
   model
 - `reject([comment = null], [user: Authenticatable|null = null]): bool|ProcessApproval`: Rejects the model
 - `discard([comment = null], [user: Authenticatable|null = null]): bool|ProcessApproval`: Discards the model
+- `return([comment = null], [user: Authenticatable|null = null]): bool|ProcessApproval`: Returns the model to the previous step
+
+
+### Misc
+- `isApprovalCompleted(): bool`: Checks if the approval process for the model is completed
+- `isSubmitted(): bool`: Checks if the model has been submitted
+- `isRejected(): bool`: Checks if the model has been rejected
+- `isDiscarded(): bool`: Checks if the model has been discarded
+- `isReturned(): bool`: Checks if the model has been returned back to the previous step
+- `nextApprovalStep(): null|ProcessApprovalFlowStep`: Returns the next approval step for the model
+- `previousApprovalStep(): null|ProcessApprovalFlowStep`: Returns the previous approval step for the model
 - `canBeApprovedBy(user: Authenticatable|null): bool|null`: Checks if the model can currently be approved by the
   specified user.
 - `onApprovalCompleted(approval: ProcessApproval): bool`: A callback method to be called when the approval process is
@@ -289,11 +372,60 @@ This package adds multiple helper methods to the approvable models. These includ
   approval will be rolled back.
 - `getNextApprovers(): Collection`: Returns a list of users that are capable of approving the model at its current step.
 
-#### relations
-
+#### Relations
 - `approvals(): morphMany` - Returns all approvals of the model
 - `lastApproval(): morphOne` - Returns the last approval (`Models\ProcessApproval`) of the model
 - `approvalStatus(): morphOne` - Returns the status object (`Models\ProcessApprovalStatus`) of the model
+
+## Seeding
+If you want to seed your approval flows to the database, this package provides a static method `makeApprovable(): bool` to create a new approval flow for a model. 
+This method can be used to seed the database with the necessary approval flows and steps for a model. 
+
+The method accepts two parameters:
+
+
+- `$steps`: An array defining the roles to be used as approval steps.
+- `$name`: (optional) The name of the approval flow.
+
+#### Basic usage:
+When the first parameter is a flat array of integers, the method creates a new approval flow with the array items as `role_id` and sets `ApprovalTypeEnum::APPROVE` as the default action for each step.
+```php
+    FundRequest::makeApprovable([1,2,3]);
+```
+#### Advanced usage:
+
+When the first parameter is an associative array of `[int => ApprovalTypeEnum, ...]`, the method creates a new approval flow with the array keys (`int`) as `role_id` and the values (`ApprovalTypeEnum`) as the corresponding action.
+```php
+    FundRequest::makeApprovable([
+        1 => ApprovalTypeEnum::APPROVE,
+        3 => ApprovalTypeEnum::CHECK
+    ]);
+```
+#### Complex usage:
+When the first parameter is an array of arrays, the method creates a new approval flow with steps that accepts `[role_id => int, action => ApprovalTypeEnum]` from the sub-arrays. 
+```php
+    FundRequest::makeApprovable([
+                [
+                    'role_id' => 2,
+                    'action' => ApprovalTypeEnum::CHECK->value
+                ],
+                [
+                    'role_id' => 1,
+                    'action' => ApprovalTypeEnum::CHECK->value
+                ],
+                [
+                    'role_id' => 1,
+                    'action' => ApprovalTypeEnum::APPROVE->value
+                ]
+            ]
+        );
+```
+This option enables you to create a flow with multiple steps for the same role, each step having a different action or occurrence.
+
+## Multi-Tenancy
+This package supports multi-tenancy by configuring a column in the users table. You can specify the column name using the `multi_tenancy_field` configuration option. 
+When the logged-in user is has the `tenant_id` field set, the package will use that value to filter the approval steps.
+With this you can have one approval flow with different steps for different tenants.
 
 ## Contributing
 

@@ -5,30 +5,27 @@ namespace RingleSoft\LaravelProcessApproval\Events;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
-use Illuminate\Foundation\Events\Dispatchable;
+use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Queue\SerializesModels;
-use RingleSoft\LaravelProcessApproval\Contracts\ApprovableModel;
+use Illuminate\Foundation\Events\Dispatchable;
 
-class ApprovalNotificationEvent
+use RingleSoft\LaravelProcessApproval\Models\ProcessApproval;
+
+class ProcessReturnedEvent
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
-
-    public ApprovableModel|null $model;
-    /**
-     * @var mixed|string
-     */
-    public mixed $type;
-
-    public string $message;
 
     /**
      * Create a new event instance.
      */
-    public function __construct($message, ApprovableModel|null $model, $type = 'SUCCESS')
+    public function __construct(public ProcessApproval $approval)
     {
-        $this->model = $model;
-        $this->type = $type;
-        $this->message = $message;
+    }
+
+
+    public static function dispatch($payload = null)
+    {
+        return app(Dispatcher::class)->dispatch(new static($payload));
     }
 
     /**

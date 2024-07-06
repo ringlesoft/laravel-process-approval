@@ -12,13 +12,11 @@ use RingleSoft\LaravelProcessApproval\Models\ProcessApproval;
 class ProcessDiscardedEvent
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
-
-    public ProcessApproval $approval;
-
+    
     /**
      * Create a new event instance.
      */
-    public function __construct(ProcessApproval $approval)
+    public function __construct(public ProcessApproval $approval)
     {
     }
 

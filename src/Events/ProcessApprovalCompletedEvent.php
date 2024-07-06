@@ -8,6 +8,7 @@ use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
+use RingleSoft\LaravelProcessApproval\Contracts\ApprovableModel;
 
 class ProcessApprovalCompletedEvent
 {
@@ -18,7 +19,7 @@ class ProcessApprovalCompletedEvent
     /**
      * Create a new event instance.
      */
-    public function __construct(Model $approvable)
+    public function __construct(ApprovableModel $approvable)
     {
     }
 

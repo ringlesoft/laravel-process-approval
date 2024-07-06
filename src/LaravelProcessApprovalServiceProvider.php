@@ -7,6 +7,7 @@ use Illuminate\Support\ServiceProvider;
 use RingleSoft\LaravelProcessApproval\Console\Commands\FlowCommand;
 use RingleSoft\LaravelProcessApproval\Console\Commands\StepCommand;
 use RingleSoft\LaravelProcessApproval\View\Components\ApprovalActions;
+use RingleSoft\LaravelProcessApproval\View\Components\ApprovalStatusSummary;
 
 class LaravelProcessApprovalServiceProvider extends ServiceProvider
 {
@@ -18,7 +19,9 @@ class LaravelProcessApprovalServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Blade::component('approval-actions', ApprovalActions::class, 'ringlesoft');
+        Blade::component('approval-status-summary', ApprovalStatusSummary::class, 'ringlesoft');
 
+        $this->loadTranslationsFrom(__DIR__.'/../resources/lang', 'ringlesoft');
         $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
         $this->loadViewsFrom(__DIR__ . '/../resources/views', 'ringlesoft');
         $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
@@ -55,5 +58,8 @@ class LaravelProcessApprovalServiceProvider extends ServiceProvider
             __DIR__ . '/../resources/views' => resource_path('views/vendor/ringlesoft/process_approval'),
         ], 'approvals-views');
 
+        $this->publishes([
+            __DIR__.'/../resources/lang' => resource_path('lang/vendor/ringlesoft/process_approval'),
+        ], 'approvals-translations');
     }
 }

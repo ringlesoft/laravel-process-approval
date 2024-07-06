@@ -7,9 +7,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use RingleSoft\LaravelProcessApproval\Contracts\ApprovableModel;
+use RingleSoft\LaravelProcessApproval\DataObjects\ApprovalStatusStepData;
+use RingleSoft\LaravelProcessApproval\Traits\MultiTenant;
 
 class ProcessApprovalFlowStep extends Model
 {
+    use MultiTenant;
     protected $guarded = ['id'];
     public function role(): BelongsTo
     {
@@ -32,4 +35,8 @@ class ProcessApprovalFlowStep extends Model
         return $model->approvals()->where('process_approval_flow_step_id', $this->id)->latest()->first();
     }
 
+    public function toApprovalStatusArray(): array
+    {
+        return ApprovalStatusStepData::fromApprovalFlowStep($this)->toArray();
+    }
 }

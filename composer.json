@@ -27,13 +27,14 @@
     ],
     "require": {
         "php": ">=8.1",
+        "illuminate/auth": "^10.0|^11.0",
         "illuminate/broadcasting": "^10.7|^11.0",
-        "illuminate/database": "^10.0|^11.0"
+        "illuminate/database": "^10.0|^11.0",
+        "illuminate/routing": "^10.24|^11.0"
     }
     ,
     "require-dev": {
-        "roave/security-advisories": "dev-latest",
-        "illuminate/routing": "^10.24|^11.0"
+        "roave/security-advisories": "dev-latest"
     },
     "extra": {
         "laravel": {
@@ -52,7 +53,7 @@
             "name": "master"
         }
     },
-    "version": "1.0.7",
+    "version": "1.0.8",
     "minimum-stability": "dev",
     "prefer-stable": true
 }
