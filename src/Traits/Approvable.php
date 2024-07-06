@@ -27,6 +27,7 @@ use RingleSoft\LaravelProcessApproval\Events\ProcessRejectedEvent;
 use RingleSoft\LaravelProcessApproval\Events\ProcessReturnedEvent;
 use RingleSoft\LaravelProcessApproval\Events\ProcessSubmittedEvent;
 use RingleSoft\LaravelProcessApproval\Exceptions\ApprovalCompletedCallbackFailedException;
+use RingleSoft\LaravelProcessApproval\Exceptions\ApprovalsPausedException;
 use RingleSoft\LaravelProcessApproval\Exceptions\NoFurtherApprovalStepsException;
 use RingleSoft\LaravelProcessApproval\Exceptions\RequestAlreadySubmittedException;
 use RingleSoft\LaravelProcessApproval\Exceptions\RequestNotSubmittedException;
@@ -40,6 +41,7 @@ use Throwable;
 
 /**
  * @mixin ApprovableModel
+ * @property bool approvalsPaused
  */
 trait Approvable
 {
@@ -336,7 +338,7 @@ trait Approvable
      * @param null $comment
      * @param Authenticatable|null $user
      * @return false|Builder|Model
-     * @throws NoFurtherApprovalStepsException|ApprovalCompletedCallbackFailedException|RequestNotSubmittedException
+     * @throws NoFurtherApprovalStepsException|ApprovalCompletedCallbackFailedException|RequestNotSubmittedException|ApprovalsPausedException
      */
     public function approve($comment = null, Authenticatable|null $user = null): ProcessApproval|bool|RedirectResponse // TODO remove the redirectResponse
     {
@@ -346,6 +348,9 @@ trait Approvable
         $nextStep = $this->nextApprovalStep();
         if (!$nextStep) {
             throw NoFurtherApprovalStepsException::create($this);
+        }
+        if($this->approvalsPaused) {
+            throw ApprovalsPausedException::create($this);
         }
         try {
             DB::beginTransaction();
@@ -394,6 +399,9 @@ trait Approvable
         if (!$this->isSubmitted()) {
             throw RequestNotSubmittedException::create($this);
         }
+        if($this->approvalsPaused) {
+            throw ApprovalsPausedException::create($this);
+        }
         try {
             DB::beginTransaction();
             $nextStep = $this->nextApprovalStep();
@@ -430,6 +438,9 @@ trait Approvable
     {
         if (!$this->isSubmitted()) {
             throw RequestNotSubmittedException::create($this);
+        }
+        if($this->approvalsPaused) {
+            throw ApprovalsPausedException::create($this);
         }
         $nextStep = $this->nextApprovalStep();
         DB::beginTransaction();
@@ -469,6 +480,9 @@ trait Approvable
     {
         if (!$this->isSubmitted()) {
             throw RequestNotSubmittedException::create($this);
+        }
+        if($this->approvalsPaused) {
+            throw ApprovalsPausedException::create($this);
         }
         $previousStep = $this->previousApprovalStep();
         $nextStep = $this->nextApprovalStep();
@@ -638,7 +652,7 @@ trait Approvable
     public function getApprovalsPausedAttribute(): mixed
     {
         if (method_exists($this, 'pauseApprovals')) {
-            return (bool)$this->pauseApprovals();
+            return $this->pauseApprovals();
         }
         return false;
     }
