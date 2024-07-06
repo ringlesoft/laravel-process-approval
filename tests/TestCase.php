@@ -18,15 +18,13 @@ class TestCase extends OrchestraTestCase
 {
     use WithWorkbench;
     use InteractsWithViews;
-    use RefreshDatabase;
+//    use RefreshDatabase;
 
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
-//        $this->loadMigrationsFrom(workbench_path('database/migrations'));
-//        $this->artisan('migrate:fresh', ['--database' => 'testbench'])->run();
 //        $this->seed(DatabaseSeeder::class);
 
 
