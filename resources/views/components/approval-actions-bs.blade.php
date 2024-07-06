@@ -29,7 +29,8 @@
                                                         data-bs-original-title="{{ __('ringlesoft::approvals.comment') }}">
                                                         @if($signature = $currentApproval->getSignature())
                                                             <img src="{{$signature}}" class="img-fluid"
-                                                                 style="max-height: 50px;" alt="{{ __('ringlesoft::approvals.signature') }}">
+                                                                 style="max-height: 50px;"
+                                                                 alt="{{ __('ringlesoft::approvals.signature') }}">
                                                         @else
                                                             <div style="width: 40px; height: 40px;"
                                                                  title="{{$currentApproval->comment}}"
@@ -51,17 +52,21 @@
                                                     </div>
                                                 @else
                                                     <div style="width: 40px; height: 40px;"
-                                                         title="{{$currentApproval->comment}}" data-toggle="tooltip"
+                                                         title="{{$currentApproval->comment}}" data-bs-toggle="tooltip"
                                                          class="rounded bg-danger text-white p-1 d-flex align-items-center justify-content-center">
                                                         <i class="icon">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" height="24"
-                                                                 viewBox="0 0 24 24" width="24">
-                                                                <path d="M0 0h24v24H0V0z" fill="none"
-                                                                      opacity=".87"></path>
-                                                                <path
-                                                                    d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm3.59-13L12 10.59 8.41 7 7 8.41 10.59 12 7 15.59 8.41 17 12 13.41 15.59 17 17 15.59 13.41 12 17 8.41z"
-                                                                    fill="#FFFFFF"></path>
-                                                            </svg>
+                                                            @if($currentApproval->approval_action === \RingleSoft\LaravelProcessApproval\Enums\ApprovalStatusEnum::OVERRIDDEN->value)
+                                                                <svg clip-rule="evenodd" fill-rule="evenodd" stroke-linejoin="round" stroke-miterlimit="2" width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="m12.002 21.534c5.518 0 9.998-4.48 9.998-9.998s-4.48-9.997-9.998-9.997c-5.517 0-9.997 4.479-9.997 9.997s4.48 9.998 9.997 9.998zm0-1.5c-4.69 0-8.497-3.808-8.497-8.498s3.807-8.497 8.497-8.497 8.498 3.807 8.498 8.497-3.808 8.498-8.498 8.498zm0-6.5c-.414 0-.75-.336-.75-.75v-5.5c0-.414.336-.75.75-.75s.75.336.75.75v5.5c0 .414-.336.75-.75.75zm-.002 3c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1z" fill-rule="nonzero" fill="#fff"/></svg>
+                                                            @else
+                                                                <svg xmlns="http://www.w3.org/2000/svg" height="24"
+                                                                     viewBox="0 0 24 24" width="24">
+                                                                    <path d="M0 0h24v24H0V0z" fill="none"
+                                                                          opacity=".87"></path>
+                                                                    <path
+                                                                        d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm3.59-13L12 10.59 8.41 7 7 8.41 10.59 12 7 15.59 8.41 17 12 13.41 15.59 17 17 15.59 13.41 12 17 8.41z"
+                                                                        fill="#FFFFFF"></path>
+                                                                </svg>
+                                                            @endif
                                                         </i>
                                                     </div>
                                                 @endif
@@ -187,17 +192,22 @@
                 <input type="hidden" name="user_id" value="{{auth()?->id()}}">
                 <input type="hidden" name="model_name" value="{{$model->getApprovableType()}}">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="modalApproveLabel">{{ __('ringlesoft::approvals.approve_request') }}</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ __('ringlesoft::approvals.close') }}"></button>
+                    <h5 class="modal-title"
+                        id="modalApproveLabel">{{ __('ringlesoft::approvals.approve_request') }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                            aria-label="{{ __('ringlesoft::approvals.close') }}"></button>
                 </div>
                 <div class="modal-body">
                     <div class="form-group">
                         <label for="comment">{{ __('ringlesoft::approvals.comment') }}</label>
-                        <textarea name="comment" id="approveComment" rows="3" placeholder="{{ __('ringlesoft::approvals.write_comment') }}" class="form-control"></textarea>
+                        <textarea name="comment" id="approveComment" rows="3"
+                                  placeholder="{{ __('ringlesoft::approvals.write_comment') }}"
+                                  class="form-control"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('ringlesoft::approvals.close') }}</button>
+                    <button type="button" class="btn btn-secondary"
+                            data-bs-dismiss="modal">{{ __('ringlesoft::approvals.close') }}</button>
                     <button type="submit" class="btn btn-success">{{ __('ringlesoft::approvals.approve') }}</button>
                 </div>
             </form>
@@ -213,16 +223,18 @@
                 <input type="hidden" name="model_name" value="{{$model->getApprovableType()}}">
                 <div class="modal-header">
                     <h5 class="modal-title" id="modalRejectLabel">{{ __('ringlesoft::approvals.reject_request') }}</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ __('ringlesoft::approvals.close') }}"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                            aria-label="{{ __('ringlesoft::approvals.close') }}"></button>
                 </div>
                 <div class="modal-body">
                     <div class="form-group">
                         <label for="approveComment">{{ __('ringlesoft::approvals.comment') }}</label>
-                        <textarea required name="comment" id="approveComment" rows="3" class="form-control"></textarea>
+                        <textarea required name="comment" id="rejectComment" rows="3" class="form-control"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('ringlesoft::approvals.close') }}</button>
+                    <button type="button" class="btn btn-secondary"
+                            data-bs-dismiss="modal">{{ __('ringlesoft::approvals.close') }}</button>
                     <button type="submit" class="btn btn-danger">{{ __('ringlesoft::approvals.reject') }}</button>
                 </div>
             </form>
@@ -237,8 +249,10 @@
                 <input type="hidden" name="user_id" value="{{auth()?->id()}}">
                 <input type="hidden" name="model_name" value="{{$model->getApprovableType()}}">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="modalDiscardLabel">{{ __('ringlesoft::approvals.discard_request') }}</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ __('ringlesoft::approvals.close') }}"></button>
+                    <h5 class="modal-title"
+                        id="modalDiscardLabel">{{ __('ringlesoft::approvals.discard_request') }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                            aria-label="{{ __('ringlesoft::approvals.close') }}"></button>
                 </div>
                 <div class="modal-body">
 
@@ -247,11 +261,12 @@
                     </div>
                     <div class="form-group">
                         <label for="approveComment">{{ __('ringlesoft::approvals.comment') }}</label>
-                        <textarea required name="comment" id="approveComment" rows="3" class="form-control"></textarea>
+                        <textarea required name="comment" id="discardComment" rows="3" class="form-control"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('ringlesoft::approvals.close') }}</button>
+                    <button type="button" class="btn btn-secondary"
+                            data-bs-dismiss="modal">{{ __('ringlesoft::approvals.close') }}</button>
                     <button type="submit" class="btn btn-danger">{{ __('ringlesoft::approvals.discard') }}</button>
                 </div>
             </form>
@@ -276,11 +291,12 @@
                     </div>
                     <div class="form-group">
                         <label for="approveComment">{{ __('ringlesoft::approvals.comment') }}</label>
-                        <textarea required name="comment" id="approveComment" rows="3" class="form-control"></textarea>
+                        <textarea required name="comment" id="returnComment" rows="3" class="form-control"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('ringlesoft::approvals.close') }}</button>
+                    <button type="button" class="btn btn-secondary"
+                            data-bs-dismiss="modal">{{ __('ringlesoft::approvals.close') }}</button>
                     <button type="submit" class="btn btn-danger">{{ __('ringlesoft::approvals.return') }}</button>
                 </div>
             </form>

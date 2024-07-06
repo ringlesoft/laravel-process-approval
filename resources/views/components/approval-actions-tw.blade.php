@@ -61,7 +61,11 @@
                                                 @else
                                                     <div class="flex justify-center">
                                                         <div style="width: 40px; height: 40px;"
+                                                             title="{{$currentApproval->comment}}" data-toggle="tooltip"
                                                              class="rounded bg-red-400 flex justify-center items-center h-full">
+                                                            @if($currentApproval->approval_action === \RingleSoft\LaravelProcessApproval\Enums\ApprovalStatusEnum::OVERRIDDEN->value)
+                                                                <svg clip-rule="evenodd" fill-rule="evenodd" stroke-linejoin="round" stroke-miterlimit="2" width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="m12.002 21.534c5.518 0 9.998-4.48 9.998-9.998s-4.48-9.997-9.998-9.997c-5.517 0-9.997 4.479-9.997 9.997s4.48 9.998 9.997 9.998zm0-1.5c-4.69 0-8.497-3.808-8.497-8.498s3.807-8.497 8.497-8.497 8.498 3.807 8.498 8.497-3.808 8.498-8.498 8.498zm0-6.5c-.414 0-.75-.336-.75-.75v-5.5c0-.414.336-.75.75-.75s.75.336.75.75v5.5c0 .414-.336.75-.75.75zm-.002 3c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1z" fill-rule="nonzero" fill="#fff"/></svg>
+                                                            @else
                                                             <i class="icon">
                                                                 <svg xmlns="http://www.w3.org/2000/svg" height="24"
                                                                      viewBox="0 0 24 24" width="24">
@@ -72,6 +76,7 @@
                                                                             fill="#FFFFFF"></path>
                                                                 </svg>
                                                             </i>
+                                                                @endif
                                                         </div>
                                                     </div>
                                                 @endif
@@ -384,7 +389,9 @@
                                 <input type="hidden" name="model_name" value="{{$model->getApprovableType()}}">
                                 <div class="modal-body">
                                     <div class="form-group">
-                                    <textarea name="comment" id="discardComment" rows="3"
+                                    <textarea name="comment"
+                                              required
+                                              id="discardComment" rows="3"
                                               placeholder="{{ __('ringlesoft::approvals.write_comment') }}"
                                               class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"></textarea>
                                     </div>

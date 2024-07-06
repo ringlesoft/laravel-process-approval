@@ -31,7 +31,11 @@ class ApprovalStatusStepData
     public function updateApproval(ProcessApproval $approval): static
     {
         $this->processApprovalId = $approval->id;
-        $this->processApprovalAction = $approval->approval_action;
+        if(is_string($approval->approval_action)) {
+            $this->processApprovalAction = ApprovalActionEnum::from($approval->approval_action);
+        } else if ($approval->approval_action instanceof ApprovalActionEnum) {
+            $this->processApprovalAction = $approval->approval_action;
+        }
         return $this;
     }
 
@@ -92,8 +96,8 @@ class ApprovalStatusStepData
             action: ApprovalTypeEnum::from($step->action) ?? ApprovalTypeEnum::APPROVE,
             roleId: $step->role_id,
             roleName: $step->role?->name ?? null,
-            processApprovalId: $step->process_approval_id ?? null,
-            processApprovalAction: $step->process_approval_action ?? null
+            processApprovalId: null,
+            processApprovalAction:  null
         );
     }
 

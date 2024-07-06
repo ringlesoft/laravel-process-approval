@@ -579,7 +579,7 @@ trait Approvable
     /**
      * @param $showRole
      * @return string
-     * @deprecated Use the component `<x-ringlesoft-approval-status-summary>` instead
+     * @deprecated Use the ui component `<x-ringlesoft-approval-status-summary>` instead
      */
     public function getApprovalSummaryUI($showRole = false): string
     {
@@ -591,7 +591,6 @@ trait Approvable
            ->with('showRole', $showRole)
            ->with('steps', $component->steps)
             ->with('map', $component->map)
-            ->with('theme', $component->theme)
            ->toHtml();
     }
 
