@@ -311,7 +311,6 @@ trait Approvable
                 'approver_name' => $user?->name ?? 'Unknown'
             ]);
             $this->approvalStatus()->update(['status' => ApprovalStatusEnum::SUBMITTED]);
-            ProcessSubmittedEvent::dispatch($this);
             if ($this->isApprovalCompleted()) {
                 if (method_exists($this, 'onApprovalCompleted') && $this->onApprovalCompleted($approval)) {
                     // Approval went well, no need to rollback
