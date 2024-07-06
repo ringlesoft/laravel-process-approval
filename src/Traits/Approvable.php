@@ -107,7 +107,8 @@ trait Approvable
             ->join('process_approval_flows', 'process_approval_flows.id', 'process_approval_flow_steps.process_approval_flow_id')
             ->where('process_approval_flows.approvable_type', self::getApprovableType())
             ->select('process_approval_flow_steps.*')
-            ->orderByRaw('`order` asc, id asc')
+            ->orderBy('order', 'asc')
+            ->orderBy('id', 'asc')
             ->get();
     }
 
