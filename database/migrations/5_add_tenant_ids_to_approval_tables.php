@@ -28,13 +28,13 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('process_approval_flow_steps', static function (Blueprint $table) {
-            $table->dropColumn('total_repaid_amount');
+            $table->dropColumn('tenant_id');
         });
         Schema::table('process_approvals', static function (Blueprint $table) {
-            $table->dropColumn('total_repaid_amount');
+            $table->dropColumn('tenant_id');
         });
         Schema::table('process_approval_statuses', static function (Blueprint $table) {
-            $table->dropColumn('total_repaid_amount');
+            $table->dropColumn('tenant_id');
         });
     }
 };
