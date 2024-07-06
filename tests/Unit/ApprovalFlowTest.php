@@ -1,12 +1,12 @@
 <?php
 
-namespace RingleSoft\LaravelProcessApproval\Tests\Feature;
+namespace RingleSoft\LaravelProcessApproval\Tests\Unit;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Orchestra\Testbench\TestCase;
 use RingleSoft\LaravelProcessApproval\Models\ProcessApprovalFlow;
 use RingleSoft\LaravelProcessApproval\Models\ProcessApprovalFlowStep;
 use RingleSoft\LaravelProcessApproval\ProcessApproval;
+use RingleSoft\LaravelProcessApproval\Tests\TestCase;
 use Workbench\App\Models\TestModel;
 
 class ApprovalFlowTest extends TestCase
