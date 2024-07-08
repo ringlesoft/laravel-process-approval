@@ -16,12 +16,15 @@ class RoleSeeder extends Seeder
         $roles = [
             'HOD', 'Accountant', 'Director', 'CEO'
         ];
-        foreach ($roles as $role) {
-            Role::create(['name' => $role]);
-        }
         $permissions = ['view', 'create', 'update', 'delete'];
         foreach ($permissions as $permission) {
-            Permission::create(['name' => $permission]);
+            Permission::create(['name' => $permission, 'guard_name' => 'web']);
         }
+
+        foreach ($roles as $role) {
+           $role = Role::create(['name' => $role]);
+           $role->givePermissionTo($permissions);
+        }
+
     }
 }

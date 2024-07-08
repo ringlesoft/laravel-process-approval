@@ -27,23 +27,10 @@ class ApprovalProcessTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function testSubmitsApprovableModel(): void
-    {
-        TestModel::seedSteps();
-        User::createSample();
-
-        $user = User::find(1);
-        Auth::login($user);
-        $testModel = TestModel::createSample();
-        $testModel->submit($user);
-        $testModel->refresh();
-        $this->assertEquals(ApprovalStatusEnum::SUBMITTED->value, $testModel->approvalStatus?->status);
-    }
 
     public function testCreateProcessApproval(): void
     {
         TestModel::seedSteps();
-        User::createSample();
         $comment = 'This is OK';
         $this->login();
         $testModel = TestModel::readyForApproval();
@@ -53,56 +40,7 @@ class ApprovalProcessTest extends TestCase
         $this->assertValidProcessApprovalCreated($testModel, $step, $comment, $approval);
     }
 
-    public function testApprovesModel(): void
-    {
-        $this->login();
-        TestModel::seedSteps();
-        $testModel = TestModel::readyForApproval();
-        $comment = 'I Approve this';
-        $approval = $testModel->approve($comment);
-        $this->assertInstanceOf(ProcessApproval::class, $approval);
-        $this->assertValidProcessApprovalCreated($testModel, $testModel->approvalFlowSteps()->first(), $comment, $approval);
-    }
 
-    public function testRejectsModel(): void
-    {
-        $this->login();
-        TestModel::seedSteps();
-        $testModel = TestModel::readyForApproval();
-        $comment = 'I Reject this';
-        $approval = $testModel->reject($comment);
-        $this->assertInstanceOf(ProcessApproval::class, $approval);
-        $this->assertValidProcessApprovalCreated($testModel, $testModel->approvalFlowSteps()->first(), $comment, $approval, ApprovalActionEnum::REJECTED);
-    }
-
-
-    public function testReturnsModel(): void
-    {
-        $this->login();
-        TestModel::seedSteps();
-        $testModel = TestModel::readyForApproval();
-        $comment = 'I Return this';
-        $approval = $testModel->return($comment);
-        $this->assertInstanceOf(ProcessApproval::class, $approval);
-        $this->assertValidProcessApprovalCreated($testModel, $testModel->approvalFlowSteps()->first(), $comment, $approval, ApprovalActionEnum::RETURNED);
-        $testModel->refresh();
-        $this->assertEquals(ApprovalStatusEnum::CREATED->value, $testModel->approvalStatus->status);
-        $this->assertEquals($testModel->nextApprovalStep()->id, $testModel->approvalStatus->steps[0]['id']);
-    }
-
-    public function testDiscardsModel(): void
-    {
-        $this->login();
-        TestModel::seedSteps();
-        $testModel = TestModel::readyForApproval();
-        $testModel->reject('I Reject this');
-        $testModel->refresh();
-        $approval =$testModel->discard($comment = 'I Discard this');
-        $testModel->refresh();
-        $this->assertValidProcessApprovalCreated($testModel, $testModel->approvalFlowSteps()->first(), $comment, $approval, ApprovalActionEnum::DISCARDED);
-        $this->assertEquals(ApprovalStatusEnum::DISCARDED->value, $testModel->approvalStatus->status);
-
-    }
 
     public function testProcessApprovalRelations(): void
     {

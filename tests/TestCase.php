@@ -66,6 +66,7 @@ class TestCase extends OrchestraTestCase
                 'database' => ':memory:',
                 'prefix'   => '',
             ]);
+            $config->set('process_approval.users_model', User::class);
 
             //
 
