@@ -104,7 +104,7 @@ class ApprovalProcessTest extends TestCase
 
     }
 
-    public function testProcessApprovalRelations()
+    public function testProcessApprovalRelations(): void
     {
         $this->login();
         TestModel::seedSteps();
@@ -112,41 +112,23 @@ class ApprovalProcessTest extends TestCase
         $approval = $testModel->approve("I Approve this");
         $approval->refresh();
         $this->assertInstanceOf(TestModel::class, $approval->approvable);
-        $this->assertInstanceOf(ProcessApprovalFlowStep::class, $approval->step);
+        $this->assertInstanceOf(ProcessApprovalFlowStep::class, $approval->processApprovalFlowStep);
     }
-//
-//    public function testProcessApprovalScope()
-//    {
-//        $testModel = TestModel::createSample();
-//        $flow = ProcessApprovalFlow::create(['name' => 'Test Flow', 'approvable_type' => TestModel::class]);
-//        $step = ProcessApprovalFlowStep::create(['process_approval_flow_id' => $flow->id, 'role_id' => 1, 'approval_type' => 'approve']);
-//
-//        ProcessApproval::create([
-//            'approvable_type' => TestModel::class,
-//            'approvable_id' => $testModel->id,
-//            'process_approval_flow_step_id' => $step->id,
-//            'approval_action' => ApprovalActionEnum::APPROVED->value,
-//            'comment' => 'Test comment',
-//            'user_id' => 1,
-//            'approver_name' => 'Test User',
-//        ]);
-//
-//        ProcessApproval::create([
-//            'approvable_type' => TestModel::class,
-//            'approvable_id' => $testModel->id,
-//            'process_approval_flow_step_id' => $step->id,
-//            'approval_action' => ApprovalActionEnum::REJECTED->value,
-//            'comment' => 'Test comment',
-//            'user_id' => 1,
-//            'approver_name' => 'Test User',
-//        ]);
-//
-//        $approvedCount = ProcessApproval::where('approval_action', ApprovalActionEnum::APPROVED->value)->count();
-//        $rejectedCount = ProcessApproval::where('approval_action', ApprovalActionEnum::REJECTED->value)->count();
-//
-//        $this->assertEquals(1, $approvedCount);
-//        $this->assertEquals(1, $rejectedCount);
-//    }
+
+    public function testProcessApprovalScope(): void
+    {
+        $this->login();
+        TestModel::seedSteps();
+        $testModel = TestModel::readyForApproval();
+        $testModel->approve("I Approve this");
+        $testModel->reject("I Reject this");
+        $approvedCount = ProcessApproval::where('approval_action', ApprovalActionEnum::APPROVED->value)->count();
+        $rejectedCount = ProcessApproval::where('approval_action', ApprovalActionEnum::REJECTED->value)->count();
+        $this->assertEquals(1, $approvedCount);
+        $this->assertEquals(1, $rejectedCount);
+    }
+
+
     /**
      * @param TestModel $testModel
      * @param mixed $step
