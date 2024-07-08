@@ -13,6 +13,6 @@ class User extends Authenticatable
 
     public static function createSample()
     {
-        return self::create(['name' => 'John Doe', 'email' => 'john@doe.com', 'password' => bcrypt('secret')]);
+        return self::query()->updateOrCreate(['email' => 'john@doe.com'],['name' => 'John Doe', 'email' => 'john@doe.com', 'password' => bcrypt('secret')]);
     }
 }

@@ -82,7 +82,9 @@ class TestCase extends OrchestraTestCase
 
     public function login(): void
     {
-        User::createSample();
-        Auth::login(User::find(1));
+        if(!Auth::check()){
+            User::createSample();
+            Auth::login(User::find(1));
+        }
     }
 }
