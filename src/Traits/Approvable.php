@@ -301,6 +301,7 @@ trait Approvable
         if ($this->approvalStatus->creator_id && $this->approvalStatus->creator_id !== Auth::id()) {
             throw new RuntimeException('Only the creator can submit the record');
         }
+        $user = $user ?? Auth::user();
         try {
             DB::beginTransaction();
             $approval = ProcessApproval::query()->create([
@@ -309,7 +310,7 @@ trait Approvable
                 'process_approval_flow_step_id' => $this->approvalFlowSteps()?->first()?->id ?? null, // Backward compatibility
                 'approval_action' => ApprovalActionEnum::SUBMITTED->value,
                 'comment' => '',
-                'user_id' => $user?->id ?? Auth::id() ?? null,
+                'user_id' => $user?->id,
                 'approver_name' => $user?->name ?? 'Unknown'
             ]);
             $this->approvalStatus()->update(['status' => ApprovalStatusEnum::SUBMITTED]);
@@ -352,6 +353,7 @@ trait Approvable
         if($this->approvalsPaused) {
             throw ApprovalsPausedException::create($this);
         }
+        $user = $user ?? Auth::user();
         try {
             DB::beginTransaction();
             $approval = ProcessApproval::query()->updateOrCreate([
@@ -360,7 +362,7 @@ trait Approvable
                 'process_approval_flow_step_id' => $nextStep->id,
                 'approval_action' => ApprovalActionEnum::APPROVED,
                 'comment' => $comment,
-                'user_id' => $user?->id ?? Auth::id() ?? null,
+                'user_id' => $user?->id,
                 'approver_name' => $user?->name ?? 'Unknown'
             ]);
             if ($approval) {
@@ -402,6 +404,7 @@ trait Approvable
         if($this->approvalsPaused) {
             throw ApprovalsPausedException::create($this);
         }
+        $user = $user ?? Auth::user();
         try {
             DB::beginTransaction();
             $nextStep = $this->nextApprovalStep();
@@ -411,7 +414,7 @@ trait Approvable
                 'process_approval_flow_step_id' => $nextStep?->id,
                 'approval_action' => ApprovalActionEnum::REJECTED,
                 'comment' => $comment,
-                'user_id' => $user?->id  ?? Auth::id() ?? null,
+                'user_id' => $user?->id,
                 'approver_name' => $user?->name ?? 'Unknown'
             ]);
             DB::commit();
@@ -442,6 +445,7 @@ trait Approvable
         if($this->approvalsPaused) {
             throw ApprovalsPausedException::create($this);
         }
+        $user = $user ?? Auth::user();
         $nextStep = $this->nextApprovalStep();
         DB::beginTransaction();
         try {
@@ -451,7 +455,7 @@ trait Approvable
                 'process_approval_flow_step_id' => $nextStep?->id,
                 'approval_action' => ApprovalActionEnum::DISCARDED->value,
                 'comment' => $comment,
-                'user_id' => $user?->id ?? Auth::id() ?? null,
+                'user_id' => $user?->id,
                 'approver_name' => $user?->name ?? 'Unknown'
             ]);
             $this->updateStatus($nextStep?->id, $approval);
@@ -484,6 +488,7 @@ trait Approvable
         if($this->approvalsPaused) {
             throw ApprovalsPausedException::create($this);
         }
+        $user = $user ?? Auth::user();
         $previousStep = $this->previousApprovalStep();
         $nextStep = $this->nextApprovalStep();
         try {
@@ -494,7 +499,7 @@ trait Approvable
                 'process_approval_flow_step_id' => $nextStep?->id,
                 'approval_action' => ApprovalActionEnum::RETURNED->value,
                 'comment' => $comment,
-                'user_id' => $user?->id ?? Auth::id() ?? null,
+                'user_id' => $user?->id,
                 'approver_name' => $user?->name ?? 'Unknown'
             ]);
             if ($previousStep) {
