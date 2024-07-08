@@ -5,10 +5,12 @@ namespace RingleSoft\LaravelProcessApproval\Tests;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Testing\Concerns\InteractsWithViews;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Auth;
 use Orchestra\Testbench\Attributes\WithMigration;
 use Orchestra\Testbench\Concerns\WithWorkbench;
 use RingleSoft\LaravelProcessApproval\LaravelProcessApprovalServiceProvider;
 use Illuminate\Contracts\Config\Repository;
+use Workbench\App\Models\User;
 use Workbench\Database\Seeders\DatabaseSeeder;
 use function Orchestra\Testbench\workbench_path;
 use Orchestra\Testbench\TestCase as OrchestraTestCase;
@@ -77,4 +79,10 @@ class TestCase extends OrchestraTestCase
     }
     // Load Spatie Permission configuration
 
+
+    public function login(): void
+    {
+        User::createSample();
+        Auth::login(User::find(1));
+    }
 }

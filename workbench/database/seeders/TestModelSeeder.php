@@ -13,20 +13,6 @@ class TestModelSeeder extends Seeder
      */
     public function run(): void
     {
-        TestModel::makeApprovable([
-                [
-                    'role_id' => 2,
-                    'action' => ApprovalTypeEnum::CHECK->value
-                ],
-                [
-                    'role_id' => 1,
-                    'action' => ApprovalTypeEnum::CHECK->value
-                ],
-                [
-                    'role_id' => 1,
-                    'action' => ApprovalTypeEnum::APPROVE->value
-                ]
-            ]
-        );
+        TestModel::seedSteps();
     }
 }

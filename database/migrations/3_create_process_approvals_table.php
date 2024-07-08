@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('process_approvals', static function (Blueprint $table) {
             $table->id();
             $table->morphs('approvable');
-            $table->foreignId('process_approval_flow_step_id')->nullable()->references('id')->on('process_approval_flow_steps')->cascadeOnDelete();
+            $table->foreignId('process_approval_flow_step_id')->nullable()->constrained('process_approval_flow_steps')->cascadeOnDelete();
             $table->string('approval_action', 12)->default('Approved');
             $table->text('approver_name')->nullable();
             $table->text('comment')->nullable();

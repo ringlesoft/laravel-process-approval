@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('process_approval_flow_steps', static function (Blueprint $table) {
             $table->id();
-            $table->foreignId('process_approval_flow_id')->references('id')->on('process_approval_flows');
+            $table->foreignId('process_approval_flow_id')->constrained('process_approval_flows')->cascadeOnDelete();
             $table->foreignId('role_id')->index();
             $table->json('permissions')->nullable();
             $table->integer('order')->nullable()->index();
