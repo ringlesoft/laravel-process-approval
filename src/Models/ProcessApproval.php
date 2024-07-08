@@ -22,7 +22,7 @@ class ProcessApproval extends Model
         return $this->belongsTo(ProcessApprovalFlowStep::class);
     }
 
-    public function approvabe(): MorphTo
+    public function approvable(): MorphTo
     {
         return $this->morphTo('approvable');
     }
