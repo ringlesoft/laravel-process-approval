@@ -68,6 +68,7 @@ class ApprovalProcessTest extends TestCase
         } catch (Throwable $e) {
             echo($e->getMessage());
         }
+        $this->assertInstanceOf(ProcessApproval::class, $approval);
         $this->assertValidProcessApprovalCreated($testModel, $testModel->approvalFlowSteps()->first(), $comment, $approval);
     }
 
