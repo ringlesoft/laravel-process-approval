@@ -309,7 +309,7 @@ trait Approvable
                 'process_approval_flow_step_id' => $this->approvalFlowSteps()?->first()?->id ?? null, // Backward compatibility
                 'approval_action' => ApprovalActionEnum::SUBMITTED->value,
                 'comment' => '',
-                'user_id' => $user?->id,
+                'user_id' => $user?->id ?? Auth::id() ?? null,
                 'approver_name' => $user?->name ?? 'Unknown'
             ]);
             $this->approvalStatus()->update(['status' => ApprovalStatusEnum::SUBMITTED]);
@@ -360,7 +360,7 @@ trait Approvable
                 'process_approval_flow_step_id' => $nextStep->id,
                 'approval_action' => ApprovalActionEnum::APPROVED,
                 'comment' => $comment,
-                'user_id' => $user?->id,
+                'user_id' => $user?->id ?? Auth::id() ?? null,
                 'approver_name' => $user?->name ?? 'Unknown'
             ]);
             if ($approval) {
@@ -411,7 +411,7 @@ trait Approvable
                 'process_approval_flow_step_id' => $nextStep?->id,
                 'approval_action' => ApprovalActionEnum::REJECTED,
                 'comment' => $comment,
-                'user_id' => $user?->id,
+                'user_id' => $user?->id  ?? Auth::id() ?? null,
                 'approver_name' => $user?->name ?? 'Unknown'
             ]);
             DB::commit();
@@ -451,7 +451,7 @@ trait Approvable
                 'process_approval_flow_step_id' => $nextStep?->id,
                 'approval_action' => ApprovalActionEnum::DISCARDED->value,
                 'comment' => $comment,
-                'user_id' => $user?->id,
+                'user_id' => $user?->id ?? Auth::id() ?? null,
                 'approver_name' => $user?->name ?? 'Unknown'
             ]);
             $this->updateStatus($nextStep?->id, $approval);
@@ -494,7 +494,7 @@ trait Approvable
                 'process_approval_flow_step_id' => $nextStep?->id,
                 'approval_action' => ApprovalActionEnum::RETURNED->value,
                 'comment' => $comment,
-                'user_id' => $user?->id,
+                'user_id' => $user?->id ?? Auth::id() ?? null,
                 'approver_name' => $user?->name ?? 'Unknown'
             ]);
             if ($previousStep) {
