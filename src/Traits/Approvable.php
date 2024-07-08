@@ -453,7 +453,7 @@ trait Approvable
                 'approvable_type' => self::getApprovableType(),
                 'approvable_id' => $this->id,
                 'process_approval_flow_step_id' => $nextStep?->id,
-                'approval_action' => ApprovalActionEnum::DISCARDED->value,
+                'approval_action' => ApprovalActionEnum::DISCARDED,
                 'comment' => $comment,
                 'user_id' => $user?->id,
                 'approver_name' => $user?->name ?? 'Unknown'
@@ -497,7 +497,7 @@ trait Approvable
                 'approvable_type' => self::getApprovableType(),
                 'approvable_id' => $this->id,
                 'process_approval_flow_step_id' => $nextStep?->id,
-                'approval_action' => ApprovalActionEnum::RETURNED->value,
+                'approval_action' => ApprovalActionEnum::RETURNED,
                 'comment' => $comment,
                 'user_id' => $user?->id,
                 'approver_name' => $user?->name ?? 'Unknown'
