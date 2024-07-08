@@ -8,15 +8,18 @@ use RingleSoft\LaravelProcessApproval\Models\ProcessApprovalFlowStep;
 use RingleSoft\LaravelProcessApproval\Models\ProcessApprovalStatus;
 use RingleSoft\LaravelProcessApproval\Tests\TestCase;
 use Workbench\App\Models\TestModel;
+use Workbench\Database\Seeders\DatabaseSeeder;
 
 class ApprovalStatusTest extends TestCase
 {
     use RefreshDatabase;
 
+
+
     public function testCreatesApprovalStatusAutomatically(): void
     {
         $testModel = TestModel::createSample();
-
+        $registeredSteps = collect($testModel->approvalStatus->steps ?? []);
         $status = $testModel->approvalStatus;
 
         $this->assertInstanceOf(ProcessApprovalStatus::class, $status);

@@ -34,6 +34,15 @@ class TestModel extends Model implements ApprovableModel
         );
     }
 
+    public static function readyForApproval(): static
+    {
+
+        $testModel = self::createSample();
+        $testModel->submit();
+        $testModel->refresh();
+        return $testModel;
+    }
+
     public function pauseApprovals() {
         return false;
     }

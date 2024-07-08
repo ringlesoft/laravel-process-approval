@@ -2,10 +2,13 @@
 
 namespace Workbench\App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @mixin Builder
+ */
 class User extends Authenticatable
 {
     use HasFactory;

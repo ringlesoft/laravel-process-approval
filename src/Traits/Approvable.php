@@ -567,6 +567,7 @@ trait Approvable
             try {
                 DB::beginTransaction();
                 $lastApproval->delete();
+                $lastApproval->delete();
                 $statusesCollection = ApprovalStatusStepData::collectionFromApprovable($this);
                 $updatedStatuses = $statusesCollection->map(function (ApprovalStatusStepData $item) use ($lastApproval) {
                     if ($item->belongsToApproval($lastApproval)) {

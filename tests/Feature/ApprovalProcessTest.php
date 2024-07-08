@@ -21,12 +21,13 @@ use RingleSoft\LaravelProcessApproval\Tests\TestCase;
 use Throwable;
 use Workbench\App\Models\TestModel;
 use Workbench\App\Models\User;
+use Workbench\Database\Seeders\DatabaseSeeder;
 
 class ApprovalProcessTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function testSubmitsApprovableModel()
+    public function testSubmitsApprovableModel(): void
     {
         TestModel::seedSteps();
         User::createSample();
@@ -41,33 +42,24 @@ class ApprovalProcessTest extends TestCase
 
     public function testCreateProcessApproval(): void
     {
-        User::createSample();
         TestModel::seedSteps();
+        User::createSample();
         $comment = 'This is OK';
         $this->login();
-
-        $testModel = TestModel::createSample();
-        $testModel->submit();
-        $testModel->refresh();
+        $testModel = TestModel::readyForApproval();
         $approvalFlowSteps = TestModel::approvalFlow()->steps;
         $step = $approvalFlowSteps->first();
-
         $approval = $testModel->approve($comment);
-
-        $this->assertValidProcessApprovalCreated($testModel, $step, $comment,  $approval);
+        $this->assertValidProcessApprovalCreated($testModel, $step, $comment, $approval);
     }
 
     public function testApprovesModel(): void
     {
         $this->login();
-        $testModel = TestModel::createSample();
+        TestModel::seedSteps();
+        $testModel = TestModel::readyForApproval();
         $comment = 'I Approve this';
-        try {
-            $testModel->submit();
-            $approval = $testModel->approve($comment);
-        } catch (Throwable $e) {
-            echo($e->getMessage());
-        }
+        $approval = $testModel->approve($comment);
         $this->assertInstanceOf(ProcessApproval::class, $approval);
         $this->assertValidProcessApprovalCreated($testModel, $testModel->approvalFlowSteps()->first(), $comment, $approval);
     }
@@ -75,16 +67,27 @@ class ApprovalProcessTest extends TestCase
     public function testRejectsModel(): void
     {
         $this->login();
-        $testModel = TestModel::createSample();
+        TestModel::seedSteps();
+        $testModel = TestModel::readyForApproval();
         $comment = 'I Reject this';
+        $approval = $testModel->reject($comment);
+        $this->assertInstanceOf(ProcessApproval::class, $approval);
+        $this->assertValidProcessApprovalCreated($testModel, $testModel->approvalFlowSteps()->first(), $comment, $approval, ApprovalActionEnum::REJECTED);
     }
 
 
     public function testReturnsModel(): void
     {
         $this->login();
-        $testModel = TestModel::createSample();
+        TestModel::seedSteps();
+        $testModel = TestModel::readyForApproval();
         $comment = 'I Return this';
+        $approval = $testModel->return($comment);
+        $this->assertInstanceOf(ProcessApproval::class, $approval);
+        $this->assertValidProcessApprovalCreated($testModel, $testModel->approvalFlowSteps()->first(), $comment, $approval, ApprovalActionEnum::RETURNED);
+        $testModel->refresh();
+        $this->assertEquals(ApprovalStatusEnum::RETURNED->value, $testModel->approvalStatus->status);
+        $this->assertEquals($testModel->nextApprovalStep()->id, $testModel->approvalStatus->steps[0]['id']);
     }
 
     public function testDiscardsModel(): void
@@ -152,16 +155,17 @@ class ApprovalProcessTest extends TestCase
      * @param mixed $step
      * @param string $comment
      * @param ProcessApproval|Model $approval
+     * @param ApprovalActionEnum $action
      * @return void
      */
-    public function assertValidProcessApprovalCreated(TestModel $testModel, mixed $step, string $comment,  ProcessApproval|Model $approval): void
+    public function assertValidProcessApprovalCreated(TestModel $testModel, mixed $step, string $comment, ProcessApproval|Model $approval, ApprovalActionEnum $action = ApprovalActionEnum::APPROVED): void
     {
         $user = Auth::user();
         $expected = [
             'approvable_type' => TestModel::getApprovableType(),
             'approvable_id' => $testModel->id,
             'process_approval_flow_step_id' => $step->id,
-            'approval_action' => ApprovalActionEnum::APPROVED,
+            'approval_action' => $action,
             'comment' => $comment,
             'user_id' => $user->id,
             'approver_name' => $user->name,
@@ -170,9 +174,10 @@ class ApprovalProcessTest extends TestCase
         $this->assertInstanceOf(ProcessApproval::class, $approval);
         $this->assertEquals($testModel->id, $approval->approvable_id);
         $this->assertEquals($step->id, $approval->process_approval_flow_step_id);
-        $this->assertEquals(ApprovalActionEnum::APPROVED, $approval->approval_action);
+        $this->assertEquals($action, $approval->approval_action);
         $returned = $approval->toArray();
         unset($returned['created_at'], $returned['updated_at'], $returned['id']);
         $this->assertEquals($expected, $returned);
     }
+
 }
