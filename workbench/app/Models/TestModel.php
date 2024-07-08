@@ -2,13 +2,16 @@
 
 namespace Workbench\App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use RingleSoft\LaravelProcessApproval\Contracts\ApprovableModel;
 use RingleSoft\LaravelProcessApproval\Enums\ApprovalTypeEnum;
 use RingleSoft\LaravelProcessApproval\Models\ProcessApproval;
 use RingleSoft\LaravelProcessApproval\Traits\Approvable;
-
+/**
+ * @mixin Builder
+ */
 class TestModel extends Model implements ApprovableModel
 {
     use  Approvable;

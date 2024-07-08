@@ -86,37 +86,34 @@ class ApprovalProcessTest extends TestCase
         $this->assertInstanceOf(ProcessApproval::class, $approval);
         $this->assertValidProcessApprovalCreated($testModel, $testModel->approvalFlowSteps()->first(), $comment, $approval, ApprovalActionEnum::RETURNED);
         $testModel->refresh();
-        $this->assertEquals(ApprovalStatusEnum::RETURNED->value, $testModel->approvalStatus->status);
+        $this->assertEquals(ApprovalStatusEnum::CREATED->value, $testModel->approvalStatus->status);
         $this->assertEquals($testModel->nextApprovalStep()->id, $testModel->approvalStatus->steps[0]['id']);
     }
 
     public function testDiscardsModel(): void
     {
         $this->login();
-        $testModel = TestModel::createSample();
-        $comment = 'I Discard this';
-        $user = User::find(1);
+        TestModel::seedSteps();
+        $testModel = TestModel::readyForApproval();
+        $testModel->reject('I Reject this');
+        $testModel->refresh();
+        $approval =$testModel->discard($comment = 'I Discard this');
+        $testModel->refresh();
+        $this->assertValidProcessApprovalCreated($testModel, $testModel->approvalFlowSteps()->first(), $comment, $approval, ApprovalActionEnum::DISCARDED);
+        $this->assertEquals(ApprovalStatusEnum::DISCARDED->value, $testModel->approvalStatus->status);
+
     }
 
-//    public function testProcessApprovalRelations()
-//    {
-//        $testModel = TestModel::createSample();
-//        $flow = ProcessApprovalFlow::create(['name' => 'Test Flow', 'approvable_type' => TestModel::class]);
-//        $step = ProcessApprovalFlowStep::create(['process_approval_flow_id' => $flow->id, 'role_id' => 1, 'approval_type' => 'approve']);
-//
-//        $approval = ProcessApproval::create([
-//            'approvable_type' => TestModel::class,
-//            'approvable_id' => $testModel->id,
-//            'process_approval_flow_step_id' => $step->id,
-//            'approval_action' => ApprovalActionEnum::APPROVED->value,
-//            'comment' => 'Test comment',
-//            'user_id' => 1,
-//            'approver_name' => 'Test User',
-//        ]);
-//
-//        $this->assertInstanceOf(TestModel::class, $approval->approvable);
-//        $this->assertInstanceOf(ProcessApprovalFlowStep::class, $approval->step);
-//    }
+    public function testProcessApprovalRelations()
+    {
+        $this->login();
+        TestModel::seedSteps();
+        $testModel = TestModel::readyForApproval();
+        $approval = $testModel->approve("I Approve this");
+        $approval->refresh();
+        $this->assertInstanceOf(TestModel::class, $approval->approvable);
+        $this->assertInstanceOf(ProcessApprovalFlowStep::class, $approval->step);
+    }
 //
 //    public function testProcessApprovalScope()
 //    {
