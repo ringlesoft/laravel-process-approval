@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\Auth;
 use RingleSoft\LaravelProcessApproval\Enums\ApprovalActionEnum;
 use RingleSoft\LaravelProcessApproval\Enums\ApprovalStatusEnum;
 use RingleSoft\LaravelProcessApproval\Enums\ApprovalTypeEnum;
-use RingleSoft\LaravelProcessApproval\Exceptions\ApprovalFlowExistsException;
 use RingleSoft\LaravelProcessApproval\Exceptions\RequestAlreadySubmittedException;
 use RingleSoft\LaravelProcessApproval\Exceptions\RequestNotSubmittedException;
 use RingleSoft\LaravelProcessApproval\Models\ProcessApproval;

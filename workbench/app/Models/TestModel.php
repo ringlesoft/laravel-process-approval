@@ -17,6 +17,8 @@ class TestModel extends Model implements ApprovableModel
     use  Approvable;
     protected $guarded = [];
 
+    public bool $autoSubmit = false;
+
 
     public static function seedSteps(): void
     {
@@ -35,6 +37,14 @@ class TestModel extends Model implements ApprovableModel
                 ]
             ]
         );
+    }
+
+    public static function readyForSubmit(): static
+    {
+
+        $testModel = self::createSample();
+        $testModel->refresh();
+        return $testModel;
     }
 
     public static function readyForApproval(): static
@@ -58,6 +68,6 @@ class TestModel extends Model implements ApprovableModel
 
     public static function createSample(): static
     {
-        return self::create([ 'description' => 'This is a test model', 'amount' => 100, 'status' => 'pending']);
+        return self::create([ 'description' => 'This is a test model', 'amount' => rand(100, 1000), 'status' => 'pending']);
     }
 }
