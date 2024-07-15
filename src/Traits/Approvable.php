@@ -376,10 +376,11 @@ trait Approvable
             DB::commit();
             if ($approval) {
                 ProcessApprovedEvent::dispatch($approval);
+                if ($this->isApprovalCompleted()) {
+                    ProcessApprovalCompletedEvent::dispatch($this);
+                }
             }
-            if ($this->isApprovalCompleted()) {
-                ProcessApprovalCompletedEvent::dispatch($approval);
-            }
+
             return $approval;
         } catch (Exception $e) {
             Log::error('Process approval failure: ', [$e]);
