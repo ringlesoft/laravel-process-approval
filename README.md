@@ -34,7 +34,7 @@ php artisan vendor:publish --provider="RingleSoft\LaravelProcessApproval\Laravel
 ```
 
 You can publish specific files by providing the ```--tag``` option within the publish command. Available options
-are ```approvals-migrations```, ```approvals-config```, ```approvals-views```. <br> For example:
+are ```approvals-migrations```, ```approvals-config```, ```approvals-views```, ```approvals-translations```. <br> For example:
 
 ```bash
 php artisan vendor:publish --provider="RingleSoft\LaravelProcessApproval\LaravelProcessApprovalServiceProvider" --tag="approvals-migrations" 
@@ -51,7 +51,7 @@ php artisan migrate
 #### 4. Create Approval flows and Steps
 
 The package relies on Approval flows and steps on your default database. This is to enable multiple approval flows
-within the system. Yuo can
+within the system. You can
 implement your own way of creating and managing the flows. However, there are available command-line functions to help
 you get started easily.
 
@@ -161,8 +161,7 @@ php artisan vendor:publish --provider="RingleSoft\LaravelProcessApproval\Laravel
 
 ### Configurable parameters
 
-- `roles_model` - Specify the full class name of the model related to roles table. (for Spatie's laravel-permissions use
-  the Spatie\Permissions\Models\Role)
+- `roles_model` - Specify the full class name of the model related to roles table. (default is Spatie's laravel-permissions  (`Spatie\Permissions\Models\Role`))
 - `users_model` - Specify the model that represents the authenticated users. (default is `App\Models\User`).
 - `models_path` - Specify the default namespace for models in your application. (default is `App\Models`).
 - `approval_controller_middlewares` - Specify any middlewares you want to apply to the ApprovalController. (Normally it
@@ -180,7 +179,7 @@ you wish to keep newly created models hidden from approvers until the creator su
 If you want the model to be auto-submitted upon creation, you can add the following property to the model:
 
 ```php
-public bool autoSubmit = true;
+public bool $autoSubmit = true;
 ```
 
 Otherwise, the package will show a submit button on the show page of the model to enable the creator to submit the
@@ -222,9 +221,9 @@ If not specified, the package will display `check` icon for approval and `times`
 ### Approval Summary
 
 If you want to display a summary of the approval process (normally when listing the models) you can use
-the `getApprovalSummaryUI()` method.
-This method returns html code with icons representing every approval step, `check` icon representing `Approved`, `times`
-icon representing `Rejected` and `exclamation` icon representing `Pending`.
+the `<x-ringlesoft-approval-status-summary>` component.
+This component returns html code with icons representing every approval step: `check` icon representing `Approved`, `times`
+icon representing `Rejected` or `Discarded` and `exclamation` icon representing `Pending`.
 
 ```php
     $fundRequest->getApprovalSummaryUI();
@@ -237,11 +236,12 @@ The package dispatches events during different stages of the approval workflow t
 - `ProcessSubmittedEvent` - Dispatched when a new approvable model is submitted.
 - `ProcessApprovedEvent` - Dispatched when an approvable model is approved by an approver.
 - `ProcessRejectedEvent` - Dispatched when an approvable model is rejected by an approver.
+- `ProcessReturnedEvent` - Dispatched when an approvable model is returned back to the previous step by an approver.
 - `ProcessDiscardedEvent` - Dispatched when an approvable model is discarded by an approver.
 - `ProcessApprovalCompletedEvent` - Dispatched when the full approval workflow is completed, either approved or
 - `ApprovalNotificationEvent` - Dispatches during approval actions with the notification message about what happened.
   discarded.
-- 
+
 ### Showing Notifications
 
 To display approval notifications, subscribe to the `ApprovalNotificationEvent` event.
@@ -263,13 +263,7 @@ Example listener implementation:
 ```php
 class ApprovalNotificationListener
 {
-    /**
-     * Create the event listener.
-     */
-    public function __construct()
-    {
-    }
-
+    ...
     /**
      * Handle the event.
      */
@@ -306,7 +300,6 @@ Here is an example of how to send notifications to the next approvers within the
         }
     }
 ```
-
 
 
 ## Helper Methods
@@ -352,6 +345,7 @@ This package adds multiple helper methods to the approvable models. These includ
 - `approve([comment = null], [user: Authenticatable|null = null]): bool|RedirectResponse|ProcessApproval`: Approves the
   model
 - `reject([comment = null], [user: Authenticatable|null = null]): bool|ProcessApproval`: Rejects the model
+- `return([comment = null], [user: Authenticatable|null = null]): bool|ProcessApproval`: Returns the model to the previous step
 - `discard([comment = null], [user: Authenticatable|null = null]): bool|ProcessApproval`: Discards the model
 - `return([comment = null], [user: Authenticatable|null = null]): bool|ProcessApproval`: Returns the model to the previous step
 
@@ -427,6 +421,9 @@ This package supports multi-tenancy by configuring a column in the users table. 
 When the logged-in user is has the `tenant_id` field set, the package will use that value to filter the approval steps.
 With this you can have one approval flow with different steps for different tenants.
 
+## Testing
+To test this package, switch to the `tests` branch and run `composer install` to install the dependencies and `vendor/bin/testbench package:test` to run the tests.
+
 ## Contributing
 
 I'll let you know when you can contribute 😜.
@@ -434,9 +431,6 @@ I'll let you know when you can contribute 😜.
 ## License
 
 Laravel Process Approval is open-source software released under the MIT License.
-
-## Package Listing
-- [Packagist](https://packagist.org/packages/ringlesoft/laravel-process-approval)
 
 ## Contacts
 
