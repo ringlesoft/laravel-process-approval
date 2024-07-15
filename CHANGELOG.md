@@ -1,7 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [1.0.8] - 2024-07-07
+## [1.0.8] - 2024-07-15
 ### Added
 - Support for Multi-Tenancy ([#24](https://github.com/ringlesoft/laravel-process-approval/issues/24))
 - Ability to return a record to the previous step ([#18](https://github.com/ringlesoft/laravel-process-approval/issues/18))
@@ -15,6 +15,8 @@ All notable changes to this project will be documented in this file.
 - Deprecated `getApprovalSummaryUI()` method in favor of `<x-ringlesoft-approval-status-summary>` component
 - `web` middleware is applied to the ApprovalController by default
 
+### Additional
+- Added testing branch `tests`
 
 ## [1.0.7] - 2024-04-17
 - Support for Laravel 11 [#19](https://github.com/ringlesoft/laravel-process-approval/issues/19).
