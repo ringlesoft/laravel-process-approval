@@ -376,7 +376,7 @@ trait Approvable
             DB::commit();
             if ($approval) {
                 ProcessApprovedEvent::dispatch($approval);
-                if ($this->isApprovalCompleted()) {
+                if ($this->refresh()->isApprovalCompleted()) {
                     ProcessApprovalCompletedEvent::dispatch($this);
                 }
             }
