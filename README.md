@@ -51,7 +51,7 @@ php artisan migrate
 #### 4. Create Approval flows and Steps
 
 The package relies on Approval flows and steps on your default database. This is to enable multiple approval flows
-within the system. Yuo can
+within the system. You can
 implement your own way of creating and managing the flows. However, there are available command-line functions to help
 you get started easily.
 
@@ -179,7 +179,7 @@ you wish to keep newly created models hidden from approvers until the creator su
 If you want the model to be auto-submitted upon creation, you can add the following property to the model:
 
 ```php
-public bool autoSubmit = true;
+public bool $autoSubmit = true;
 ```
 
 Otherwise, the package will show a submit button on the show page of the model to enable the creator to submit the
