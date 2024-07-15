@@ -77,7 +77,7 @@ class EventDispatchTest extends TestCase
         $testModel->approve('Second approval');
         $testModel->refresh();
         Event::fake();
-        $testModel->approve('Third approval');
+        $testModel->approve('Last approval');
         $testModel->refresh();
         Event::assertDispatched(ProcessApprovalCompletedEvent::class);
     }
