@@ -27,14 +27,20 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('process_approval_flow_steps', static function (Blueprint $table) {
-            $table->dropColumn('tenant_id');
-        });
-        Schema::table('process_approvals', static function (Blueprint $table) {
-            $table->dropColumn('tenant_id');
-        });
-        Schema::table('process_approval_statuses', static function (Blueprint $table) {
-            $table->dropColumn('tenant_id');
-        });
+        if(Schema::hasColumn('process_approval_flow_steps', 'tenant_id')) {
+            Schema::table('process_approval_flow_steps', static function (Blueprint $table) {
+                $table->dropColumn('tenant_id');
+            });
+        }
+        if(Schema::hasColumn('process_approvals', 'tenant_id')) {
+            Schema::table('process_approvals', static function (Blueprint $table) {
+                $table->dropColumn('tenant_id');
+            });
+        }
+        if(Schema::hasColumn('process_approval_statuses', 'tenant_id')) {
+            Schema::table('process_approval_statuses', static function (Blueprint $table) {
+                $table->dropColumn('tenant_id');
+            });
+        }
     }
 };

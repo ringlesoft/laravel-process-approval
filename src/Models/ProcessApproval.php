@@ -4,6 +4,7 @@ namespace RingleSoft\LaravelProcessApproval\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 use RingleSoft\LaravelProcessApproval\Traits\MultiTenant;
 
 class ProcessApproval extends Model
@@ -19,6 +20,11 @@ class ProcessApproval extends Model
     public function processApprovalFlowStep(): BelongsTo
     {
         return $this->belongsTo(ProcessApprovalFlowStep::class);
+    }
+
+    public function approvable(): MorphTo
+    {
+        return $this->morphTo('approvable');
     }
 
     public function getSignature()
