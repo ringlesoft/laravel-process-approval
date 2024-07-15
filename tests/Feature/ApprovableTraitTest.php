@@ -119,10 +119,12 @@ class ApprovableTraitTest extends TestCase
     {
         $testModel = TestModel::readyForApproval();
         $testModel->approve('First approval');
+        $testModel->refresh();
         $testModel->undoLastApproval();
+        $testModel->refresh();
 
         $this->assertFalse($testModel->isApprovalStarted());
-        $this->assertEquals(ApprovalStatusEnum::SUBMITTED->value, $testModel->approvalStatus->status);
+        $this->assertEquals(ApprovalStatusEnum::PENDING->value, $testModel->approvalStatus->status);
     }
 
 
