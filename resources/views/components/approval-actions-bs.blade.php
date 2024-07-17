@@ -181,7 +181,7 @@
                                     @csrf
                                     <input type="hidden" name="user_id" value="{{auth()?->id()}}">
                                     <input type="hidden" name="model_name" value="{{$model->getApprovableType()}}">
-                                    @if($model->creator?->id === \Illuminate\Support\Facades\Auth::id())
+                                    @if($model->canBeSubmittedBy(\Illuminate\Support\Facades\Auth::user()))
                                         <button class="btn btn-success" type="submit">
                                             {{ __('ringlesoft::approvals.submit') }}
                                         </button>
