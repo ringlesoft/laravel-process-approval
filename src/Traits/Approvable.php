@@ -205,7 +205,7 @@ trait Approvable
             }
             return $registeredSteps->last()['process_approval_action'] !== ApprovalActionEnum::REJECTED->value;
         }
-        return false;
+        return true;
     }
 
 
