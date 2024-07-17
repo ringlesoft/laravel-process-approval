@@ -186,7 +186,7 @@
                         </span>
                             @else
                                 <span>
-                                    Waiting for the creator to submit
+                                    {{ __('approvals.waiting_for_creator_submit') }}
                                 </span>
                             @endif
                         </div>
