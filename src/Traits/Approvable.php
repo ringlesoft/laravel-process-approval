@@ -370,7 +370,7 @@ trait Approvable
             ]);
             if ($approval) {
                 $this->updateStatus($nextStep->id, $approval);
-                if ($this->isApprovalCompleted()) {
+                if ($this->refresh()->isApprovalCompleted()) {
                     if (!$this->onApprovalCompleted($approval)) {
                         throw ApprovalCompletedCallbackFailedException::create($this);
                     }
@@ -379,11 +379,10 @@ trait Approvable
             DB::commit();
             if ($approval) {
                 ProcessApprovedEvent::dispatch($approval);
-                if ($this->refresh()->isApprovalCompleted()) {
+                if ($this->isApprovalCompleted()) {
                     ProcessApprovalCompletedEvent::dispatch($this);
                 }
             }
-
             return $approval;
         } catch (Exception $e) {
             Log::error('Process approval failure: ', [$e]);
