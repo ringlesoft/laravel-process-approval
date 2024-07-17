@@ -156,7 +156,7 @@ You can publish the configuration file of this package, `process_approval.php`, 
 your specific requirements. If you wish to publish the files, use the following command:
 
 ```bash
-php artisan vendor:publish --provider="RingleSoft\LaravelProcessApproval\LaravelProcessApprovalServiceProvider" --tag="config"
+php artisan vendor:publish --provider="RingleSoft\LaravelProcessApproval\LaravelProcessApprovalServiceProvider" --tag="approvals-config"
 ```
 
 ### Configurable parameters

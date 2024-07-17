@@ -560,6 +560,16 @@ trait Approvable
         return !$this->approvalsPaused && $this->isSubmitted() && $nextStep && $user?->hasRole($nextStep->role);
     }
 
+    /**
+     * Check if the request can be submitted by a user
+     * @param Authenticatable $user
+     * @return bool|null
+     */
+    public function canBeSubmittedBy(Authenticatable $user): bool|null
+    {
+        return !$this->isSubmitted() && ($this->approvalStatus->creator_id === null || $this->approvalStatus->id === $user->id);
+    }
+
 
     public function undoLastApproval(): void
     {

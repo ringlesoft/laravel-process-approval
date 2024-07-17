@@ -60,6 +60,6 @@ class ApprovalStatusSummary extends Component
 
     public function render(): View
     {
-        return view('ringlesoft::components.approval-summary-ui');
+        return view()->file(__DIR__.'/../../../resources/views/components/approval-summary-ui.blade.php');
     }
 }
