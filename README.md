@@ -1,8 +1,8 @@
 # Laravel Process Approval
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/ringlesoft/laravel-process-approval.svg)](https://packagist.org/packages/ringlesoft/laravel-process-approval)
 [![Total Downloads](https://img.shields.io/packagist/dt/ringlesoft/laravel-process-approval.svg)](https://packagist.org/packages/ringlesoft/laravel-process-approval)
-[![PHP Version Require](http://poser.pugx.org/ringlesoft/laravel-process-approval/require/php)](https://packagist.org/ringlesoft/laravel-process-approval)
-[![Dependents](http://poser.pugx.org/ringlesoft/laravel-process-approval/dependents)](https://packagist.org/packages/ringlesoft/laravel-process-approval)
+[![PHP Version Require](https://poser.pugx.org/ringlesoft/laravel-process-approval/require/php)](https://packagist.org/ringlesoft/laravel-process-approval)
+[![Dependents](https://poser.pugx.org/ringlesoft/laravel-process-approval/dependents)](https://packagist.org/packages/ringlesoft/laravel-process-approval)
 ***
 ## Introduction
 
@@ -156,7 +156,7 @@ You can publish the configuration file of this package, `process_approval.php`, 
 your specific requirements. If you wish to publish the files, use the following command:
 
 ```bash
-php artisan vendor:publish --provider="RingleSoft\LaravelProcessApproval\LaravelProcessApprovalServiceProvider" --tag="config"
+php artisan vendor:publish --provider="RingleSoft\LaravelProcessApproval\LaravelProcessApprovalServiceProvider" --tag="approvals-config"
 ```
 
 ### Configurable parameters

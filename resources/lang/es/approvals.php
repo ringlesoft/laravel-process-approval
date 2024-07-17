@@ -34,4 +34,5 @@ return [
     'write_comment' => 'Escriba su comentario de aprobación',
     'you_can_approve_this' => 'Puede aprobar esto como',
     'you_can_submit' => 'Puede enviar este documento para aprobaciones.',
+    'waiting_for_creator_submit' => 'Esperando que el creador lo envíe',
 ];

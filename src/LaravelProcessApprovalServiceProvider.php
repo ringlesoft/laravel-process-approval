@@ -23,7 +23,6 @@ class LaravelProcessApprovalServiceProvider extends ServiceProvider
 
         $this->loadTranslationsFrom(__DIR__.'/../resources/lang', 'ringlesoft');
         $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
-        $this->loadViewsFrom(__DIR__ . '/../resources/views', 'ringlesoft');
         $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
         $this->publishItems();
 
