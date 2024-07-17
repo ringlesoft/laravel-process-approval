@@ -181,13 +181,13 @@ trait Approvable
     {
         return self::query()
             ->whereHas('approvalStatus', static function ($q) use ($step) {
-            return $q
-                ->where('status', '!=', ApprovalActionEnum::APPROVED->value)
-                ->whereJsonContains('steps', [
-                'id' => $step->id,
-                'process_approval_id' => null,
-            ]);
-        });
+                return $q
+                    ->where('status', '!=', ApprovalActionEnum::APPROVED->value)
+                    ->whereJsonContains('steps', [
+                        'id' => $step->id,
+                        'process_approval_id' => null,
+                    ]);
+            });
     }
 
     /**
@@ -196,13 +196,16 @@ trait Approvable
      */
     public function isApprovalCompleted(): bool
     {
-        $registeredSteps = collect($this->approvalStatus()->steps ?? []);
-        foreach ($registeredSteps as $item) {
-            if ($item['process_approval_action'] === null || $item['process_approval_id'] === null || $item['process_approval_action'] === ApprovalStatusEnum::RETURNED->value) {
-                return false;
+        $registeredSteps = collect($this->approvalStatus->steps ?? []);
+        if ($registeredSteps->count() > 0) {
+            foreach ($registeredSteps as $item) {
+                if ($item['process_approval_action'] === null || $item['process_approval_id'] === null || $item['process_approval_action'] === ApprovalStatusEnum::RETURNED->value) {
+                    return false;
+                }
             }
+            return $registeredSteps->last()['process_approval_action'] !== ApprovalActionEnum::REJECTED->value;
         }
-        return $registeredSteps->last()['process_approval_action'] !== ApprovalActionEnum::REJECTED->value;
+        return false;
     }
 
 
@@ -350,7 +353,7 @@ trait Approvable
         if (!$nextStep) {
             throw NoFurtherApprovalStepsException::create($this);
         }
-        if($this->approvalsPaused) {
+        if ($this->approvalsPaused) {
             throw ApprovalsPausedException::create($this);
         }
         $user = $user ?? Auth::user();
@@ -402,7 +405,7 @@ trait Approvable
         if (!$this->isSubmitted()) {
             throw RequestNotSubmittedException::create($this);
         }
-        if($this->approvalsPaused) {
+        if ($this->approvalsPaused) {
             throw ApprovalsPausedException::create($this);
         }
         $user = $user ?? Auth::user();
@@ -443,7 +446,7 @@ trait Approvable
         if (!$this->isSubmitted()) {
             throw RequestNotSubmittedException::create($this);
         }
-        if($this->approvalsPaused) {
+        if ($this->approvalsPaused) {
             throw ApprovalsPausedException::create($this);
         }
         $user = $user ?? Auth::user();
@@ -486,7 +489,7 @@ trait Approvable
         if (!$this->isSubmitted()) {
             throw RequestNotSubmittedException::create($this);
         }
-        if($this->approvalsPaused) {
+        if ($this->approvalsPaused) {
             throw ApprovalsPausedException::create($this);
         }
         $user = $user ?? Auth::user();
@@ -506,8 +509,8 @@ trait Approvable
             if ($previousStep) {
                 $flag = false;
                 $approvalStatusSteps = ApprovalStatusStepData::collectionFromProcessApprovalStatus($this->approvalStatus);
-                $approvalStatusSteps->map(function (ApprovalStatusStepData $item) use($previousStep, &$flag) {
-                    if($item->belongsToStep($previousStep->id)) {
+                $approvalStatusSteps->map(function (ApprovalStatusStepData $item) use ($previousStep, &$flag) {
+                    if ($item->belongsToStep($previousStep->id)) {
                         $item->makeReturned();
                         $flag = true;
                     } else if ($flag && $item->isReturned()) {
@@ -616,12 +619,12 @@ trait Approvable
         // This is only for backwards compatibility.
         // The component `x-ringlesoft-approval-status-summary` should be used instead
         $component = new ApprovalStatusSummary($this, $showRole);
-        return  ($component)
-           ->render()
-           ->with('showRole', $showRole)
-           ->with('steps', $component->steps)
+        return ($component)
+            ->render()
+            ->with('showRole', $showRole)
+            ->with('steps', $component->steps)
             ->with('map', $component->map)
-           ->toHtml();
+            ->toHtml();
     }
 
     /**
