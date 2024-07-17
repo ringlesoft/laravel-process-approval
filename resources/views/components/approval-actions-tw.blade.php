@@ -198,7 +198,7 @@
                                     @csrf
                                     <input type="hidden" name="user_id" value="{{auth()?->id()}}">
                                     <input type="hidden" name="model_name" value="{{$model->getApprovableType()}}">
-                                    @if($model->creator?->id === \Illuminate\Support\Facades\Auth::id())
+                                    @if($model->canBeSubmittedBy(\Illuminate\Support\Facades\Auth::user()))
                                         <button
                                             class="block text-white bg-green-500 hover:bg-green-600 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-4 py-2.5 text-center dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800"
                                             type="submit">

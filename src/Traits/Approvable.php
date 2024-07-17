@@ -567,7 +567,7 @@ trait Approvable
      */
     public function canBeSubmittedBy(Authenticatable $user): bool|null
     {
-        return !$this->isSubmitted() && ($this->approvalStatus->creator_id === null || $this->approvalStatus->id === $user->id);
+        return !$this->isSubmitted() && ($this->approvalStatus->creator_id === null || $this->approvalStatus->creator_id === $user->id);
     }
 
 
