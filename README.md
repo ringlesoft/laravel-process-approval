@@ -432,6 +432,10 @@ I'll let you know when you can contribute 😜.
 
 Laravel Process Approval is open-source software released under the MIT License.
 
+## Support
+- [Buy me a Coffee](https://www.buymeacoffee.com/ringunger)
+- [Github Sponsors](https://github.com/sponsors/ringlesoft)
+
 ## Contacts
 
 Follow me on <a href="https://x.com/ringunger">X</a>: <a href="https://x.com/ringunger">@ringunger</a><br>
