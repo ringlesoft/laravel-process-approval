@@ -35,4 +35,5 @@ return [
     'you_can_approve_this' => 'Vous pouvez approuver cela comme',
     'you_can_submit' => 'Vous pouvez soumettre ce document pour approbations.',
     'waiting_for_creator_submit' => 'En attente de la soumission du créateur',
+    'verify' => 'Vérifier',
 ];

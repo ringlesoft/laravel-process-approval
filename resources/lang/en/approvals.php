@@ -36,4 +36,5 @@ return [
     'you_can_submit' => 'You can submit this document for approvals.',
     'optional' => 'optional',
     'waiting_for_creator_submit' => 'Waiting for the creator to submit',
+    'verify' => 'Verify',
 ];
