@@ -4,6 +4,7 @@ namespace RingleSoft\LaravelProcessApproval\Console\Commands;
 
 use Exception;
 use Illuminate\Console\Command;
+use RingleSoft\LaravelProcessApproval\Enums\ApprovalTypeEnum;
 use RingleSoft\LaravelProcessApproval\Facades\ProcessApproval;
 use function Laravel\Prompts\alert;
 use function Laravel\Prompts\info;
@@ -78,7 +79,7 @@ class StepCommand extends Command
             'Select the role to be that will approve this model',
             $roleChoices,
         );
-        $action = select("Select the type of action", ['Approve', 'Check'], 'Approve');
+        $action = select("Select the type of action", collect(ApprovalTypeEnum::cases())->pluck('value')->toArray(), 'Approve');
         try {
             ProcessApproval::createStep(flowId: $flowId, roleId: $role, action: $action );
             info('Step created Successfully');

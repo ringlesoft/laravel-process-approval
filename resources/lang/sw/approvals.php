@@ -35,4 +35,5 @@ return [
     'you_can_approve_this' => 'Unaweza kuidhinisha hii kama',
     'you_can_submit' => 'Unaweza kuwasilisha hati hii kwa ajili ya kuidhinishwa.',
     'waiting_for_creator_submit' => 'Inasubiri muundaji kuiwasilisha',
+    'verify' => 'Thibitisha',
 ];
