@@ -35,4 +35,5 @@ return [
     'you_can_approve_this' => '您可以批准此请求',
     'you_can_submit' => '您可以提交此文件以供审批。',
     'waiting_for_creator_submit' => '等待创作者提交',
+    'verify' => '验证',
 ];

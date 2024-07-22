@@ -35,4 +35,5 @@ return [
     'you_can_approve_this' => 'Sie können dies genehmigen als',
     'you_can_submit' => 'Sie können dieses Dokument zur Genehmigung einreichen.',
     'waiting_for_creator_submit' => 'Warten auf die Einreichung des Erstellers',
+    'verify' => 'Verifizieren',
 ];
