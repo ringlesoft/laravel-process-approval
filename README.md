@@ -225,10 +225,6 @@ the `<x-ringlesoft-approval-status-summary>` component.
 This component returns html code with icons representing every approval step: `check` icon representing `Approved`, `times`
 icon representing `Rejected` or `Discarded` and `exclamation` icon representing `Pending`.
 
-```php
-    $fundRequest->getApprovalSummaryUI();
-```
-
 ## Events
 
 The package dispatches events during different stages of the approval workflow to allow hooking into the process.
