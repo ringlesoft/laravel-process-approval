@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Facade;
 
 /**
  * @see \RingleSoft\LaravelProcessApproval\ProcessApproval
+ * @mixin \RingleSoft\LaravelProcessApproval\ProcessApproval
  */
 class ProcessApproval extends Facade
 {
