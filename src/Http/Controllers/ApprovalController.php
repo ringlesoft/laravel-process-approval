@@ -84,7 +84,7 @@ class ApprovalController extends Controller
             }
         } catch (Exception $e) {
             $error = $e->getMessage();
-            ApprovalNotificationEvent::dispatch(__('ringlesoft::messages.failed_to_approve_document') . $error, $model ?? null, 'ERROR');
+            ApprovalNotificationEvent::dispatch(__('ringlesoft::messages.failed_to_approve_document') . ": $error", $model ?? null, 'ERROR');
         }
 
         if ($request->wantsJson()) {
