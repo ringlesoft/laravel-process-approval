@@ -66,10 +66,11 @@ class ApprovalController extends Controller
      */
     public function approve(Request $request, $id): RedirectResponse|JsonResponse
     {
+        $userModel = config('process_approval.users_model');
         $rules = [
             'model_name' => ['string', 'required'],
             'comment' => [],
-            'user_id' => ['sometimes', 'exists:users,id']
+            'user_id' => ['sometimes', 'exists:' . (new $userModel)->getTable() . ',id']
         ];
         $request->validate($rules);
         try {
@@ -103,10 +104,11 @@ class ApprovalController extends Controller
      */
     public function reject(Request $request, $id): RedirectResponse|JsonResponse
     {
+        $userModel = config('process_approval.users_model');
         $rules = [
             'model_name' => ['string', 'required'],
             'comment' => ['string', 'required', 'min:1'],
-            'user_id' => ['sometimes', 'exists:users,id']
+            'user_id' => ['sometimes', 'exists:' . (new $userModel)->getTable() . ',id']
         ];
         $request->validate($rules);
         try {
@@ -139,10 +141,11 @@ class ApprovalController extends Controller
      */
     public function return(Request $request, $id): RedirectResponse|JsonResponse
     {
+        $userModel = config('process_approval.users_model');
         $rules = [
             'model_name' => ['string', 'required'],
             'comment' => ['string', 'required', 'min:1'],
-            'user_id' => ['sometimes', 'exists:users,id']
+            'user_id' => ['sometimes', 'exists:' . (new $userModel)->getTable() . ',id']
         ];
         $request->validate($rules);
         try {
@@ -175,10 +178,11 @@ class ApprovalController extends Controller
      */
     public function discard(Request $request, $id): RedirectResponse|JsonResponse
     {
+        $userModel = config('process_approval.users_model');
         $rules = [
             'model_name' => ['string', 'required'],
             'comment' => [],
-            'user_id' => ['sometimes', 'exists:users,id']
+            'user_id' => ['sometimes', 'exists:' . (new $userModel)->getTable() . ',id']
         ];
         $request->validate($rules);
         try {
