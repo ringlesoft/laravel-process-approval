@@ -30,10 +30,11 @@ class ApprovalController extends Controller
      */
     public function submit(Request $request, $id): RedirectResponse|JsonResponse
     {
+        $userModel = config('process_approval.users_model');
         $rules = [
             'model_name' => ['string', 'required'],
             'comment' => ['nullable'],
-            'user_id' => ['sometimes', 'exists:users,id']
+            'user_id' => ['sometimes', 'exists:' . (new $userModel)->getTable() . ',id']
         ];
         $request->validate($rules);
         try {
