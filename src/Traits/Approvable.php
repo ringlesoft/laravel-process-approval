@@ -371,7 +371,12 @@ trait Approvable
             if ($approval) {
                 $this->updateStatus($nextStep->id, $approval);
                 if ($this->refresh()->isApprovalCompleted()) {
-                    if (!$this->onApprovalCompleted($approval)) {
+                   try {
+                        $approvalCompleted = $this->onApprovalCompleted($approval);
+                    } catch (Exception $e) {
+                        throw ApprovalCompletedCallbackFailedException::create($this, $e->getMessage());
+                    }
+                    if (!$approvalCompleted) {
                         throw ApprovalCompletedCallbackFailedException::create($this);
                     }
                 }
