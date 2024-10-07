@@ -63,18 +63,18 @@ class FlowCommand extends Command
     private function addFlow($modelName): bool
     {
         if (!Str::contains($modelName, '\\')) {
-            $modelName = config('process_approval.models_path') . "\\{$modelName}";
+            $modelName = config('process_approval.models_path') . "\\$modelName";
         }
-            try {
-                ProcessApproval::createFlow(
-                    name: Str::of($modelName)->afterLast('\\')->snake(' ')->title()->toString(),
-                    modelClass: $modelName
-                );
-                info("{$modelName} created successfully!");
-            } catch (Exception $e) {
-                echo "Failed to create Flow: " . $e->getMessage();
-                return false;
-            }
+        try {
+            ProcessApproval::createFlow(
+                name: Str::of($modelName)->afterLast('\\')->snake(' ')->title()->toString(),
+                modelClass: $modelName
+            );
+            info("$modelName created successfully!");
+        } catch (Exception $e) {
+            echo "Failed to create Flow: " . $e->getMessage();
+            return false;
+        }
         return true;
     }
 
@@ -87,9 +87,9 @@ class FlowCommand extends Command
     {
         try {
             ProcessApproval::deleteFlow($flow);
-            info("{$flow} removed successfully!");
+            info("$flow removed successfully!");
         } catch (Exception $e) {
-            alert("Failed to delete flow. ". $e->getMessage());
+            alert("Failed to delete flow. " . $e->getMessage());
             return false;
         }
         return true;
