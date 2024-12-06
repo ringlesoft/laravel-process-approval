@@ -194,9 +194,9 @@ trait Approvable
      * Check if Approval process is completed
      * @return bool
      */
-    public function isApprovalCompleted(): bool
+    public function isApprovalCompleted(array $currentSteps = null): bool
     {
-        $registeredSteps = collect($this->approvalStatus->steps ?? []);
+        $registeredSteps = $currentSteps ? collect($currentSteps) : collect($this->approvalStatus->steps ?? []);
         if ($registeredSteps->count() > 0) {
             foreach ($registeredSteps as $item) {
                 if ($item['process_approval_action'] === null || $item['process_approval_id'] === null || $item['process_approval_action'] === ApprovalStatusEnum::RETURNED->value) {
@@ -645,12 +645,13 @@ trait Approvable
             }
             return $step;
         });
-        $action = $approval->approval_action;
-        if ($action === ApprovalStatusEnum::APPROVED->value && !$this->isApprovalCompleted()) {
+        $action = $approval->approval_action->value;
+        $currentSteps = ApprovalStatusStepData::collectionToArray($current);
+        if ($action === ApprovalStatusEnum::APPROVED->value && !$this->isApprovalCompleted($currentSteps)) {
             $action = ApprovalStatusEnum::PENDING->value;
         }
         return $this->approvalStatus()->update([
-            'steps' => ApprovalStatusStepData::collectionToArray($current),
+            'steps' => $currentSteps,
             'status' => $action
         ]);
     }
