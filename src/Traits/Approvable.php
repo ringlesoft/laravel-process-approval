@@ -593,7 +593,7 @@ trait Approvable
 
     public function undoLastApproval(): void
     {
-        $approvals = $this->approvals()->latest()->get();
+        $approvals = $this->approvals()->latest()->latest('id')->get();
         $lastApproval = $approvals->first();
         if ($lastApproval) {
             try {
