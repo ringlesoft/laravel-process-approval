@@ -30,10 +30,15 @@ class ApprovableTraitTest extends TestCase
         $this->login();
     }
 
+    public function testModelRequiresApproval(): void
+    {
+        $testModel = TestModel::createSample();
+        $this->assertTrue(TestModel::requiresApproval());
+    }
+
 
     public function testSubmitRequest(): void
     {
-
         $testModel = TestModel::createSample();
         $testModel->submit();
         $testModel->refresh();
@@ -59,6 +64,7 @@ class ApprovableTraitTest extends TestCase
         $testModel->refresh();
         $this->assertInstanceOf(ProcessApproval::class, $approval);
         $this->assertValidProcessApprovalCreated($testModel, $testModel->approvalFlowSteps()->first(), $comment, $approval);
+        $this->assertTrue($testModel->isPending());
         $this->assertTrue($testModel->isApprovalStarted());
     }
 
