@@ -598,8 +598,7 @@ trait Approvable
 
     public function undoLastApproval(): void
     {
-        $approvals = $this->approvals()->latest()->latest('id')->get();
-        $lastApproval = $approvals->first();
+        $lastApproval = $this->approvals()->latest()->latest('id')->get()->first();
         if ($lastApproval) {
             try {
                 DB::beginTransaction();
