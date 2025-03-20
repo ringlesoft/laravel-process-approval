@@ -25,14 +25,15 @@ class User extends Authenticatable
     }
     public static function createMultiple()
     {
+        $roles = Role::all();
         $user = self::query()->updateOrCreate(['email' => 'hod@test.com'],['name' => 'John Doe', 'email' => 'hod@doe.com', 'password' => bcrypt('secret')]);
         $user2 = self::query()->updateOrCreate(['email' => 'accountant@test.com'],['name' => 'John Doe', 'email' => 'accountant@doe.com', 'password' => bcrypt('secret')]);
         $user3 = self::query()->updateOrCreate(['email' => 'dirctor@test.com'],['name' => 'John Doe', 'email' => 'dirctor@doe.com', 'password' => bcrypt('secret')]);
         $user4 = self::query()->updateOrCreate(['email' => 'ceo@test.com'],['name' => 'John Doe', 'email' => 'ceo@doe.com', 'password' => bcrypt('secret')]);
-        $user->roles()->sync([Role::find(1)->id]);
-        $user2->roles()->sync([Role::find(2)->id]);
-        $user3->roles()->sync([Role::find(3)->id]);
-        $user4->roles()->sync([Role::find(4)->id]);
+        $user->roles()->sync([$roles[0]]);
+        $user2->roles()->sync([$roles[1]]);
+        $user3->roles()->sync([$roles[2]]);
+        $user4->roles()->sync([$roles[3]]);
         return $user;
     }
 }

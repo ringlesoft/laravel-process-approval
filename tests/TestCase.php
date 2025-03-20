@@ -79,10 +79,14 @@ class TestCase extends OrchestraTestCase
     // Load Spatie Permission configuration
 
 
-    public function login(): void
+    public function login($multiUser = false): void
     {
         if(!Auth::check()){
-            User::createSample();
+            if($multiUser){
+                User::createMultiple();
+            } else {
+                User::createSample();
+            }
             Auth::login(User::find(1));
         }
     }
