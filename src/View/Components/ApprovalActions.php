@@ -3,6 +3,8 @@
 namespace RingleSoft\LaravelProcessApproval\View\Components;
 
 
+use Closure;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
@@ -35,8 +37,11 @@ class ApprovalActions extends Component
     }
 
 
-    public function render(): View
+    public function render(): Closure|Htmlable|View|string
     {
+        if(!count($this->modelApprovalSteps)){
+            return "";
+        }
         if (config('process_approval.css_library') === 'bootstrap') {
             return view()->file(__DIR__.'/../../../resources/views/components/approval-actions-bs.blade.php');
         }

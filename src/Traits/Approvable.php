@@ -52,14 +52,36 @@ trait Approvable
     {
         parent::boot();
         static::created(static function ($model) {
+            if (method_exists($model, 'bypassApprovalProcess') && $model->bypassApprovalProcess()) {
+                return;
+            }
             $model->approvalStatus()->create([
                 'steps' => $model->approvalFlowSteps()->map(function ($item) {
                     return $item->toApprovalStatusArray();
                 }),
-                'status' => (property_exists($model, 'autoSubmit') && $model->autoSubmit) ? ApprovalStatusEnum::SUBMITTED->value : ApprovalStatusEnum::CREATED->value,
+                'status' => ((property_exists($model, 'autoSubmit') && $model->autoSubmit) || (method_exists($model, 'enableAutoSubmit') && $model->enableAutoSubmit())) ? ApprovalStatusEnum::SUBMITTED->value : ApprovalStatusEnum::CREATED->value,
                 'creator_id' => Auth::id(),
             ]);
         });
+    }
+
+
+    /**
+     * Bypass the approval process for this model instance
+     * @return bool
+     */
+    public function bypassApprovalProcess(): bool
+    {
+        return false;
+    }
+
+    /**
+     * Enable auto-submit for this model instance
+     * @return bool
+     */
+    public function enableAutoSubmit(): bool
+    {
+        return false;
     }
 
     /**
@@ -192,14 +214,24 @@ trait Approvable
      */
     public static function waitingForStep(ProcessApprovalFlowStep $step): Builder
     {
+        // TODO this should consider Order and id at the same time
+        $otherSteps = $step->processApprovalFlow->steps()->where('id', '<', $step->id)->get();
         return self::query()
-            ->whereHas('approvalStatus', static function ($q) use ($step) {
-                return $q
+            ->whereHas('approvalStatus', static function ($q) use ($step, $otherSteps) {
+                $q = $q
                     ->where('status', '!=', ApprovalActionEnum::APPROVED->value)
+                    ->where('status', '!=', ApprovalActionEnum::CREATED->value)
                     ->whereJsonContains('steps', [
                         'id' => $step->id,
                         'process_approval_id' => null,
                     ]);
+                foreach ($otherSteps as $otherStep) {
+                    $q = $q->whereJsonContains('steps', [
+                        'id' => $otherStep->id,
+                        'process_approval_action' => ApprovalActionEnum::APPROVED->value,
+                    ]);
+                }
+                return $q;
             });
     }
 
@@ -613,7 +645,7 @@ trait Approvable
                 $lastDoneStatus = $updatedStatuses->filter(function (ApprovalStatusStepData $item) {
                     return $item->isDone();
                 })?->last();
-                if($lastDoneStatus){
+                if ($lastDoneStatus) {
                     $newStatus = ApprovalStatusEnum::PENDING->value;
                 } else {
                     $newStatus = ApprovalStatusEnum::SUBMITTED->value;
@@ -672,7 +704,7 @@ trait Approvable
             return $step;
         });
         $action = $approval->approval_action;
-        if(is_a($action, ApprovalActionEnum::class)) {
+        if (is_a($action, ApprovalActionEnum::class)) {
             $action = $action->value;
         }
         $currentSteps = ApprovalStatusStepData::collectionToArray($current);
