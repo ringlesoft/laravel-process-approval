@@ -18,6 +18,17 @@ use RingleSoft\LaravelProcessApproval\Models\ProcessApprovalFlowStep;
 interface ApprovableModel
 {
 
+    /**
+     * Bypass the approval process for this model instance
+     * @return bool
+     */
+    public function bypassApprovalProcess(): bool;
+
+    /**
+     * Enable auto-submit for this model instance
+     * @return bool
+     */
+    public function enableAutoSubmit(): bool;
 
     /**
      * Returns the Type (Model Class) of this particular record

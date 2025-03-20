@@ -182,8 +182,30 @@ If you want the model to be auto-submitted upon creation, you can add the follow
 public bool $autoSubmit = true;
 ```
 
+Or define the method `enableAutoSubmit(): bool` in your model <strong>(Recommended)</strong>.
+
+```php
+public function enableAutoSubmit(): bool
+{
+    // Your logic here
+    return true;
+}
+```
+
 Otherwise, the package will show a submit button on the show page of the model to enable the creator to submit the
 model.
+
+### Bypassing Approval Process
+
+If you want to bypass the approval process for a particular model instance, you can define the method `bypassApprovalProcess(): bool` in your model and return `true`.
+
+```php
+public function bypassApprovalProcess(): bool
+{
+    // Your logic here
+    return true;
+}
+````
 
 ### Pausing Approval process
 
@@ -192,6 +214,7 @@ You can pause approvals by adding a `pauseApprovals(): mixed` method to your App
 
 ```php
 public function pauseApprovals() {
+    // Your logic here
     return true;
 }
 ```

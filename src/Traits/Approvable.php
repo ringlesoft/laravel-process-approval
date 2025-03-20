@@ -52,14 +52,36 @@ trait Approvable
     {
         parent::boot();
         static::created(static function ($model) {
+            if(method_exists($model, 'bypassApprovalProcess') &&  $model->bypassApprovalProcess()) {
+                return;
+            }
             $model->approvalStatus()->create([
                 'steps' => $model->approvalFlowSteps()->map(function ($item) {
                     return $item->toApprovalStatusArray();
                 }),
-                'status' => (property_exists($model, 'autoSubmit') && $model->autoSubmit) ? ApprovalStatusEnum::SUBMITTED->value : ApprovalStatusEnum::CREATED->value,
+                'status' => ((property_exists($model, 'autoSubmit') && $model->autoSubmit) || (method_exists($model, 'enableAutoSubmit') && $model->enableAutoSubmit()) )? ApprovalStatusEnum::SUBMITTED->value : ApprovalStatusEnum::CREATED->value,
                 'creator_id' => Auth::id(),
             ]);
         });
+    }
+
+
+    /**
+     * Bypass the approval process for this model instance
+     * @return bool
+     */
+    public function bypassApprovalProcess(): bool
+    {
+        return false;
+    }
+
+    /**
+     * Enable auto-submit for this model instance
+     * @return bool
+     */
+    public function enableAutoSubmit(): bool
+    {
+        return false;
     }
 
     /**
