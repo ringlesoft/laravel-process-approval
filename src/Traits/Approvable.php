@@ -237,7 +237,7 @@ trait Approvable
      */
     public function isRejected(): bool
     {
-        return $this->approvalStatus?->status === ApprovalActionEnum::REJECTED->value;
+        return $this->approvalStatus?->status === ApprovalStatusEnum::REJECTED->value;
 
     }
 
@@ -247,13 +247,18 @@ trait Approvable
      */
     public function isDiscarded(): bool
     {
-        return $this->approvalStatus?->status === ApprovalActionEnum::DISCARDED->value;
+        return $this->approvalStatus?->status === ApprovalStatusEnum::DISCARDED->value;
 
     }
 
     public function isReturned(): bool
     {
-        return $this->approvalStatus?->status === ApprovalActionEnum::RETURNED->value;
+        return $this->approvalStatus?->status === ApprovalStatusEnum::RETURNED->value;
+    }
+
+    public function isPending(): bool
+    {
+        return $this->approvalStatus?->status === ApprovalStatusEnum::PENDING->value;
     }
 
     /**
