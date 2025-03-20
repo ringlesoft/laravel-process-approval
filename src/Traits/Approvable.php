@@ -237,7 +237,7 @@ trait Approvable
      */
     public function isRejected(): bool
     {
-        return $this->approvalStatus?->status === ApprovalActionEnum::REJECTED->value;
+        return $this->approvalStatus?->status === ApprovalStatusEnum::REJECTED->value;
 
     }
 
@@ -247,13 +247,18 @@ trait Approvable
      */
     public function isDiscarded(): bool
     {
-        return $this->approvalStatus?->status === ApprovalActionEnum::DISCARDED->value;
+        return $this->approvalStatus?->status === ApprovalStatusEnum::DISCARDED->value;
 
     }
 
     public function isReturned(): bool
     {
-        return $this->approvalStatus?->status === ApprovalActionEnum::RETURNED->value;
+        return $this->approvalStatus?->status === ApprovalStatusEnum::RETURNED->value;
+    }
+
+    public function isPending(): bool
+    {
+        return $this->approvalStatus?->status === ApprovalStatusEnum::PENDING->value;
     }
 
     /**
@@ -262,7 +267,7 @@ trait Approvable
      */
     public function isApprovalStarted(): bool
     {
-        return !in_array($this->approvalStatus->status, [ApprovalStatusEnum::CREATED->value, ApprovalStatusEnum::SUBMITTED->value, ApprovalStatusEnum::PENDING->value,], true);
+        return !in_array($this->approvalStatus->status, [ApprovalStatusEnum::CREATED->value, ApprovalStatusEnum::SUBMITTED->value], true);
     }
 
     /**
@@ -593,7 +598,7 @@ trait Approvable
 
     public function undoLastApproval(): void
     {
-        $lastApproval = $this->approvals()->latest()->get()->first();
+        $lastApproval = $this->approvals()->latest()->latest('id')->get()->first();
         if ($lastApproval) {
             try {
                 DB::beginTransaction();
@@ -605,7 +610,15 @@ trait Approvable
                     }
                     return $item;
                 });
-                $this->approvalStatus()->update(['steps' => ApprovalStatusStepData::collectionToArray($updatedStatuses), 'status' => ApprovalStatusEnum::PENDING->value]);// Todo Improve
+                $lastDoneStatus = $updatedStatuses->filter(function (ApprovalStatusStepData $item) {
+                    return $item->isDone();
+                })?->last();
+                if($lastDoneStatus){
+                    $newStatus = ApprovalStatusEnum::PENDING->value;
+                } else {
+                    $newStatus = ApprovalStatusEnum::SUBMITTED->value;
+                }
+                $this->approvalStatus()->update(['steps' => ApprovalStatusStepData::collectionToArray($updatedStatuses), 'status' => $newStatus]);// Todo Improve
                 DB::commit();
             } catch (Throwable $e) {
                 Log::error('Process Approval - discard: ', [$e]);
