@@ -262,7 +262,7 @@ trait Approvable
      */
     public function isApprovalStarted(): bool
     {
-        return !in_array($this->approvalStatus->status, [ApprovalStatusEnum::CREATED->value, ApprovalStatusEnum::SUBMITTED->value, ApprovalStatusEnum::PENDING->value,], true);
+        return !in_array($this->approvalStatus->status, [ApprovalStatusEnum::CREATED->value, ApprovalStatusEnum::SUBMITTED->value], true);
     }
 
     /**
