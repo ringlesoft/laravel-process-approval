@@ -80,6 +80,19 @@ trait Approvable
         return ProcessApprovalFlow::query()->where('approvable_type', self::getApprovableType())->with('steps.approval')->first();
     }
 
+    /**
+     * Check if this Model requires approval
+     * @return bool
+     */
+    public static function requiresApproval(): bool
+    {
+        $flow = static::approvalFlow();
+        if (!$flow) {
+            return false;
+        }
+        return $flow->steps->count() > 0;
+    }
+
     public function approvalStatus(): MorphOne
     {
         return $this->morphOne(ProcessApprovalStatus::class, 'approvable');
@@ -371,7 +384,7 @@ trait Approvable
             if ($approval) {
                 $this->updateStatus($nextStep->id, $approval);
                 if ($this->refresh()->isApprovalCompleted()) {
-                   try {
+                    try {
                         $approvalCompleted = $this->onApprovalCompleted($approval);
                     } catch (Exception $e) {
                         throw ApprovalCompletedCallbackFailedException::create($this, $e->getMessage());
@@ -645,7 +658,10 @@ trait Approvable
             }
             return $step;
         });
-        $action = $approval->approval_action->value;
+        $action = $approval->approval_action;
+        if(is_a($action, ApprovalActionEnum::class)) {
+            $action = $action->value;
+        }
         $currentSteps = ApprovalStatusStepData::collectionToArray($current);
         if ($action === ApprovalStatusEnum::APPROVED->value && !$this->isApprovalCompleted($currentSteps)) {
             $action = ApprovalStatusEnum::PENDING->value;
