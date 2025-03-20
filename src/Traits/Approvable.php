@@ -606,9 +606,12 @@ trait Approvable
                     }
                     return $item;
                 });
-
-                $newStatus = ApprovalStatusEnum::PENDING->value;
-                if($approvals->count() === 1) {
+                $lastDoneStatus = $updatedStatuses->filter(function (ApprovalStatusStepData $item) {
+                    return $item->isDone();
+                })?->last();
+                if($lastDoneStatus){
+                    $newStatus = ApprovalStatusEnum::PENDING->value;
+                } else {
                     $newStatus = ApprovalStatusEnum::SUBMITTED->value;
                 }
                 $this->approvalStatus()->update(['steps' => ApprovalStatusStepData::collectionToArray($updatedStatuses), 'status' => $newStatus]);// Todo Improve
