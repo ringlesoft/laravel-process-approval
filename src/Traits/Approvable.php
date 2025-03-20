@@ -593,7 +593,8 @@ trait Approvable
 
     public function undoLastApproval(): void
     {
-        $lastApproval = $this->approvals()->latest()->get()->first();
+        $approvals = $this->approvals()->latest()->get();
+        $lastApproval = $approvals->first();
         if ($lastApproval) {
             try {
                 DB::beginTransaction();
@@ -605,7 +606,12 @@ trait Approvable
                     }
                     return $item;
                 });
-                $this->approvalStatus()->update(['steps' => ApprovalStatusStepData::collectionToArray($updatedStatuses), 'status' => ApprovalStatusEnum::PENDING->value]);// Todo Improve
+
+                $newStatus = ApprovalStatusEnum::PENDING->value;
+                if($approvals->count() === 1) {
+                    $newStatus = ApprovalStatusEnum::SUBMITTED->value;
+                }
+                $this->approvalStatus()->update(['steps' => ApprovalStatusStepData::collectionToArray($updatedStatuses), 'status' => $newStatus]);// Todo Improve
                 DB::commit();
             } catch (Throwable $e) {
                 Log::error('Process Approval - discard: ', [$e]);
