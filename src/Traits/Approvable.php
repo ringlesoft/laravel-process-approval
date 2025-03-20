@@ -218,6 +218,7 @@ trait Approvable
             ->whereHas('approvalStatus', static function ($q) use ($step) {
                 return $q
                     ->where('status', '!=', ApprovalActionEnum::APPROVED->value)
+                    ->where('status', '!=', ApprovalActionEnum::CREATED->value)
                     ->whereJsonContains('steps', [
                         'id' => $step->id,
                         'process_approval_id' => null,
