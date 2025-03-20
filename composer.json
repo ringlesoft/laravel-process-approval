@@ -57,7 +57,7 @@
             "name": "master"
         }
     },
-    "version": "1.0.9",
+    "version": "1.1.0",
     "minimum-stability": "dev",
     "prefer-stable": true,
     "autoload-dev": {
