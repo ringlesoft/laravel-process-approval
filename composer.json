@@ -14,7 +14,8 @@
     ],
     "autoload": {
         "psr-4": {
-            "RingleSoft\\LaravelProcessApproval\\": "src/"
+            "RingleSoft\\LaravelProcessApproval\\": "src/",
+            "RingleSoft\\LaravelProcessApproval\\Tests\\": "tests/"
         }
     },
     "authors": [
@@ -31,10 +32,13 @@
         "illuminate/broadcasting": "^10|^11|^12",
         "illuminate/database": "^10|^11|^12",
         "illuminate/routing": "^10|^11|^12"
-    }
-    ,
+    },
     "require-dev": {
-        "roave/security-advisories": "dev-latest"
+        "roave/security-advisories": "dev-latest",
+        "orchestra/testbench": "^9.1",
+        "nunomaduro/collision": "^8.1",
+        "spatie/laravel-permission": "^6.9"
+
     },
     "extra": {
         "laravel": {
@@ -55,5 +59,29 @@
     },
     "version": "1.0.9",
     "minimum-stability": "dev",
-    "prefer-stable": true
+    "prefer-stable": true,
+    "autoload-dev": {
+        "psr-4": {
+            "Workbench\\App\\": "workbench/app/",
+            "Workbench\\Database\\Factories\\": "workbench/database/factories/",
+            "Workbench\\Database\\Seeders\\": "workbench/database/seeders/"
+        }
+    },
+    "scripts": {
+        "post-autoload-dump": [
+            "@clear",
+            "@prepare"
+        ],
+        "clear": "@php vendor/bin/testbench package:purge-skeleton --ansi",
+        "prepare": "@php vendor/bin/testbench package:discover --ansi",
+        "build": "@php vendor/bin/testbench workbench:build --ansi",
+        "serve": [
+            "Composer\\Config::disableProcessTimeout",
+            "@build",
+            "@php vendor/bin/testbench serve"
+        ],
+        "lint": [
+            "@php vendor/bin/phpstan analyse"
+        ]
+    }
 }

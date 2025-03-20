@@ -27,7 +27,7 @@ class TestCase extends OrchestraTestCase
     {
         parent::setUp();
         $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
-
+        (new DatabaseSeeder())->run();
     }
 
 
