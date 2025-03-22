@@ -29,7 +29,7 @@ return [
     /**
      * The name of the css library to use
      */
-    'css_library' => 'tailwind', // tailwind | bootstrap
+    'css_library' => 'tailwind', // tailwind | bootstrap |bootstrap3 | bootstrap4 | null
 
     /**
      * The name of the multi tenancy field in the users table
