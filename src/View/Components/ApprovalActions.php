@@ -54,8 +54,11 @@ class ApprovalActions extends Component
             }
             $bsVersionAttribute = $this->getModalToggleAttributes($bsVersion);
             return view()->file(__DIR__ . '/../../../resources/views/components/approval-actions-bs.blade.php', compact('bsVersionAttribute'));
+        } else if (config('process_approval.css_library') === 'tailwindcss') {
+            return view()->file(__DIR__ . '/../../../resources/views/components/approval-actions-tw.blade.php');
+        } else {
+            return view()->file(__DIR__ . '/../../../resources/views/components/approval-actions.blade.php');
         }
-        return view()->file(__DIR__ . '/../../../resources/views/components/approval-actions-tw.blade.php');
     }
 
 
