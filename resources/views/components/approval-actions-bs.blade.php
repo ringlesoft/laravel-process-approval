@@ -115,27 +115,28 @@
                                     <div class="col-12 col-md-5">
                                         <div class="w-100 d-flex justify-content-end gap-2 align-items-md-center">
                                             @if($model->isRejected())
-                                                <button class="btn btn-danger" data-bs-toggle="modal"
-                                                        data-bs-target="#modalDiscard">
+                                                <button class="btn btn-danger" data-{{$bsVersionAttribute}}toggle="modal"
+                                                        data-{{$bsVersionAttribute}}target="#modalDiscard">
                                                     {{ __('ringlesoft::approvals.discard') }}
                                                 </button>
                                             @else
-                                                <button class="btn btn-danger" data-bs-toggle="modal"
-                                                        data-bs-target="#modalReject">
+                                                <button class="btn btn-danger" data-{{$bsVersionAttribute}}toggle="modal"
+                                                        data-{{$bsVersionAttribute}}target="#modalReject">
                                                     {{ __('ringlesoft::approvals.reject') }}
                                                 </button>
                                             @endif
 
                                             @if(!$model->isRejected())
-                                                <button class="btn btn-danger" data-bs-toggle="modal"
-                                                        data-bs-target="#modalReturn">
+                                                <button class="btn btn-danger" data-{{$bsVersionAttribute}}toggle="modal"
+                                                        data-{{$bsVersionAttribute}}target="#modalReturn">
                                                     {{ __('ringlesoft::approvals.return') }}
                                                 </button>
                                             @endif
-                                            <button class="btn btn-success" data-bs-toggle="modal"
-                                                    data-bs-target="#modalApprove">
+                                            <button class="btn btn-success" data-{{$bsVersionAttribute}}toggle="modal"
+                                                    data-{{$bsVersionAttribute}}target="#modalApprove">
                                                 {{$model->isRejected() ? __('ringlesoft::approvals.re_approve') : ucfirst(__('ringlesoft::approvals.'. strtolower($nextApprovalStep->action)) ?? __('ringlesoft::approvals.approve'))}}
                                             </button>
+
                                         </div>
                                     </div>
                                 </div>
@@ -196,7 +197,7 @@
     </div>
     <!-- Modal -->
     @if($model->canBeApprovedBy(auth()?->user()))
-        <div class="modal fade" id="modalApprove" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+        <div class="modal fade" id="modalApprove" data-{{$bsVersionAttribute}}backdrop="static" data-{{$bsVersionAttribute}}keyboard="false" tabindex="-1"
              aria-labelledby="modalApproveLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <form method="post" class="modal-content"
@@ -207,7 +208,7 @@
                     <div class="modal-header">
                         <h5 class="modal-title"
                             id="modalApproveLabel">{{ __('ringlesoft::approvals.approve_request') }}</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                        <button type="button" class="btn-close" data-{{$bsVersionAttribute}}dismiss="modal"
                                 aria-label="{{ __('ringlesoft::approvals.close') }}"></button>
                     </div>
                     <div class="modal-body">
@@ -220,14 +221,14 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary"
-                                data-bs-dismiss="modal">{{ __('ringlesoft::approvals.close') }}</button>
+                                data-{{$bsVersionAttribute}}dismiss="modal">{{ __('ringlesoft::approvals.close') }}</button>
                         <button type="submit" class="btn btn-success">{{ __('ringlesoft::approvals.approve') }}</button>
                     </div>
                 </form>
             </div>
         </div>
 
-        <div class="modal fade" id="modalReject" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+        <div class="modal fade" id="modalReject" data-{{$bsVersionAttribute}}backdrop="static" data-{{$bsVersionAttribute}}keyboard="false" tabindex="-1"
              aria-labelledby="modalRejectLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <form method="post" class="modal-content"
@@ -238,7 +239,7 @@
                     <div class="modal-header">
                         <h5 class="modal-title"
                             id="modalRejectLabel">{{ __('ringlesoft::approvals.reject_request') }}</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                        <button type="button" class="btn-close" data-{{$bsVersionAttribute}}dismiss="modal"
                                 aria-label="{{ __('ringlesoft::approvals.close') }}"></button>
                     </div>
                     <div class="modal-body">
@@ -250,14 +251,14 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary"
-                                data-bs-dismiss="modal">{{ __('ringlesoft::approvals.close') }}</button>
+                                data-{{$bsVersionAttribute}}dismiss="modal">{{ __('ringlesoft::approvals.close') }}</button>
                         <button type="submit" class="btn btn-danger">{{ __('ringlesoft::approvals.reject') }}</button>
                     </div>
                 </form>
             </div>
         </div>
 
-        <div class="modal fade" id="modalDiscard" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+        <div class="modal fade" id="modalDiscard" data-{{$bsVersionAttribute}}backdrop="static" data-{{$bsVersionAttribute}}keyboard="false" tabindex="-1"
              aria-labelledby="modalDiscardLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <form method="post" class="modal-content"
@@ -268,7 +269,7 @@
                     <div class="modal-header">
                         <h5 class="modal-title"
                             id="modalDiscardLabel">{{ __('ringlesoft::approvals.discard_request') }}</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                        <button type="button" class="btn-close" data-{{$bsVersionAttribute}}dismiss="modal"
                                 aria-label="{{ __('ringlesoft::approvals.close') }}"></button>
                     </div>
                     <div class="modal-body">
@@ -284,14 +285,14 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary"
-                                data-bs-dismiss="modal">{{ __('ringlesoft::approvals.close') }}</button>
+                                data-{{$bsVersionAttribute}}dismiss="modal">{{ __('ringlesoft::approvals.close') }}</button>
                         <button type="submit" class="btn btn-danger">{{ __('ringlesoft::approvals.discard') }}</button>
                     </div>
                 </form>
             </div>
         </div>
 
-        <div class="modal fade" id="modalReturn" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+        <div class="modal fade" id="modalReturn" data-{{$bsVersionAttribute}}backdrop="static" data-{{$bsVersionAttribute}}keyboard="false" tabindex="-1"
              aria-labelledby="modalReturnLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <form method="post" class="modal-content"
@@ -302,7 +303,7 @@
                     <div class="modal-header">
                         <h5 class="modal-title"
                             id="modalReturnLabel">{{ __('ringlesoft::approvals.return_request') }}</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <button type="button" class="btn-close" data-{{$bsVersionAttribute}}dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
 
@@ -317,7 +318,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary"
-                                data-bs-dismiss="modal">{{ __('ringlesoft::approvals.close') }}</button>
+                                data-{{$bsVersionAttribute}}dismiss="modal">{{ __('ringlesoft::approvals.close') }}</button>
                         <button type="submit" class="btn btn-danger">{{ __('ringlesoft::approvals.return') }}</button>
                     </div>
                 </form>
