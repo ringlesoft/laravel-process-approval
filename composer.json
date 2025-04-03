@@ -53,7 +53,7 @@
             "name": "master"
         }
     },
-    "version": "1.1.0",
+    "version": "1.1.1",
     "minimum-stability": "dev",
     "prefer-stable": true
 }
