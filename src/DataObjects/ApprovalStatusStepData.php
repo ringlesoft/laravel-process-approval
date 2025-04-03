@@ -17,11 +17,11 @@ class ApprovalStatusStepData
     public function __construct(
         private readonly int              $id,
         private readonly ApprovalTypeEnum $action,
-        private int|string       $roleId,
-        private string|null      $roleName = null,
-        private int|null         $processApprovalId = null,
-        private ApprovalActionEnum|null      $processApprovalAction = null,
-        private bool|null        $active = null
+        private readonly int|string       $roleId,
+        private readonly string|null      $roleName = null,
+        private int|null                  $processApprovalId = null,
+        private ApprovalActionEnum|null   $processApprovalAction = null,
+        private readonly bool|null $active = null
     )
     {
     }
@@ -185,7 +185,7 @@ class ApprovalStatusStepData
             roleName: $data['role_name'] ?? null,
             processApprovalId: $data['process_approval_id'] ?? null,
             processApprovalAction: !empty($data['process_approval_action']) ? ApprovalActionEnum::from($data['process_approval_action']) : null,
-            active: isset($data['active']) ? $data['active'] : null
+            active: $data['active'] ?? null
         );
     }
 
