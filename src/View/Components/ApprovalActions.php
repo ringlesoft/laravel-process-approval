@@ -9,6 +9,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use Illuminate\View\Component;
 use RingleSoft\LaravelProcessApproval\Models\ProcessApproval;
 use RingleSoft\LaravelProcessApproval\Models\ProcessApprovalFlow;
@@ -39,12 +40,37 @@ class ApprovalActions extends Component
 
     public function render(): Closure|Htmlable|View|string
     {
-        if(!count($this->modelApprovalSteps)){
+        if (!count($this->modelApprovalSteps)) {
             return "";
         }
-        if (config('process_approval.css_library') === 'bootstrap') {
-            return view()->file(__DIR__.'/../../../resources/views/components/approval-actions-bs.blade.php');
+        if (Str::of(config('process_approval.css_library'))->startsWith('bootstrap')) {
+            $versionNumber = Str::of(config('process_approval.css_library'))->after('bootstrap')->toString();
+            if ($versionNumber === '3') {
+                $bsVersion = 3;
+            } else if ($versionNumber === '4') {
+                $bsVersion = 4;
+            } else {
+                $bsVersion = 5;
+            }
+            $bsVersionAttribute = $this->getModalToggleAttributes($bsVersion);
+            return view()->file(__DIR__ . '/../../../resources/views/components/approval-actions-bs.blade.php', compact('bsVersionAttribute'));
+        } else if (config('process_approval.css_library') === 'tailwindcss') {
+            return view()->file(__DIR__ . '/../../../resources/views/components/approval-actions-tw.blade.php');
+        } else {
+            return view()->file(__DIR__ . '/../../../resources/views/components/approval-actions.blade.php');
         }
-        return view()->file(__DIR__.'/../../../resources/views/components/approval-actions-tw.blade.php');
     }
+
+
+    private function getModalToggleAttributes($bsVersion): string
+    {
+        if ($bsVersion === 3) {
+            return '';
+        } else if ($bsVersion === 4 || $bsVersion === 5) {
+            return 'bs-';
+        } else {
+            return 'bs-'; // Default to Bootstrap 4/5 syntax
+        }
+    }
+
 }

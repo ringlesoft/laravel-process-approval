@@ -18,7 +18,6 @@ class ProcessSubmittedEvent
      */
     public function __construct(public ApprovableModel $approvable)
     {
-        //
     }
 
     /**
