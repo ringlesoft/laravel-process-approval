@@ -64,6 +64,17 @@ trait Approvable
         });
     }
 
+    /**
+     * Initialize the trait.
+     */
+    protected function initializeApprovable(): void
+    {
+        /**
+         * Eager loading the relation to improve performance
+         */
+        $this->with = array_merge($this->with ?? [], ['approvalStatus']);
+    }
+
 
     /**
      * Bypass the approval process for this model instance
