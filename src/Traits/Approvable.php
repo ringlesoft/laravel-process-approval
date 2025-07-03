@@ -64,6 +64,17 @@ trait Approvable
         });
     }
 
+    /**
+     * Initialize the trait.
+     */
+    protected function initializeApprovable(): void
+    {
+        /**
+         * Eager loading the relation to improve performance
+         */
+        $this->with = array_merge($this->with ?? [], ['approvalStatus']);
+    }
+
 
     /**
      * Bypass the approval process for this model instance
@@ -148,6 +159,24 @@ trait Approvable
             ->orderBy('order', 'asc')
             ->orderBy('id', 'asc')
             ->get();
+    }
+
+    /**
+     * Get the approval steps for this specific model
+     * @return Collection|null
+     */
+    private function getModelApprovalSteps(): Collection|null
+    {
+        if ($this->_approvalSteps) {
+            return $this->_approvalSteps;
+        }
+        $this->_approvalSteps = ProcessApprovalFlowStep::query()
+            ->with(['role'])
+            ->whereIntegerInRaw('id', collect($this->approvalStatus->steps ?? [])->keyBy('id')->keys())
+            ->orderBy('order')->orderBy('id')
+            ->get();
+        return $this->_approvalSteps;
+
     }
 
 
@@ -236,6 +265,7 @@ trait Approvable
 
     /**
      * Check if Approval process is completed
+     * @param array|null $currentSteps
      * @return bool
      */
     public function isApprovalCompleted(array $currentSteps = null): bool
@@ -307,14 +337,17 @@ trait Approvable
      */
     public function nextApprovalStep(): ProcessApprovalFlowStep|null
     {
-        foreach (collect($this->approvalStatus->steps ?? []) as $step) {
-            if (($step['process_approval_id'] === null || $step['process_approval_action'] === ApprovalStatusEnum::RETURNED->value) && $realStep = ProcessApprovalFlowStep::query()->with('role')->find($step['id'])) {
-                return $realStep;
+        $cachedSteps = collect($this->approvalStatus->steps ?? [])->keyBy('id');
+        $steps = $this->getModelApprovalSteps();
+        foreach ($steps as  $step) {
+            $cachedStep = $cachedSteps->get($step->id);
+            if (($cachedStep['process_approval_id'] === null || $cachedStep['process_approval_action'] === ApprovalStatusEnum::RETURNED->value) && $step) {
+                return $step;
             }
-            if ($step['process_approval_action'] !== ApprovalActionEnum::APPROVED->value && $step['process_approval_action'] !== ApprovalActionEnum::DISCARDED->value) {
-                return ProcessApprovalFlowStep::query()->with('role')->find($step['id']);
+            if ($cachedStep['process_approval_action'] !== ApprovalActionEnum::APPROVED->value && $cachedStep['process_approval_action'] !== ApprovalActionEnum::DISCARDED->value) {
+                return $step;
             }
-            if ($step['process_approval_action'] === ApprovalActionEnum::DISCARDED->value) {
+            if ($cachedStep['process_approval_action'] === ApprovalActionEnum::DISCARDED->value) {
                 return null;
             }
         }
@@ -343,7 +376,7 @@ trait Approvable
      * @param Authenticatable|null $user
      * @return ProcessApproval|bool|RedirectResponse
      * @throws RequestAlreadySubmittedException
-     * @throws Exception
+     * @throws Throwable
      */
     public function submit(Authenticatable|null $user = null): ProcessApproval|bool|RedirectResponse
     {
@@ -378,7 +411,7 @@ trait Approvable
                 ProcessSubmittedEvent::dispatch($this);
             }
             return $approval;
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             Log::debug('Process approval failure: ', [$e]);
             DB::rollBack();
             throw $e;
@@ -391,7 +424,7 @@ trait Approvable
      * @param null $comment
      * @param Authenticatable|null $user
      * @return false|Builder|Model
-     * @throws NoFurtherApprovalStepsException|ApprovalCompletedCallbackFailedException|RequestNotSubmittedException|ApprovalsPausedException
+     * @throws NoFurtherApprovalStepsException|ApprovalCompletedCallbackFailedException|RequestNotSubmittedException|ApprovalsPausedException|Throwable
      */
     public function approve($comment = null, Authenticatable|null $user = null): ProcessApproval|bool|RedirectResponse // TODO remove the redirectResponse
     {
@@ -438,7 +471,7 @@ trait Approvable
                 }
             }
             return $approval;
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             Log::error('Process approval failure: ', [$e]);
             DB::rollBack();
             throw $e;
@@ -451,7 +484,7 @@ trait Approvable
      * @param null $comment
      * @param Authenticatable|null $user
      * @return ProcessApproval|bool
-     * @throws Exception
+     * @throws Throwable
      */
     public function reject($comment = null, Authenticatable|null $user = null): ProcessApproval|bool
     {
@@ -480,7 +513,7 @@ trait Approvable
                 ProcessRejectedEvent::dispatch($approval);
             }
             return $approval ?? false;
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             Log::error('Process Approval - reject: ', [$e]);
             DB::rollBack();
             throw $e;
@@ -492,7 +525,7 @@ trait Approvable
      * @param $comment
      * @param Authenticatable|null $user
      * @return ApprovableModel|bool
-     * @throws Exception
+     * @throws Throwable
      */
     public function discard($comment = null, Authenticatable|null $user = null): ProcessApproval|bool
     {
@@ -627,6 +660,10 @@ trait Approvable
     }
 
 
+    /**
+     * @return void
+     * @throws Throwable
+     */
     public function undoLastApproval(): void
     {
         $lastApproval = $this->approvals()->latest()->latest('id')->get()->first();

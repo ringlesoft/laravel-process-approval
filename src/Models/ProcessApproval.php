@@ -10,7 +10,10 @@ use RingleSoft\LaravelProcessApproval\Traits\MultiTenant;
 class ProcessApproval extends Model
 {
     use MultiTenant;
+
     public $guarded = ['id'];
+
+    public $with = ['user'];
 
     public function user(): BelongsTo
     {
@@ -29,7 +32,7 @@ class ProcessApproval extends Model
 
     public function getSignature()
     {
-        if(method_exists($this->user, 'getSignature')) {
+        if (method_exists($this->user, 'getSignature')) {
             return $this->user?->getSignature();
         }
         return null;
