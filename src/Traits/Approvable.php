@@ -48,9 +48,8 @@ trait Approvable
     private Collection|null $_approvalSteps = null;
 
 
-    protected static function boot(): void
+    protected static function bootApprovable(): void
     {
-        parent::boot();
         static::created(static function ($model) {
             if (method_exists($model, 'bypassApprovalProcess') && $model->bypassApprovalProcess()) {
                 return;
