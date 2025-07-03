@@ -48,8 +48,9 @@ trait Approvable
     private Collection|null $_approvalSteps = null;
 
 
-    protected static function bootApprovable(): void
+    protected static function boot(): void
     {
+        parent::boot();
         static::created(static function ($model) {
             if (method_exists($model, 'bypassApprovalProcess') && $model->bypassApprovalProcess()) {
                 return;
@@ -269,7 +270,6 @@ trait Approvable
     public function isRejected(): bool
     {
         return $this->approvalStatus?->status === ApprovalStatusEnum::REJECTED->value;
-
     }
 
     /**
@@ -279,7 +279,6 @@ trait Approvable
     public function isDiscarded(): bool
     {
         return $this->approvalStatus?->status === ApprovalStatusEnum::DISCARDED->value;
-
     }
 
     public function isReturned(): bool
@@ -305,21 +304,51 @@ trait Approvable
      * Get the next approval Step
      * @return ProcessApprovalFlowStep|null
      */
-    public function nextApprovalStep(): ProcessApprovalFlowStep|null
+    protected ?ProcessApprovalFlowStep $cachedNextStep = null;
+    public function nextApprovalStep($realSteps = null, $itemSteps = null): ?ProcessApprovalFlowStep
     {
-        foreach (collect($this->approvalStatus->steps ?? []) as $step) {
-            if (($step['process_approval_id'] === null || $step['process_approval_action'] === ApprovalStatusEnum::RETURNED->value) && $realStep = ProcessApprovalFlowStep::query()->with('role')->find($step['id'])) {
-                return $realStep;
+        if ($this->cachedNextStep !== null) {
+            return $this->cachedNextStep;
+        }
+
+        $stepsData = isset($itemSteps) ? collect($itemSteps) : collect($this->approvalStatus->steps ?? []);
+        $stepIds = $stepsData->pluck('id')->filter()->unique()->values();
+
+        $realSteps =  isset($realSteps) ? collect($realSteps) : ProcessApprovalFlowStep::with('role')
+            ->whereIn('id', $stepIds)
+            ->get()
+            ->keyBy('id');
+
+        foreach ($stepsData as $step) {
+            $realStep = collect($realSteps)->where('role_id', $step['role_id'])->first() ?? null;
+
+            if (!$realStep) {
+                continue;
             }
-            if ($step['process_approval_action'] !== ApprovalActionEnum::APPROVED->value && $step['process_approval_action'] !== ApprovalActionEnum::DISCARDED->value) {
-                return ProcessApprovalFlowStep::query()->with('role')->find($step['id']);
+
+            if (
+                ($step['process_approval_id'] === null ||
+                    $step['process_approval_action'] === ApprovalStatusEnum::RETURNED->value)
+            ) {
+                return $this->cachedNextStep = $realStep;
             }
+
+            if (
+                $step['process_approval_action'] !== ApprovalActionEnum::APPROVED->value &&
+                $step['process_approval_action'] !== ApprovalActionEnum::DISCARDED->value
+            ) {
+                return $this->cachedNextStep = $realStep;
+            }
+
             if ($step['process_approval_action'] === ApprovalActionEnum::DISCARDED->value) {
-                return null;
+                return $this->cachedNextStep = null;
             }
         }
-        return null;
+
+        return $this->cachedNextStep = null;
     }
+
+
 
     /**
      * Get the previous Approval Step
@@ -599,9 +628,9 @@ trait Approvable
      * Get list of users capable of approving this request next
      * @return mixed
      */
-    public function getNextApprovers(): Collection
+    public function getNextApprovers($realSteps = null, $itemSteps = null): Collection
     {
-        $nextStep = $this->nextApprovalStep();
+        $nextStep = $this->nextApprovalStep($realSteps, $itemSteps);
         return (config('process_approval.users_model'))::role($nextStep?->role)->get();
     }
 
@@ -610,9 +639,9 @@ trait Approvable
      * @param Authenticatable|null $user
      * @return bool|null
      */
-    public function canBeApprovedBy(Authenticatable|null $user): bool|null
+    public function canBeApprovedBy($realSteps = null, $itemSteps = null, Authenticatable|null $user): bool|null
     {
-        $nextStep = $this->nextApprovalStep();
+        $nextStep = $this->nextApprovalStep($realSteps, $itemSteps);
         return !$this->approvalsPaused && $this->isSubmitted() && $nextStep && $user?->hasRole($nextStep->role);
     }
 
@@ -626,7 +655,18 @@ trait Approvable
         return !$this->isSubmitted() && ($this->approvalStatus->creator_id === null || $this->approvalStatus->creator_id === $user->id);
     }
 
-
+    /**
+     * Undo the last approval action taken on this approvable model.
+     *
+     * This method will delete the last approval record from the database and update the approval status.
+     * It rolls back the last approval step if any exist and resets the status of the approval process
+     * to either 'PENDING' or 'SUBMITTED' based on the state of the approval steps.
+     *
+     * The method uses a database transaction to ensure atomicity and logs any errors encountered during
+     * the process.
+     *
+     * @return void
+     */
     public function undoLastApproval(): void
     {
         $lastApproval = $this->approvals()->latest()->latest('id')->get()->first();
@@ -649,7 +689,7 @@ trait Approvable
                 } else {
                     $newStatus = ApprovalStatusEnum::SUBMITTED->value;
                 }
-                $this->approvalStatus()->update(['steps' => ApprovalStatusStepData::collectionToArray($updatedStatuses), 'status' => $newStatus]);// Todo Improve
+                $this->approvalStatus()->update(['steps' => ApprovalStatusStepData::collectionToArray($updatedStatuses), 'status' => $newStatus]); // Todo Improve
                 DB::commit();
             } catch (Throwable $e) {
                 Log::error('Process Approval - discard: ', [$e]);
@@ -779,6 +819,4 @@ trait Approvable
         }
         return true;
     }
-
 }
-

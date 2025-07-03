@@ -103,7 +103,7 @@ interface ApprovableModel
      * Get the next approval step for this record
      * @return ProcessApprovalFlowStep|null
      */
-    public function nextApprovalStep(): ProcessApprovalFlowStep|null;
+    public function nextApprovalStep($realSteps = null, $itemSteps = null): ?ProcessApprovalFlowStep;
 
     /**
      * Get the previous approval step
@@ -147,7 +147,7 @@ interface ApprovableModel
      * @param Authenticatable|null $user
      * @return bool|null
      */
-    public function canBeApprovedBy(Authenticatable|null $user): bool|null;
+    public function canBeApprovedBy($realSteps = null, $itemSteps = null, Authenticatable|null $user): bool|null;
 
     /**
      * A function run when approval is completed.
@@ -161,7 +161,7 @@ interface ApprovableModel
      * Get a collection of individuals yet to approve this record
      * @return Collection
      */
-    public function getNextApprovers(): Collection;
+    public function getNextApprovers($realSteps = null, $itemSteps = null): Collection;
 
     /**
      * Create approval flow for this record
@@ -169,6 +169,5 @@ interface ApprovableModel
      * @param array|null $steps
      * @return bool
      */
-    public static function makeApprovable(array|null $steps = null, string|null $name = null):bool;
+    public static function makeApprovable(array|null $steps = null, string|null $name = null): bool;
 }
-
