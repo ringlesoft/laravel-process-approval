@@ -8,17 +8,17 @@
                         <thead>
                         <tr>
                             <th style="width: 50px;">{{ __('ringlesoft::approvals.by') }}:</th>
-                            @foreach($modelApprovalSteps as $item)
+                            @foreach($modelApprovalSteps as $step)
                                 <th style="width: {{(100 / count($modelApprovalSteps))}}%;"
-                                    class="text-center">{{$item['step']->role?->name ?? 'Step '. $loop->iteration}}</th>
+                                    class="text-center">{{$step->role?->name ??  __('approvals.step'). ' '. $loop->iteration}}</th>
                             @endforeach
                         </tr>
                         <tr>
                             <th>{{ __('ringlesoft::approvals.date') }}</th>
-                            @foreach($modelApprovalSteps as $item)
+                            @foreach($modelApprovalSteps as $step)
                                 <td>
                                     <div class="d-flex flex-column justify-content-center align-items-center">
-                                        @if($currentApproval = $item['approval'])
+                                        @if($currentApproval = $step->approval)
                                             <div>
                                                 @if($currentApproval->approval_action === \RingleSoft\LaravelProcessApproval\Enums\ApprovalActionEnum::APPROVED->value)
                                                     <div
