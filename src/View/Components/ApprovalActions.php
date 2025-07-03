@@ -25,12 +25,13 @@ class ApprovalActions extends Component
 
     public function __construct(public ApprovableModel $model)
     {
-        $this->modelApprovalSteps = collect($model->approvalStatus->steps ?? [])->map(function ($step) {
-            $step['step'] = ProcessApprovalFlowStep::with('role')->find($step['id']);
-            $step['approval'] = ($step['process_approval_id'] !== null) ? ProcessApproval::find($step['process_approval_id']) : null;
+        $this->modelApprovalSteps = ProcessApprovalFlowStep::query()
+            ->whereIntegerInRaw('id', collect($model->approvalStatus->steps ?? [])->pluck('id')->toArray())
+            ->with('role')
+            ->with('approval')
+            ->orderBy('order')
+            ->get();
 
-            return $step;
-        });
         $this->approvalFlow = $model->approvalFlow();
         $this->nextApprovalStep = $model->nextApprovalStep();
         $this->userCanApprove = $model->canBeApprovedBy(Auth::user());
