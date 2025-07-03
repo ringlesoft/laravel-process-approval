@@ -6,19 +6,15 @@ namespace RingleSoft\LaravelProcessApproval\View\Components;
 use Closure;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Contracts\View\View;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\View\Component;
-use RingleSoft\LaravelProcessApproval\Models\ProcessApproval;
-use RingleSoft\LaravelProcessApproval\Models\ProcessApprovalFlow;
-use RingleSoft\LaravelProcessApproval\Models\ProcessApprovalFlowStep;
 use RingleSoft\LaravelProcessApproval\Contracts\ApprovableModel;
+use RingleSoft\LaravelProcessApproval\Models\ProcessApprovalFlowStep;
 
 class ApprovalActions extends Component
 {
-    public Builder|ProcessApprovalFlow|null $approvalFlow;
     public ProcessApprovalFlowStep|null $nextApprovalStep;
     public bool $userCanApprove;
     public Collection $modelApprovalSteps;
@@ -32,7 +28,6 @@ class ApprovalActions extends Component
             ->orderBy('order')
             ->get();
 
-        $this->approvalFlow = $model->approvalFlow();
         $this->nextApprovalStep = $model->nextApprovalStep();
         $this->userCanApprove = $model->canBeApprovedBy(Auth::user());
 
