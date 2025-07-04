@@ -246,20 +246,28 @@ trait Approvable
         $otherSteps = $step->processApprovalFlow->steps()->where('id', '<', $step->id)->get();
         return self::query()
             ->whereHas('approvalStatus', static function ($q) use ($step, $otherSteps) {
-                $q = $q
-                    ->where('status', '!=', ApprovalActionEnum::APPROVED->value)
-                    ->where('status', '!=', ApprovalActionEnum::CREATED->value)
-                    ->whereJsonContains('steps', [
-                        'id' => $step->id,
-                        'process_approval_id' => null,
-                    ]);
+                $q->where('status', '!=', ApprovalActionEnum::APPROVED->value)
+                    ->where('status', '!=', ApprovalActionEnum::CREATED->value);
                 foreach ($otherSteps as $otherStep) {
-                    $q = $q->whereJsonContains('steps', [
+                    $q->whereJsonContains('steps', [
                         'id' => $otherStep->id,
                         'process_approval_action' => ApprovalActionEnum::APPROVED->value,
                     ]);
                 }
-                return $q;
+                return $q->where(function($q2) use ($step) {
+                    $q2->whereJsonContains('steps', [
+                        'id' => $step->id,
+                        'process_approval_id' => null,
+                    ])->orWhere(function($q3) use ($step) {
+                        $q3->whereJsonDoesntContain('steps', [
+                            'id' => $step->id,
+                            'process_approval_id' => null,
+                        ])->whereJsonContains('steps', [
+                            'id' => $step->id,
+                            'process_approval_action' => ApprovalActionEnum::RETURNED->value,
+                        ]);
+                    });
+                });
             });
     }
 
