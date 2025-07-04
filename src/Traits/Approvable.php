@@ -345,17 +345,17 @@ trait Approvable
      */
     public function nextApprovalStep(): ProcessApprovalFlowStep|null
     {
-        $cachedSteps = collect($this->approvalStatus->steps ?? [])->keyBy('id');
-        $steps = $this->getModelApprovalSteps();
-        foreach ($steps as  $step) {
-            $cachedStep = $cachedSteps->get($step->id);
-            if (($cachedStep['process_approval_id'] === null || $cachedStep['process_approval_action'] === ApprovalStatusEnum::RETURNED->value) && $step) {
-                return $step;
+        foreach (collect($this->approvalStatus->steps ?? []) as $step) {
+            // Not yet approved or was returned to this step
+            if (($step['process_approval_id'] === null || $step['process_approval_action'] === ApprovalStatusEnum::RETURNED->value) && $realStep = ProcessApprovalFlowStep::query()->with('role')->find($step['id'])) {
+                return $realStep;
             }
-            if ($cachedStep['process_approval_action'] !== ApprovalActionEnum::APPROVED->value && $cachedStep['process_approval_action'] !== ApprovalActionEnum::DISCARDED->value) {
-                return $step;
+            // Already acted upon, but neither approved nor discarded
+            if ($step['process_approval_action'] !== ApprovalActionEnum::APPROVED->value && $step['process_approval_action'] !== ApprovalActionEnum::DISCARDED->value) {
+                return ProcessApprovalFlowStep::query()->with('role')->find($step['id']);
             }
-            if ($cachedStep['process_approval_action'] === ApprovalActionEnum::DISCARDED->value) {
+            // Break when the first discarded step is found (approval should not go further)
+            if ($step['process_approval_action'] === ApprovalActionEnum::DISCARDED->value) {
                 return null;
             }
         }
