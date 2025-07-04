@@ -162,21 +162,21 @@ trait Approvable
     }
 
     /**
-     * Get the approval steps for this specific model
+     * Get the approval steps for this specific model with cache feature
+     * Currently unused
      * @return Collection|null
      */
     private function getModelApprovalSteps(): Collection|null
     {
-        if ($this->_approvalSteps) {
+        if ($this->_approvalSteps && count($this->_approvalSteps) > 0) {
             return $this->_approvalSteps;
         }
         $this->_approvalSteps = ProcessApprovalFlowStep::query()
-            ->with(['role'])
+            ->with('role')
             ->whereIntegerInRaw('id', collect($this->approvalStatus->steps ?? [])->keyBy('id')->keys())
             ->orderBy('order')->orderBy('id')
             ->get();
         return $this->_approvalSteps;
-
     }
 
 
@@ -242,24 +242,40 @@ trait Approvable
      */
     public static function waitingForStep(ProcessApprovalFlowStep $step): Builder
     {
-        // TODO this should consider Order and id at the same time
-        $otherSteps = $step->processApprovalFlow->steps()->where('id', '<', $step->id)->get();
+        // Getting Steps before
+        $stepsBefore = ProcessApprovalFlowStep::query()
+            ->where('process_approval_flow_id', $step->process_approval_flow_id)
+            ->where('id', '!=', $step->id)
+            ->when(($step->order === null), function ($q) use ($step) {
+                $q->where('id', '<', $step->id);
+            })
+            ->orderBy('order', 'asc')
+            ->orderBy('id', 'asc')
+            ->get();
         return self::query()
-            ->whereHas('approvalStatus', static function ($q) use ($step, $otherSteps) {
-                $q = $q
-                    ->where('status', '!=', ApprovalActionEnum::APPROVED->value)
-                    ->where('status', '!=', ApprovalActionEnum::CREATED->value)
-                    ->whereJsonContains('steps', [
-                        'id' => $step->id,
-                        'process_approval_id' => null,
-                    ]);
-                foreach ($otherSteps as $otherStep) {
-                    $q = $q->whereJsonContains('steps', [
-                        'id' => $otherStep->id,
+            ->whereHas('approvalStatus', static function ($q) use ($step, $stepsBefore) {
+                $q->where('status', '!=', ApprovalActionEnum::APPROVED->value)
+                    ->where('status', '!=', ApprovalActionEnum::CREATED->value);
+                foreach ($stepsBefore as $stepBefore) {
+                    $q->whereJsonContains('steps', [
+                        'id' => $stepBefore->id,
                         'process_approval_action' => ApprovalActionEnum::APPROVED->value,
                     ]);
                 }
-                return $q;
+                return $q->where(function ($q2) use ($step) {
+                    $q2->whereJsonContains('steps', [
+                        'id' => $step->id,
+                        'process_approval_id' => null,
+                    ])->orWhere(function ($q3) use ($step) {
+                        $q3->whereJsonDoesntContain('steps', [
+                            'id' => $step->id,
+                            'process_approval_id' => null,
+                        ])->whereJsonContains('steps', [
+                            'id' => $step->id,
+                            'process_approval_action' => ApprovalActionEnum::RETURNED->value,
+                        ]);
+                    });
+                });
             });
     }
 
@@ -337,17 +353,17 @@ trait Approvable
      */
     public function nextApprovalStep(): ProcessApprovalFlowStep|null
     {
-        $cachedSteps = collect($this->approvalStatus->steps ?? [])->keyBy('id');
-        $steps = $this->getModelApprovalSteps();
-        foreach ($steps as  $step) {
-            $cachedStep = $cachedSteps->get($step->id);
-            if (($cachedStep['process_approval_id'] === null || $cachedStep['process_approval_action'] === ApprovalStatusEnum::RETURNED->value) && $step) {
-                return $step;
+        foreach (collect($this->approvalStatus->steps ?? []) as $step) {
+            // Not yet approved or was returned to this step
+            if (($step['process_approval_id'] === null || $step['process_approval_action'] === ApprovalStatusEnum::RETURNED->value) && $realStep = ProcessApprovalFlowStep::query()->with('role')->find($step['id'])) {
+                return $realStep;
             }
-            if ($cachedStep['process_approval_action'] !== ApprovalActionEnum::APPROVED->value && $cachedStep['process_approval_action'] !== ApprovalActionEnum::DISCARDED->value) {
-                return $step;
+            // Already acted upon, but neither approved nor discarded
+            if ($step['process_approval_action'] !== ApprovalActionEnum::APPROVED->value && $step['process_approval_action'] !== ApprovalActionEnum::DISCARDED->value) {
+                return ProcessApprovalFlowStep::query()->with('role')->find($step['id']);
             }
-            if ($cachedStep['process_approval_action'] === ApprovalActionEnum::DISCARDED->value) {
+            // Break when the first discarded step is found (approval should not go further)
+            if ($step['process_approval_action'] === ApprovalActionEnum::DISCARDED->value) {
                 return null;
             }
         }
