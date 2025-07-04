@@ -242,23 +242,31 @@ trait Approvable
      */
     public static function waitingForStep(ProcessApprovalFlowStep $step): Builder
     {
-        // TODO this should consider Order and id at the same time
-        $otherSteps = $step->processApprovalFlow->steps()->where('id', '<', $step->id)->get();
+        // Getting Steps before
+        $stepsBefore = ProcessApprovalFlowStep::query()
+            ->where('process_approval_flow_id', $step->process_approval_flow_id)
+            ->where('id', '!=', $step->id)
+            ->when(($step->order === null), function ($q) use ($step) {
+                $q->where('id', '<', $step->id);
+            })
+            ->orderBy('order', 'asc')
+            ->orderBy('id', 'asc')
+            ->get();
         return self::query()
-            ->whereHas('approvalStatus', static function ($q) use ($step, $otherSteps) {
+            ->whereHas('approvalStatus', static function ($q) use ($step, $stepsBefore) {
                 $q->where('status', '!=', ApprovalActionEnum::APPROVED->value)
                     ->where('status', '!=', ApprovalActionEnum::CREATED->value);
-                foreach ($otherSteps as $otherStep) {
+                foreach ($stepsBefore as $stepBefore) {
                     $q->whereJsonContains('steps', [
-                        'id' => $otherStep->id,
+                        'id' => $stepBefore->id,
                         'process_approval_action' => ApprovalActionEnum::APPROVED->value,
                     ]);
                 }
-                return $q->where(function($q2) use ($step) {
+                return $q->where(function ($q2) use ($step) {
                     $q2->whereJsonContains('steps', [
                         'id' => $step->id,
                         'process_approval_id' => null,
-                    ])->orWhere(function($q3) use ($step) {
+                    ])->orWhere(function ($q3) use ($step) {
                         $q3->whereJsonDoesntContain('steps', [
                             'id' => $step->id,
                             'process_approval_id' => null,
