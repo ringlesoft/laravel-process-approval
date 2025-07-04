@@ -162,21 +162,21 @@ trait Approvable
     }
 
     /**
-     * Get the approval steps for this specific model
+     * Get the approval steps for this specific model with cache feature
+     * Currently unused
      * @return Collection|null
      */
     private function getModelApprovalSteps(): Collection|null
     {
-        if ($this->_approvalSteps) {
+        if ($this->_approvalSteps && count($this->_approvalSteps) > 0) {
             return $this->_approvalSteps;
         }
         $this->_approvalSteps = ProcessApprovalFlowStep::query()
-            ->with(['role'])
+            ->with('role')
             ->whereIntegerInRaw('id', collect($this->approvalStatus->steps ?? [])->keyBy('id')->keys())
             ->orderBy('order')->orderBy('id')
             ->get();
         return $this->_approvalSteps;
-
     }
 
 
