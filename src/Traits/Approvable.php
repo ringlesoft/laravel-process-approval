@@ -105,11 +105,14 @@ trait Approvable
 
     /**
      * Get the flow model of this approvable
-     * @return ProcessApprovalFlow|Builder|null
+     * @return ProcessApprovalFlow|null
      */
-    public static function approvalFlow(): ProcessApprovalFlow|Builder|null
+    public static function approvalFlow(): ProcessApprovalFlow|null
     {
-        return ProcessApprovalFlow::query()->where('approvable_type', self::getApprovableType())->with('steps.approval')->first();
+        return ProcessApprovalFlow::query()
+            ->where('approvable_type', self::getApprovableType())
+            ->with('steps.role')
+            ->first();
     }
 
     /**
@@ -160,25 +163,6 @@ trait Approvable
             ->orderBy('id', 'asc')
             ->get();
     }
-
-    /**
-     * Get the approval steps for this specific model with cache feature
-     * Currently unused
-     * @return Collection|null
-     */
-    private function getModelApprovalSteps(): Collection|null
-    {
-        if ($this->_approvalSteps && count($this->_approvalSteps) > 0) {
-            return $this->_approvalSteps;
-        }
-        $this->_approvalSteps = ProcessApprovalFlowStep::query()
-            ->with('role')
-            ->whereIntegerInRaw('id', collect($this->approvalStatus->steps ?? [])->keyBy('id')->keys())
-            ->orderBy('order')->orderBy('id')
-            ->get();
-        return $this->_approvalSteps;
-    }
-
 
     public static function approved(): Builder
     {
@@ -347,25 +331,32 @@ trait Approvable
         return !in_array($this->approvalStatus->status, [ApprovalStatusEnum::CREATED->value, ApprovalStatusEnum::SUBMITTED->value], true);
     }
 
+    private function nextApprovalStepId(): ?int
+    {
+        foreach (collect($this->approvalStatus->steps ?? []) as $step) {
+            // Break when the first discarded step is found (approval should not go further)
+            if ($step['process_approval_action'] === ApprovalActionEnum::DISCARDED->value) {
+                return null;
+            }
+            // Not yet approved or was returned to this step
+            if (
+                ($step['process_approval_id'] === null || $step['process_approval_action'] === ApprovalStatusEnum::RETURNED->value) ||
+                ($step['process_approval_action'] !== ApprovalActionEnum::APPROVED->value)
+            ) {
+                return $step['id'];
+            }
+        }
+        return null;
+    }
+
     /**
      * Get the next approval Step
      * @return ProcessApprovalFlowStep|null
      */
     public function nextApprovalStep(): ProcessApprovalFlowStep|null
     {
-        foreach (collect($this->approvalStatus->steps ?? []) as $step) {
-            // Not yet approved or was returned to this step
-            if (($step['process_approval_id'] === null || $step['process_approval_action'] === ApprovalStatusEnum::RETURNED->value) && $realStep = ProcessApprovalFlowStep::query()->with('role')->find($step['id'])) {
-                return $realStep;
-            }
-            // Already acted upon, but neither approved nor discarded
-            if ($step['process_approval_action'] !== ApprovalActionEnum::APPROVED->value && $step['process_approval_action'] !== ApprovalActionEnum::DISCARDED->value) {
-                return ProcessApprovalFlowStep::query()->with('role')->find($step['id']);
-            }
-            // Break when the first discarded step is found (approval should not go further)
-            if ($step['process_approval_action'] === ApprovalActionEnum::DISCARDED->value) {
-                return null;
-            }
+        if ($nextStepId = $this->nextApprovalStepId()) {
+            return ProcessApprovalFlowStep::query()->with('role')->find($nextStepId);
         }
         return null;
     }
