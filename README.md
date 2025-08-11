@@ -444,8 +444,7 @@ With this you can have one approval flow with different steps for different tena
 To test this package, switch to the `tests` branch and run `composer install` to install the dependencies and `vendor/bin/testbench package:test` to run the tests.
 
 ## Contributing
-
-I'll let you know when you can contribute 😜.
+You are welcome to contribute to this package. Please fork the repository and create a pull request.
 
 ## License
 

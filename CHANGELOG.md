@@ -1,6 +1,42 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [1.1.2] - 2025-08-11
+### Added
+- Blade template updates and approval action improvements
+- Overall Query optimization and eager loading improvements
+- Performance and code quality improvements 
+### Fixed
+- Multitenancy field issue and conditional logic corrections
+
+
+
+## [1.1.1] - 2025-04-03
+### Added
+- Support for Bootstrap 3 and 4
+- New UI independent of CSS Libraries (beta)
+- Introduced bypassApprovalProcess and enableAutoSubmit method for approvable models
+- Fixed Issue ProcessApprovalCompletedEvent did not receive `ApprovableModel`
+- Multiple improvements and bug fixes
+
+## [1.1.0] - 2025-03-20
+### Added
+- Support for Laravel 12
+- Added a static method `requiresApproval()` to check if the particular model will require approval when submitted
+- Added `bypassApprovalProcess` method for bypassing model's approval process programmatically
+- Added `enableAutoSubmit` method for enabling model's autoSubmit programmatically
+### Fixed
+- Fixed a bug where status of a model would show APPROVED even before the approval process is finished
+- Multiple bug fixes and improvements
+
+## [1.0.9] - 2024-10-07
+### Fixed
+- Multiple improvements
+- Resolved issue #41
+### Added
+- deprecated `getApprovalSummaryUi()`
+- Now you can throw a custom Exception within the `onApprovalCompletedCallback()` to be able to customize the notifications shown to the user when approval fails.
+
 ## [1.0.8] - 2024-07-15
 ### Added
 - Support for Multi-Tenancy ([#24](https://github.com/ringlesoft/laravel-process-approval/issues/24))
