@@ -9,17 +9,17 @@
                         <thead>
                         <tr>
                             <th class="border p-2" style="width: 50px;">{{ __('ringlesoft::approvals.by') }}:</th>
-                            @foreach($modelApprovalSteps as $item)
+                            @foreach($modelApprovalSteps as $step)
                                 <th style="width: {{(100 / count($modelApprovalSteps))}}%;"
-                                    class="text-center border">{{$item['step']->role?->name ?? __('approvals.step') . ' '. $loop->iteration }}</th>
+                                    class="text-center border">{{$step->role?->name ?? __('approvals.step') . ' '. $loop->iteration }}</th>
                             @endforeach
                         </tr>
                         <tr>
                             <th class="p-2">{{ __('ringlesoft::approvals.date') }}</th>
-                            @foreach($modelApprovalSteps as $item)
+                            @foreach($modelApprovalSteps as $step)
                                 <td class="border p-2">
                                     <div class="text-center">
-                                        @if($currentApproval = $item['approval'])
+                                        @if($currentApproval = $step->approval)
                                             <div class="relative group">
                                                 <div
                                                     class="absolute bottom-0 left-1/2 -translate-x-1/2 transform opacity-0 scale-75 origin-bottom group-hover:opacity-100 transition-all duration-300 z-10 px-3 py-2 text-sm text-white bg-gray-800 rounded-lg shadow-lg">

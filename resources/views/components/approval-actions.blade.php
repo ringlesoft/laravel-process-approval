@@ -154,18 +154,18 @@
                         <thead>
                         <tr>
                             <th style="width: 50px;">{{ __('ringlesoft::approvals.by') }}:</th>
-                            @foreach($modelApprovalSteps as $item)
+                            @foreach($modelApprovalSteps as $step)
                                 <th style="width: {{(100 / count($modelApprovalSteps))}}%;" class="lpa-text-center">
-                                    {{$item['step']->role?->name ?? __('approvals.step') . ' '. $loop->iteration }}
+                                    {{$step->role?->name ?? __('approvals.step') . ' '. $loop->iteration }}
                                 </th>
                             @endforeach
                         </tr>
                         <tr>
                             <th>{{ __('ringlesoft::approvals.date') }}</th>
-                            @foreach($modelApprovalSteps as $item)
+                            @foreach($modelApprovalSteps as $step)
                                 <td>
                                     <div class="lpa-text-center">
-                                        @if($currentApproval = $item['approval'])
+                                        @if($currentApproval = $step->approval)
                                             <div class="approval-item" style="position: relative;">
                                                 <div class="tooltip">
                                                     {{$currentApproval->comment ?? __('ringlesoft::approvals.no_comment') .'!'}}

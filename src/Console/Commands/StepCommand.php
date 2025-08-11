@@ -76,7 +76,7 @@ class StepCommand extends Command
         }
         $roleChoices = ($rolesModel)::query()->get()->pluck('name', 'id')->toArray();
         $role = select(
-            'Select the role to be that will approve this model',
+            'Select the role that will approve this model',
             $roleChoices,
         );
         $action = select("Select the type of action", collect(ApprovalTypeEnum::cases())->pluck('value')->toArray(), 'Approve');
