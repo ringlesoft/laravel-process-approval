@@ -18,7 +18,7 @@ class MultiTenantScope implements Scope
     {
         if($tenantId = Auth::user()?->{config('process_approval.multi_tenancy_field', 'tenant_id')}) {
             $builder->where(static function ($query) use ($model, $tenantId) {
-                $tenantIdField = Config::get('process_approval.multi_tenancy_field', 'tenant_id');
+                $tenantIdField = config('process_approval.multi_tenancy_field', 'tenant_id');
                 $query->where($model->getTable() . ".$tenantIdField", $tenantId)
                     ->orWhereNull($model->getTable() .".$tenantIdField");
             });
