@@ -21,16 +21,18 @@ class ApprovalActions extends Component
 
     public function __construct(public ApprovableModel $model)
     {
+        $modelApprovals = $model->approvals()->with('processApprovalFlowStep')->get()->keyBy('process_approval_flow_step_id');
         $this->modelApprovalSteps = ProcessApprovalFlowStep::query()
             ->whereIntegerInRaw('id', collect($model->approvalStatus->steps ?? [])->pluck('id')->toArray())
             ->with('role')
-            ->with('approval')
             ->orderBy('order')
-            ->get();
-
+            ->get()
+        ->map(function($step) use($modelApprovals) {
+            $step->approval = $modelApprovals->get($step->id);
+            return $step;
+        });
         $this->nextApprovalStep = $model->nextApprovalStep();
         $this->userCanApprove = $model->canBeApprovedBy(Auth::user());
-
     }
 
 

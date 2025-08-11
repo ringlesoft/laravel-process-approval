@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Config;
 
 class MultiTenantScope implements Scope
 {
@@ -17,10 +18,10 @@ class MultiTenantScope implements Scope
     {
         if($tenantId = Auth::user()?->{config('process_approval.multi_tenancy_field', 'tenant_id')}) {
             $builder->where(static function ($query) use ($model, $tenantId) {
-                $query->where($model->getTable() . '.tenant_id', $tenantId)
-                    ->orWhereNull($model->getTable() .'.tenant_id');
+                $tenantIdField = Config::get('process_approval.multi_tenancy_field', 'tenant_id');
+                $query->where($model->getTable() . ".$tenantIdField", $tenantId)
+                    ->orWhereNull($model->getTable() .".$tenantIdField");
             });
         }
-
     }
 }
