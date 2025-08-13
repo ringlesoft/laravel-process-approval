@@ -104,7 +104,7 @@ class ProcessApproval implements ProcessApprovalContract
      * @inheritDoc
      * @throws ApprovalFlowDoesNotExistsException
      */
-    public function createStep(int $flowId, int $roleId, string|null $action = 'APPROVE', string|int|null $tenantId = null): ProcessApprovalFlowStep
+    public function createStep(int $flowId, string|int $roleId, string|null $action = 'APPROVE', string|int|null $tenantId = null): ProcessApprovalFlowStep
     {
         $flow = ProcessApprovalFlow::find($flowId);
         if(!$flow){
