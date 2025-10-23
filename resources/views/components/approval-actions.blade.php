@@ -242,7 +242,7 @@
 
                 @if($model->approvalsPaused !== 'ONLY_ACTIONS')
                     <div class="approval-actions" style="margin-top: 15px;">
-                        @if($nextApprovalStep && $model->approvalsDissabled !== 'ONLY_ACTIONS')
+                        @if($nextApprovalStep && $model->approvalsDisabled !== 'ONLY_ACTIONS')
                             @if($userCanApprove)
                                 <div style="display: flex; justify-content: space-between; gap: 10px;">
                                     <div style="color: #6b7280;">

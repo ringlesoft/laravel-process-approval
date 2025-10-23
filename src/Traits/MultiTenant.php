@@ -16,7 +16,9 @@ trait MultiTenant
     {
         parent::booted();
         static::creating(static function ($model) {
-            if(Auth::user()?->{config('process_approval.multi_tenancy_field', 'tenant_id')}) {
+            if(Auth::user()
+                && property_exists(Auth::user(), config('process_approval.multi_tenancy_field', 'tenant_id'))
+                && Auth::user()?->{config('process_approval.multi_tenancy_field', 'tenant_id')}) {
                 $model->tenant_id = Auth::user()?->{config('process_approval.multi_tenancy_field', 'tenant_id')};
             }
         });

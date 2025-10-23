@@ -268,7 +268,7 @@ trait Approvable
      * @param array|null $currentSteps
      * @return bool
      */
-    public function isApprovalCompleted(array $currentSteps = null): bool
+    public function isApprovalCompleted(?array $currentSteps = null): bool
     {
         $registeredSteps = $currentSteps ? collect($currentSteps) : collect($this->approvalStatus->steps ?? []);
         if ($registeredSteps->count() > 0) {
@@ -781,6 +781,18 @@ trait Approvable
     {
         if (method_exists($this, 'pauseApprovals')) {
             return $this->pauseApprovals();
+        }
+        return false;
+    }
+
+    /**
+     * Allow Desabling the approval process
+     * @return mixed
+     */
+    public function getApprovalsDisabledAttribute(): mixed
+    {
+        if (method_exists($this, 'disableApprovals')) {
+            return $this->disableApprovals();
         }
         return false;
     }
