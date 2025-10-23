@@ -110,7 +110,7 @@ trait Approvable
     public static function approvalFlow(): ProcessApprovalFlow|null
     {
         return ProcessApprovalFlow::query()
-            ->where('approvable_type', self::getApprovableType())
+            ->where('approvable_type', static::getApprovableType())
             ->with('steps.role')
             ->first();
     }
@@ -157,7 +157,7 @@ trait Approvable
     {
         return ProcessApprovalFlowStep::query()
             ->join('process_approval_flows', 'process_approval_flows.id', 'process_approval_flow_steps.process_approval_flow_id')
-            ->where('process_approval_flows.approvable_type', self::getApprovableType())
+            ->where('process_approval_flows.approvable_type', static::getApprovableType())
             ->select('process_approval_flow_steps.*')
             ->orderBy('order', 'asc')
             ->orderBy('id', 'asc')
@@ -166,14 +166,14 @@ trait Approvable
 
     public static function approved(): Builder
     {
-        return self::query()->whereHas('approvalStatus', static function ($q) {
+        return static::query()->whereHas('approvalStatus', static function ($q) {
             return $q->where('status', ApprovalActionEnum::APPROVED->value);
         });
     }
 
     public static function rejected(): Builder
     {
-        return self::query()->whereHas('approvalStatus', static function ($q) {
+        return static::query()->whereHas('approvalStatus', static function ($q) {
             return $q->where('status', ApprovalActionEnum::REJECTED->value);
         });
     }
@@ -183,7 +183,7 @@ trait Approvable
      */
     public static function discarded(): Builder
     {
-        return self::query()->whereHas('approvalStatus', static function ($q) {
+        return static::query()->whereHas('approvalStatus', static function ($q) {
             return $q->where('status', ApprovalActionEnum::DISCARDED->value);
         });
     }
@@ -193,7 +193,7 @@ trait Approvable
      */
     public static function returned(): Builder
     {
-        return self::query()->whereHas('approvalStatus', static function ($q) {
+        return static::query()->whereHas('approvalStatus', static function ($q) {
             return $q->where('status', ApprovalActionEnum::RETURNED->value);
         });
     }
@@ -203,7 +203,7 @@ trait Approvable
      */
     public static function nonSubmitted(): Builder
     {
-        return self::query()->whereHas('approvalStatus', static function ($q) {
+        return static::query()->whereHas('approvalStatus', static function ($q) {
             return $q->where('status', ApprovalActionEnum::CREATED->value);
         });
     }
@@ -213,7 +213,7 @@ trait Approvable
      */
     public static function submitted(): Builder
     {
-        return self::query()->whereHas('approvalStatus', static function ($q) {
+        return static::query()->whereHas('approvalStatus', static function ($q) {
             return $q->where('status', ApprovalActionEnum::SUBMITTED->value);
         });
     }
@@ -236,7 +236,7 @@ trait Approvable
             ->orderBy('order', 'asc')
             ->orderBy('id', 'asc')
             ->get();
-        return self::query()
+        return static::query()
             ->whereHas('approvalStatus', static function ($q) use ($step, $stepsBefore) {
                 $q->where('status', '!=', ApprovalActionEnum::APPROVED->value)
                     ->where('status', '!=', ApprovalActionEnum::CREATED->value);
@@ -397,7 +397,7 @@ trait Approvable
         try {
             DB::beginTransaction();
             $approval = ProcessApproval::query()->create([
-                'approvable_type' => self::getApprovableType(),
+                'approvable_type' => static::getApprovableType(),
                 'approvable_id' => $this->id,
                 'process_approval_flow_step_id' => $this->approvalFlowSteps()?->first()?->id ?? null, // Backward compatibility
                 'approval_action' => ApprovalActionEnum::SUBMITTED->value,
@@ -449,7 +449,7 @@ trait Approvable
         try {
             DB::beginTransaction();
             $approval = ProcessApproval::query()->updateOrCreate([
-                'approvable_type' => self::getApprovableType(),
+                'approvable_type' => static::getApprovableType(),
                 'approvable_id' => $this->id,
                 'process_approval_flow_step_id' => $nextStep->id,
                 'approval_action' => ApprovalActionEnum::APPROVED,
@@ -506,7 +506,7 @@ trait Approvable
             DB::beginTransaction();
             $nextStep = $this->nextApprovalStep();
             $approval = ProcessApproval::query()->create([
-                'approvable_type' => self::getApprovableType(),
+                'approvable_type' => static::getApprovableType(),
                 'approvable_id' => $this->id,
                 'process_approval_flow_step_id' => $nextStep?->id,
                 'approval_action' => ApprovalActionEnum::REJECTED,
@@ -547,7 +547,7 @@ trait Approvable
         DB::beginTransaction();
         try {
             $approval = ProcessApproval::query()->create([
-                'approvable_type' => self::getApprovableType(),
+                'approvable_type' => static::getApprovableType(),
                 'approvable_id' => $this->id,
                 'process_approval_flow_step_id' => $nextStep?->id,
                 'approval_action' => ApprovalActionEnum::DISCARDED,
@@ -591,7 +591,7 @@ trait Approvable
         try {
             DB::beginTransaction();
             $approval = ProcessApproval::query()->create([
-                'approvable_type' => self::getApprovableType(),
+                'approvable_type' => static::getApprovableType(),
                 'approvable_id' => $this->id,
                 'process_approval_flow_step_id' => $nextStep?->id,
                 'approval_action' => ApprovalActionEnum::RETURNED,
@@ -809,7 +809,7 @@ trait Approvable
         $processApproval = new \RingleSoft\LaravelProcessApproval\ProcessApproval();
         try {
             DB::BeginTransaction();
-            $flow = $processApproval->createFlow($name ?? Str::title(self::class), self::class);
+            $flow = $processApproval->createFlow($name ?? Str::title(static::class), static::class);
             if ($steps && count($steps) > 0) {
                 $rolesModel = config('process_approval.roles_model');
                 foreach ($steps as $key => $step) {
