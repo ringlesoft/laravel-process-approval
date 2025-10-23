@@ -16,10 +16,10 @@ trait MultiTenant
     {
         parent::booted();
         static::creating(static function ($model) {
-            if(Auth::user()
-                && property_exists(Auth::user(), config('process_approval.multi_tenancy_field', 'tenant_id'))
-                && Auth::user()?->{config('process_approval.multi_tenancy_field', 'tenant_id')}) {
-                $model->tenant_id = Auth::user()?->{config('process_approval.multi_tenancy_field', 'tenant_id')};
+            $user = Auth::user();
+            $tenantField = config('process_approval.multi_tenancy_field', 'tenant_id');
+            if ($user && !empty($user->{$tenantField})) {
+                $model->tenant_id = $user->{$tenantField};
             }
         });
         static::addGlobalScope(new MultiTenantScope());
