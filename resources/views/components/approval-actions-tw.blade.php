@@ -104,7 +104,7 @@
                 </div>
                 @if($model->approvalsPaused !== 'ONLY_ACTIONS')
                     <div class="approval-actions w-full mt-3">
-                        @if($nextApprovalStep && $model->approvalsDissabled !== 'ONLY_ACTIONS')
+                        @if($nextApprovalStep && $model->approvalsDisabled !== 'ONLY_ACTIONS')
                             @if($userCanApprove)
                                 <div class="flex justify-between">
                                     <div class="md:col-7">
