@@ -268,7 +268,7 @@ trait Approvable
      * @param array|null $currentSteps
      * @return bool
      */
-    public function isApprovalCompleted(array $currentSteps = null): bool
+    public function isApprovalCompleted(?array $currentSteps = null): bool
     {
         $registeredSteps = $currentSteps ? collect($currentSteps) : collect($this->approvalStatus->steps ?? []);
         if ($registeredSteps->count() > 0) {
