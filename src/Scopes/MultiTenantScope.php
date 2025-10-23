@@ -16,11 +16,13 @@ class MultiTenantScope implements Scope
      */
     public function apply(Builder $builder, Model $model): void
     {
-        if($tenantId = Auth::user()?->{config('process_approval.multi_tenancy_field', 'tenant_id')}) {
+        if (Auth::user()
+            && property_exists(Auth::user(), config('process_approval.multi_tenancy_field', 'tenant_id'))
+            && $tenantId = Auth::user()?->{config('process_approval.multi_tenancy_field', 'tenant_id')}) {
             $builder->where(static function ($query) use ($model, $tenantId) {
                 $tenantIdField = config('process_approval.multi_tenancy_field', 'tenant_id');
                 $query->where($model->getTable() . ".$tenantIdField", $tenantId)
-                    ->orWhereNull($model->getTable() .".$tenantIdField");
+                    ->orWhereNull($model->getTable() . ".$tenantIdField");
             });
         }
     }

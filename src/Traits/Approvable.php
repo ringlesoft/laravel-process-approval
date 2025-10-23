@@ -786,6 +786,18 @@ trait Approvable
     }
 
     /**
+     * Allow Desabling the approval process
+     * @return mixed
+     */
+    public function getApprovalsDisabledAttribute(): mixed
+    {
+        if (method_exists($this, 'disableApprovals')) {
+            return $this->disableApprovals();
+        }
+        return false;
+    }
+
+    /**
      * Create approval flow for this record
      * @param array|null $steps lit of roles that should be used as approval steps
      * @param string|null $name Name of the flow
