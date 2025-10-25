@@ -156,6 +156,7 @@ trait Approvable
     public function approvalFlowSteps(): array|Collection
     {
         return ProcessApprovalFlowStep::query()
+            ->with(['role'])
             ->join('process_approval_flows', 'process_approval_flows.id', 'process_approval_flow_steps.process_approval_flow_id')
             ->where('process_approval_flows.approvable_type', static::getApprovableType())
             ->select('process_approval_flow_steps.*')
