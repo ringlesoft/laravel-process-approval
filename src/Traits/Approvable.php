@@ -72,7 +72,7 @@ trait Approvable
         /**
          * Eager loading the relation to improve performance
          */
-        $this->with = array_merge($this->with ?? [], ['approvalStatus']);
+        $this->with = array_merge($this->with ?? [], ['approvalStatus','lastApproval']);
     }
 
 
