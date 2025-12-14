@@ -35,4 +35,20 @@ return [
      * The name of the multi tenancy field in the users table
      */
     'multi_tenancy_field' => 'tenant_id',
+
+    /**
+     * If true, the package expects UUID primary keys for its tables and uses UUID-based
+     * relations (e.g. uuid morphs / UUID foreign keys).
+     *
+     * Use this for fresh installs. Existing bigint installs should keep this false.
+     */
+    'use_uuids' => false,
+
+    /**
+     * If true, the package will automatically load migrations from the vendor package.
+     *
+     * When you publish migrations into your application (e.g. via `process-approval:install`),
+     * make sure you set this to `false` to avoid running migrations twice.
+     */
+    'load_migrations' => true,
 ];
