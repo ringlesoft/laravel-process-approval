@@ -16,7 +16,7 @@ return new class extends Migration
             $table->text('approver_name')->nullable();
             $table->text('comment')->nullable();
             $table->foreignUuid('user_id')->references('id')->on('users')->cascadeOnDelete();
-            $table->string('tenant_id', 38)->index()->nullable()->after('user_id');
+            $table->string('tenant_id', 38)->index()->nullable();
             $table->timestamps();
         });
     }
