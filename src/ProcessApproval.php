@@ -68,7 +68,7 @@ class ProcessApproval implements ProcessApprovalContract
      * @throws ApprovalFlowDoesNotExistsException
      * @throws Exception
      */
-    public function deleteFlow(int $flowId): bool|null
+    public function deleteFlow(string|int $flowId): bool|null
     {
         $approvalFlow = ProcessApprovalFlow::find($flowId);
         if(!$approvalFlow){
@@ -90,7 +90,7 @@ class ProcessApproval implements ProcessApprovalContract
      * @inheritDoc
      * @throws ApprovalFlowStepDoesNotExistsException
      */
-    public function deleteStep(int $stepId): ?bool
+    public function deleteStep(string|int $stepId): ?bool
     {
         $step = ProcessApprovalFlowStep::find($stepId);
         if(!$step){
@@ -104,7 +104,7 @@ class ProcessApproval implements ProcessApprovalContract
      * @inheritDoc
      * @throws ApprovalFlowDoesNotExistsException
      */
-    public function createStep(int $flowId, int $roleId, string|null $action = 'APPROVE', string|int|null $tenantId = null): ProcessApprovalFlowStep
+    public function createStep(string|int $flowId, string|int $roleId, string|null $action = 'APPROVE', string|int|null $tenantId = null): ProcessApprovalFlowStep
     {
         $flow = ProcessApprovalFlow::find($flowId);
         if(!$flow){

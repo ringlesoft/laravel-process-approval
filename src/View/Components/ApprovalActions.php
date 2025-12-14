@@ -51,10 +51,20 @@ class ApprovalActions extends Component
                 $bsVersion = 5;
             }
             $bsVersionAttribute = $this->getModalToggleAttributes($bsVersion);
+            if (view()->exists('ringlesoft-process-approval::components.approval-actions-bs')) {
+                return view('ringlesoft-process-approval::components.approval-actions-bs', compact('bsVersionAttribute'));
+            }
             return view()->file(__DIR__ . '/../../../resources/views/components/approval-actions-bs.blade.php', compact('bsVersionAttribute'));
         }
         if (Str::of(config('process_approval.css_library'))->startsWith('tailwind')) {
+            if (view()->exists('ringlesoft-process-approval::components.approval-actions-tw')) {
+                return view('ringlesoft-process-approval::components.approval-actions-tw');
+            }
             return view()->file(__DIR__ . '/../../../resources/views/components/approval-actions-tw.blade.php');
+        }
+
+        if (view()->exists('ringlesoft-process-approval::components.approval-actions')) {
+            return view('ringlesoft-process-approval::components.approval-actions');
         }
         return view()->file(__DIR__ . '/../../../resources/views/components/approval-actions.blade.php');
     }

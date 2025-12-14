@@ -9,11 +9,15 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 use RingleSoft\LaravelProcessApproval\Contracts\ApprovableModel;
 use RingleSoft\LaravelProcessApproval\DataObjects\ApprovalStatusStepData;
 use RingleSoft\LaravelProcessApproval\Traits\MultiTenant;
+use RingleSoft\LaravelProcessApproval\Traits\UsesProcessApprovalUuids;
 
 class ProcessApprovalFlowStep extends Model
 {
     use MultiTenant;
+    use UsesProcessApprovalUuids;
     protected $guarded = ['id'];
+    protected $with = ['role'];
+
     public function role(): BelongsTo
     {
         return $this->belongsTo(config('process_approval.roles_model'));
