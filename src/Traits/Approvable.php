@@ -803,7 +803,7 @@ trait Approvable
      * @param array|null $steps lit of roles that should be used as approval steps
      * @param string|null $name Name of the flow
      * @return  bool
-     * @throws Exception
+     * @throws Throwable
      */
     public static function makeApprovable(array|null $steps = null, string|null $name = null): bool
     {
@@ -814,14 +814,15 @@ trait Approvable
             if ($steps && count($steps) > 0) {
                 $rolesModel = config('process_approval.roles_model');
                 foreach ($steps as $key => $step) {
-                    if (is_numeric($key) && is_numeric($step)) { // Associative
+                    if (is_int($key) && (is_string($step) || is_int($step))) {
                         $roleId = ($rolesModel)::find($step)?->id;
                         $approvalActionType = ApprovalTypeEnum::APPROVE->value;
-                    } elseif (is_numeric($key) && is_array($step)) { // Associative
+                    } elseif (is_int($key) && is_array($step)) {
                         $roleId = ($rolesModel)::find($step['role_id'])?->id;
                         $approvalActionType = ApprovalTypeEnum::from($step['action'])->value ?? ApprovalTypeEnum::APPROVE->value;
                     } else {
-                        $roleId = ($rolesModel)::where((is_numeric($key) ? 'id' : 'name'), $key)->first()?->id;
+                        $field = (is_numeric($key) || Str::isUuid((string) $key)) ? 'id' : 'name';
+                        $roleId = ($rolesModel)::where($field, $key)->first()?->id;
                         $approvalActionType = ApprovalTypeEnum::from($step)->value ?? ApprovalTypeEnum::APPROVE->value;
                     }
                     if ($roleId) {
@@ -830,7 +831,7 @@ trait Approvable
                 }
             }
             DB::commit();
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             DB::rollBack();
             throw $e;
         }
