@@ -26,7 +26,10 @@ class TestCase extends OrchestraTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+        $migrationsPath = config('process_approval.use_uuids', false)
+            ? __DIR__ . '/../database/migrations_uuid'
+            : __DIR__ . '/../database/migrations';
+        $this->loadMigrationsFrom($migrationsPath);
         (new DatabaseSeeder())->run();
     }
 
