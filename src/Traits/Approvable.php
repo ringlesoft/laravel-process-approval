@@ -332,7 +332,7 @@ trait Approvable
         return !in_array($this->approvalStatus->status, [ApprovalStatusEnum::CREATED->value, ApprovalStatusEnum::SUBMITTED->value], true);
     }
 
-    private function nextApprovalStepId(): ?int
+    private function nextApprovalStepId(): string|int|null
     {
         foreach (collect($this->approvalStatus->steps ?? []) as $step) {
             // Break when the first discarded step is found (approval should not go further)
@@ -814,16 +814,29 @@ trait Approvable
             if ($steps && count($steps) > 0) {
                 $rolesModel = config('process_approval.roles_model');
                 foreach ($steps as $key => $step) {
-                    if (is_int($key) && (is_string($step) || is_int($step))) {
-                        $roleId = ($rolesModel)::find($step)?->id;
-                        $approvalActionType = ApprovalTypeEnum::APPROVE->value;
-                    } elseif (is_int($key) && is_array($step)) {
-                        $roleId = ($rolesModel)::find($step['role_id'])?->id;
-                        $approvalActionType = ApprovalTypeEnum::from($step['action'])->value ?? ApprovalTypeEnum::APPROVE->value;
-                    } else {
-                        $field = (is_numeric($key) || Str::isUuid((string) $key)) ? 'id' : 'name';
-                        $roleId = ($rolesModel)::where($field, $key)->first()?->id;
-                        $approvalActionType = ApprovalTypeEnum::from($step)->value ?? ApprovalTypeEnum::APPROVE->value;
+                    $roleId = null;
+                    $approvalActionType = ApprovalTypeEnum::APPROVE->value;
+
+                    if (is_int($key) && (is_string($step) || $step instanceof ApprovalTypeEnum)) {
+                        $actionEnum = $step instanceof ApprovalTypeEnum ? $step : ApprovalTypeEnum::tryFrom($step);
+                        if ($actionEnum !== null) {
+                            $roleId = ($rolesModel)::find($key)?->id;
+                            $approvalActionType = $actionEnum->value;
+                        }
+                    }
+
+                    if ($roleId === null) {
+                        if (is_int($key) && (is_string($step) || is_int($step))) {
+                            $roleId = ($rolesModel)::find($step)?->id;
+                            $approvalActionType = ApprovalTypeEnum::APPROVE->value;
+                        } elseif (is_int($key) && is_array($step)) {
+                            $roleId = ($rolesModel)::find($step['role_id'])?->id;
+                            $approvalActionType = ApprovalTypeEnum::from($step['action'])->value ?? ApprovalTypeEnum::APPROVE->value;
+                        } else {
+                            $field = (is_numeric($key) || Str::isUuid((string) $key)) ? 'id' : 'name';
+                            $roleId = ($rolesModel)::where($field, $key)->first()?->id;
+                            $approvalActionType = ApprovalTypeEnum::from($step)->value ?? ApprovalTypeEnum::APPROVE->value;
+                        }
                     }
                     if ($roleId) {
                         $processApproval->createStep($flow->id, $roleId, $approvalActionType);
