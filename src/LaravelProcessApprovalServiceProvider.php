@@ -3,6 +3,7 @@
 namespace RingleSoft\LaravelProcessApproval;
 
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use RingleSoft\LaravelProcessApproval\Console\Commands\FlowCommand;
 use RingleSoft\LaravelProcessApproval\Console\Commands\StepCommand;
@@ -22,6 +23,10 @@ class LaravelProcessApprovalServiceProvider extends ServiceProvider
         Blade::component('approval-status-summary', ApprovalStatusSummary::class, 'ringlesoft');
 
         $this->loadTranslationsFrom(__DIR__.'/../resources/lang', 'ringlesoft');
+        $this->loadViewsFrom(__DIR__ . '/../resources/views', 'ringlesoft-process-approval');
+        if (function_exists('resource_path')) {
+            View::prependNamespace('ringlesoft-process-approval', resource_path('views/vendor/ringlesoft/process_approval'));
+        }
         $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
         $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
         $this->publishItems();
