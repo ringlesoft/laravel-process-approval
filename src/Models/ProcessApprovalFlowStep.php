@@ -14,6 +14,8 @@ class ProcessApprovalFlowStep extends Model
 {
     use MultiTenant;
     protected $guarded = ['id'];
+    protected $with = ['role'];
+
     public function role(): BelongsTo
     {
         return $this->belongsTo(config('process_approval.roles_model'));
