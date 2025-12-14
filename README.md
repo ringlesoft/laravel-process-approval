@@ -34,11 +34,38 @@ php artisan vendor:publish --provider="RingleSoft\LaravelProcessApproval\Laravel
 ```
 
 You can publish specific files by providing the ```--tag``` option within the publish command. Available options
-are ```approvals-migrations```, ```approvals-config```, ```approvals-views```, ```approvals-translations```. <br> For example:
+are ```approvals-migrations```, ```approvals-migrations-uuids```, ```approvals-config```, ```approvals-views```, ```approvals-translations```. <br> For example:
 
 ```bash
 php artisan vendor:publish --provider="RingleSoft\LaravelProcessApproval\LaravelProcessApprovalServiceProvider" --tag="approvals-migrations" 
 ```
+> **Note:** If you run `php artisan process-approval:install`, it will publish the selected migration set for you (bigint by default, UUIDs with `--uuids`).
+
+
+#### UUID Support (Optional)
+
+This package supports UUID primary keys for all package tables and UUID-based polymorphic relations.
+
+If you want to use UUIDs, it is recommended to use the `install` command (this publishes the correct migrations and updates
+the published config):
+
+```bash
+php artisan process-approval:install --uuids
+```
+
+If you need to overwrite already published files, you can pass `--force`:
+
+```bash
+php artisan process-approval:install --uuids --force
+```
+
+If you prefer to publish migrations manually, a UUID migration tag is also available:
+
+```bash
+php artisan vendor:publish --provider="RingleSoft\LaravelProcessApproval\LaravelProcessApprovalServiceProvider" --tag="approvals-migrations-uuids"
+```
+
+> **Note**: If you manually publish migrations, make sure you set `load_migrations` in the config file to `false` to avoid running migrations twice. Running `process-approval:install` will set this variable to `false` for you.
 
 #### 3. Run migration:
 
@@ -98,7 +125,7 @@ This will show a list of all available flows and steps
 
 ## Usage
 
-#### 1. Implement `AprovableModel` to your approvable model
+#### 1. Implement `ApprovableModel` on your approvable model
 
 ```php
 class FundRequest extends Model implements ApprovableModel
@@ -114,7 +141,7 @@ class FundRequest extends Model implements ApprovableModel
 ```php
 class FundRequest extends Model implements ApprovableModel
 {
-    use \RingleSoft\ProcessApproval\Traits\Approvable;
+    use \RingleSoft\LaravelProcessApproval\Traits\Approvable;
    // Your model content
 
 }
@@ -129,7 +156,7 @@ approval. This is useful in the case of performing specific tasks when the appro
 ```php
 class FundRequest extends Model implements ApprovableModel
 {
-use \RingleSoft\ProcessApproval\Traits\Approvable;
+    use \RingleSoft\LaravelProcessApproval\Traits\Approvable;
    // Your model content
    
     public function onApprovalCompleted(ProcessApproval $approval): bool
@@ -169,6 +196,8 @@ php artisan vendor:publish --provider="RingleSoft\LaravelProcessApproval\Laravel
 - `css_library` - Specify the css library for styling the UI component (bootstrap/tailwind). (default
   is `Tailwind CSS`).
 - `multi_tenancy_field` - Specify the multi-tenancy field in the users table. (default is `tenant_id`)
+- `use_uuids` - Enable UUID support for all package tables and UUID-based polymorphic relations (recommended for fresh installs).
+- `load_migrations` - If true, the package auto-loads vendor migrations. If you publish migrations into your app, make sure set this to `false`.
 
 ### Model Submitting
 
@@ -257,9 +286,8 @@ The package dispatches events during different stages of the approval workflow t
 - `ProcessRejectedEvent` - Dispatched when an approvable model is rejected by an approver.
 - `ProcessReturnedEvent` - Dispatched when an approvable model is returned back to the previous step by an approver.
 - `ProcessDiscardedEvent` - Dispatched when an approvable model is discarded by an approver.
-- `ProcessApprovalCompletedEvent` - Dispatched when the full approval workflow is completed, either approved or
-- `ApprovalNotificationEvent` - Dispatches during approval actions with the notification message about what happened.
-  discarded.
+- `ProcessApprovalCompletedEvent` - Dispatched when the full approval workflow is completed (approved or discarded).
+- `ApprovalNotificationEvent` - Dispatched during approval actions with a notification message about what happened.
 
 ### Showing Notifications
 
@@ -366,7 +394,6 @@ This package adds multiple helper methods to the approvable models. These includ
 - `reject([comment = null], [user: Authenticatable|null = null]): bool|ProcessApproval`: Rejects the model
 - `return([comment = null], [user: Authenticatable|null = null]): bool|ProcessApproval`: Returns the model to the previous step
 - `discard([comment = null], [user: Authenticatable|null = null]): bool|ProcessApproval`: Discards the model
-- `return([comment = null], [user: Authenticatable|null = null]): bool|ProcessApproval`: Returns the model to the previous step
 
 
 ### Misc
