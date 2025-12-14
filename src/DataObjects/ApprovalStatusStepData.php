@@ -15,11 +15,11 @@ class ApprovalStatusStepData
 {
 
     public function __construct(
-        private readonly int              $id,
+        private readonly string|int       $id,
         private readonly ApprovalTypeEnum $action,
         private readonly int|string       $roleId,
         private readonly string|null      $roleName = null,
-        private int|null                  $processApprovalId = null,
+        private string|int|null           $processApprovalId = null,
         private ApprovalActionEnum|null   $processApprovalAction = null,
         private readonly bool|null $active = null
     )
@@ -147,10 +147,10 @@ class ApprovalStatusStepData
 
     /**
      * Check if the step belongs to the specified step
-     * @param int|ProcessApprovalFlowStep $step
+     * @param string|int|ProcessApprovalFlowStep $step
      * @return bool
      */
-    public function belongsToStep(int|ProcessApprovalFlowStep $step): bool
+    public function belongsToStep(string|int|ProcessApprovalFlowStep $step): bool
     {
         if($step instanceof ProcessApprovalFlowStep) {
             $step = $step->id;
@@ -161,10 +161,10 @@ class ApprovalStatusStepData
 
     /**
      * Check if the step belongs to the specified approval
-     * @param int|ProcessApproval $approval
+     * @param string|int|ProcessApproval $approval
      * @return bool
      */
-    public function belongsToApproval(int|ProcessApproval $approval): bool
+    public function belongsToApproval(string|int|ProcessApproval $approval): bool
     {
         if($approval instanceof ProcessApproval) {
             $approval = $approval->id;
