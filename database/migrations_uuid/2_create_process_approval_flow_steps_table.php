@@ -16,7 +16,7 @@ return new class extends Migration
             $table->integer('order')->nullable()->index();
             $table->enum('action', ['APPROVE', 'VERIFY', 'CHECK'])->default('APPROVE');
             $table->tinyInteger('active')->default(1);
-            $table->string('tenant_id', 38)->index()->nullable()->after('active');
+            $table->string('tenant_id', 38)->index()->nullable();
             $table->timestamps();
         });
     }

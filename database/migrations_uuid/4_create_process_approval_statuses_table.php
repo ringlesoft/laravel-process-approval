@@ -15,7 +15,7 @@ return new class extends Migration
             $table->json('steps')->nullable();
             $table->string('status', 10)->default(ApprovalStatusEnum::CREATED->value);
             $table->uuid('creator_id')->nullable();
-            $table->string('tenant_id', 38)->index()->nullable()->after('creator_id');
+            $table->string('tenant_id', 38)->index()->nullable();
             $table->timestamps();
         });
     }
