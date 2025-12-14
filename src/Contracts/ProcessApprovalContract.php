@@ -34,7 +34,7 @@ interface ProcessApprovalContract
      * @param int $flowId
      * @return bool|null
      */
-    public function deleteFlow(int $flowId): bool|null;
+    public function deleteFlow(string|int $flowId): bool|null;
 
 
     /**
@@ -45,12 +45,12 @@ interface ProcessApprovalContract
      * @param string|int|null $tenantId
      * @return ProcessApprovalFlowStep
      */
-    public function createStep(int $flowId, int $roleId, String|null $action = 'APPROVE', string|int|null $tenantId = null): ProcessApprovalFlowStep;
+    public function createStep(string|int $flowId, string|int $roleId, String|null $action = 'APPROVE', string|int|null $tenantId = null): ProcessApprovalFlowStep;
 
     /**
      * Delete an approval flow step
      * @param int $stepId
      * @return bool|null
      */
-    public function deleteStep(int $stepId): bool|null;
+    public function deleteStep(string|int $stepId): bool|null;
 }

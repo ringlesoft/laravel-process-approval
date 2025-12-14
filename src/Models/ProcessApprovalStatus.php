@@ -6,10 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use RingleSoft\LaravelProcessApproval\Traits\MultiTenant;
+use RingleSoft\LaravelProcessApproval\Traits\UsesProcessApprovalUuids;
 
 class ProcessApprovalStatus extends Model
 {
     use MultiTenant;
+    use UsesProcessApprovalUuids;
     protected $guarded = ['id'];
 
     protected $casts = [
