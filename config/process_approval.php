@@ -3,36 +3,44 @@
 return [
 
     /**
-     * This is the name of the table that contains the roles used to classify users
-     * (for spatie-laravel-permissions it is the `roles` table
+     * The Role model class used to resolve approver roles.
+     *
+     * For spatie/laravel-permission, this is typically `Spatie\Permission\Models\Role`.
      */
     'roles_model' => "\\Spatie\\Permission\\Models\\Role",
 
 
     /**
-     * The model associated with login and authentication
+     * The User model class used as the actor/approver (usually your authenticatable model).
      */
     'users_model' => "\\App\\Models\\User",
 
 
     /**
-     * The Namespace in which application models ar located
+     * Default namespace where your application models live.
+     *
+     * Used to build fully-qualified class names when you refer to models by short name.
      */
     'models_path' => "\\App\Models",
 
     /**
-     * The middlewares that will be applied to the routes pointing to the approval controller
-     * 'web' is already applied by default
+     * Middlewares applied to the approval routes.
+     *
+     * The `web` middleware group is already applied by default.
      */
     'approval_controller_middlewares' => [],
 
     /**
-     * The name of the css library to use
+     * CSS library to use for the shipped Blade components/views.
+     *
+     * Supported: tailwind, bootstrap, bootstrap3, bootstrap4, or null.
      */
     'css_library' => 'tailwind', // tailwind | bootstrap |bootstrap3 | bootstrap4 | null
 
     /**
-     * The name of the multi tenancy field in the users table
+     * Multi-tenancy field name used to scope approvals (if you enable multi-tenancy).
+     *
+     * This field is expected to exist on your approvable/user models.
      */
     'multi_tenancy_field' => 'tenant_id',
 
