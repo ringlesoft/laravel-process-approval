@@ -10,10 +10,11 @@ class ProcessApprovalFlow extends Model
 {
 
     protected $guarded = ['id'];
+    protected $with = ['steps'];
 
     public static function getList(): \Illuminate\Contracts\Pagination\LengthAwarePaginator|LengthAwarePaginator|array
     {
-        return self::query()->with(['steps'])->paginate();
+        return self::query()->paginate();
     }
     public function steps(): HasMany
     {
