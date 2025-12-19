@@ -22,10 +22,9 @@ trait UsesProcessApprovalUuids
             if (!config('process_approval.use_uuids', false)) {
                 return;
             }
-
             $keyName = $model->getKeyName();
             if (empty($model->{$keyName})) {
-                $model->{$keyName} = (string) Str::uuid();
+                $model->{$keyName} = (string)Str::uuid7();
             }
         });
     }
