@@ -141,6 +141,73 @@
     .approval-item:hover .tooltip {
         opacity: 1;
     }
+
+    @media (prefers-color-scheme: dark) {
+        .lpa-card-body {
+            border: 1px solid #3f3f46;
+            background: #18181b;
+        }
+
+        .lpa-text-center {
+            color: #f4f4f5;
+        }
+
+        table {
+            color: #e4e4e7;
+        }
+
+        th, td {
+            border: 1px solid #3f3f46;
+        }
+
+        .lpa-modal {
+            background: rgba(0, 0, 0, 0.6);
+        }
+
+        .lpa-modal-content {
+            background: #27272a;
+            border: 1px solid #3f3f46;
+        }
+
+        .lpa-modal-close {
+            color: #a1a1aa;
+        }
+
+        .lpa-modal-close:hover {
+            color: #f4f4f5;
+        }
+
+        textarea {
+            color: #f4f4f5;
+            background: #18181b;
+            border: 1px solid #3f3f46;
+        }
+
+        textarea::placeholder {
+            color: #a1a1aa;
+        }
+
+        .tooltip {
+            background: #09090b;
+            color: #f4f4f5;
+        }
+
+        .btn-green {
+            background: #16a34a;
+        }
+
+        .btn-green:hover {
+            background: #15803d;
+        }
+
+        .btn-red {
+            background: #dc2626;
+        }
+
+        .btn-red:hover {
+            background: #b91c1c;
+        }
+    }
 </style>
 
 @if($model->approvalsPaused !== true)
@@ -320,7 +387,7 @@
                               class="approval-comment"
                               placeholder="{{ __('ringlesoft::approvals.write_comment') }} ({{ __('ringlesoft::approvals.optional') }})"></textarea>
                     <div style="display: flex; gap: 10px; justify-content: center;">
-                        <button type="button" class="btn close-modal"
+                        <button type="button" class="lpa-btn close-modal"
                                 style="background: #fff; color: #6b7280; border: 1px solid #d1d5db;"
                                 data-modal="approve-modal">
                             {{ __('ringlesoft::approvals.no_cancel') }}
