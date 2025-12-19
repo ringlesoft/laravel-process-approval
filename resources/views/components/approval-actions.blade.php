@@ -142,7 +142,8 @@
         opacity: 1;
     }
 
-    @media (prefers-color-scheme: dark) {
+    @if(config('process_approval.allow_dark_mode', false))
+@media (prefers-color-scheme: dark) {
         .lpa-card-body {
             border: 1px solid #3f3f46;
             background: #18181b;
@@ -208,6 +209,7 @@
             background: #b91c1c;
         }
     }
+    @endif
 </style>
 
 @if($model->approvalsPaused !== true)
@@ -497,7 +499,7 @@
     });
 
     document.querySelectorAll('.approval-comment').forEach(textarea => {
-        textarea.addEventListener('keydown', function(e) {
+        textarea.addEventListener('keydown', function (e) {
             if (e.key === 'Enter' && e.shiftKey) {
                 e.preventDefault();
                 const form = this.closest('form');

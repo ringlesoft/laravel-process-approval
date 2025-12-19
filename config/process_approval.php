@@ -38,6 +38,12 @@ return [
     'css_library' => 'tailwind', // tailwind | bootstrap |bootstrap3 | bootstrap4 | null
 
     /**
+     * For the vanilla CSS option, set to true to allow dark mode.
+     * This will follow the global system/app dark mode setting
+     */
+    'allow_dark_mode' => false,
+
+    /**
      * Multi-tenancy field name used to scope approvals (if you enable multi-tenancy).
      *
      * This field is expected to exist on your approvable/user models.
