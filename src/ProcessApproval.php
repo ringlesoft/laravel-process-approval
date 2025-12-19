@@ -57,7 +57,11 @@ class ProcessApproval implements ProcessApprovalContract
         if(ProcessApprovalFlow::query()->where('approvable_type', trim($modelClass, '\\'))->exists()) {
             throw ApprovalFlowExistsException::create($name, $modelClass);
         }
-        return ProcessApprovalFlow::query()->create([
+        $x = new ProcessApprovalFlow([
+            'name' => $name,
+            'approvable_type' => get_class(new $modelClass()),
+        ]);
+        return ProcessApprovalFlow::create([
             'name' => $name,
             'approvable_type' => get_class(new $modelClass()),
         ]);

@@ -397,7 +397,7 @@ trait Approvable
         $user = $user ?? Auth::user();
         try {
             DB::beginTransaction();
-            $approval = ProcessApproval::query()->create([
+            $approval = ProcessApproval::create([
                 'approvable_type' => static::getApprovableType(),
                 'approvable_id' => $this->id,
                 'process_approval_flow_step_id' => $this->approvalFlowSteps()?->first()?->id ?? null, // Backward compatibility
@@ -506,7 +506,7 @@ trait Approvable
         try {
             DB::beginTransaction();
             $nextStep = $this->nextApprovalStep();
-            $approval = ProcessApproval::query()->create([
+            $approval = ProcessApproval::create([
                 'approvable_type' => static::getApprovableType(),
                 'approvable_id' => $this->id,
                 'process_approval_flow_step_id' => $nextStep?->id,
@@ -547,7 +547,7 @@ trait Approvable
         $nextStep = $this->nextApprovalStep();
         DB::beginTransaction();
         try {
-            $approval = ProcessApproval::query()->create([
+            $approval = ProcessApproval::create([
                 'approvable_type' => static::getApprovableType(),
                 'approvable_id' => $this->id,
                 'process_approval_flow_step_id' => $nextStep?->id,
@@ -591,7 +591,7 @@ trait Approvable
         $nextStep = $this->nextApprovalStep();
         try {
             DB::beginTransaction();
-            $approval = ProcessApproval::query()->create([
+            $approval = ProcessApproval::create([
                 'approvable_type' => static::getApprovableType(),
                 'approvable_id' => $this->id,
                 'process_approval_flow_step_id' => $nextStep?->id,
@@ -807,10 +807,9 @@ trait Approvable
      */
     public static function makeApprovable(array|null $steps = null, string|null $name = null): bool
     {
-        $processApproval = new \RingleSoft\LaravelProcessApproval\ProcessApproval();
         try {
             DB::BeginTransaction();
-            $flow = $processApproval->createFlow($name ?? Str::title(static::class), static::class);
+            $flow = \RingleSoft\LaravelProcessApproval\Facades\ProcessApproval::createFlow($name ?? Str::title(static::class), static::class);
             if ($steps && count($steps) > 0) {
                 $rolesModel = config('process_approval.roles_model');
                 foreach ($steps as $key => $step) {
@@ -839,7 +838,7 @@ trait Approvable
                         }
                     }
                     if ($roleId) {
-                        $processApproval->createStep($flow->id, $roleId, $approvalActionType);
+                        \RingleSoft\LaravelProcessApproval\Facades\ProcessApproval::createStep($flow->id, $roleId, $approvalActionType);
                     }
                 }
             }

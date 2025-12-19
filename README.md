@@ -173,8 +173,8 @@ class FundRequest extends Model implements ApprovableModel
     <x-ringlesoft-approval-actions :model="$fundRequest" />
 ```
 
-Currently, the UI is implemented using `tailwind` or `bootstrap`. Support for vanilla CSS and JS will be available soon.
-You can switch between the two by modifying the `css_library` setting in the configuration file. Additionally, you have
+Currently, the UI is implemented using `tailwind`, `bootstrap` or vanilla `css`.
+You can switch between the frameworks by modifying the `css_library` setting in the configuration file. Additionally, you have
 the option to publish the views and customize them to meet your specific requirements.
 
 ## Configuration
@@ -461,6 +461,7 @@ When the first parameter is an array of arrays, the method creates a new approva
         );
 ```
 This option enables you to create a flow with multiple steps for the same role, each step having a different action or occurrence.
+> **Note:** If you are using the Laravel's DatabaseSeeder, make sure to remove the `use WithoutModelEvents;` to be able to use the `makeApprovable()` method.
 
 ## Multi-Tenancy
 This package supports multi-tenancy by configuring a column in the users table. You can specify the column name using the `multi_tenancy_field` configuration option. 

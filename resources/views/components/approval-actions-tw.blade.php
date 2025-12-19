@@ -1,34 +1,34 @@
 @if($model->approvalsPaused !== true)
     <div {{ $attributes->class(['flex w-full justify-center p-3']) }} >
-        <div class="card-body w-full p-3 overflow-x-auto  sm:rounded-lg border border-gray-300 ">
-            <h6 class="text-center">{{ __('ringlesoft::approvals.approvals') }}</h6>
+        <div class="card-body w-full p-3 overflow-x-auto sm:rounded-lg border border-gray-300 dark:border-zinc-600 bg-white dark:bg-zinc-900">
+            <h6 class="text-center text-gray-900 dark:text-gray-100">{{ __('ringlesoft::approvals.approvals') }}</h6>
             @if($model->isSubmitted())
                 <div class="approvals relative mt-3">
                     <table
-                        class="w-full text-sm text-left text-gray-800 dark:text-gray-400 mb-2 border border-collapse">
+                        class="w-full text-sm text-left text-zinc-800 dark:text-zinc-200 mb-2 border border-zinc-300 dark:border-zinc-700 border-collapse">
                         <thead>
                         <tr>
-                            <th class="border p-2" style="width: 50px;">{{ __('ringlesoft::approvals.by') }}:</th>
+                            <th class="border border-gray-300 dark:border-gray-600 p-2" style="width: 50px;">{{ __('ringlesoft::approvals.by') }}:</th>
                             @foreach($modelApprovalSteps as $step)
                                 <th style="width: {{(100 / count($modelApprovalSteps))}}%;"
-                                    class="text-center border">{{$step->role?->name ?? __('approvals.step') . ' '. $loop->iteration }}</th>
+                                    class="text-center border border-gray-300 dark:border-gray-600">{{$step->role?->name ?? __('approvals.step') . ' '. $loop->iteration }}</th>
                             @endforeach
                         </tr>
                         <tr>
-                            <th class="p-2">{{ __('ringlesoft::approvals.date') }}</th>
+                            <th class="p-2 text-gray-900 dark:text-gray-100">{{ __('ringlesoft::approvals.date') }}</th>
                             @foreach($modelApprovalSteps as $step)
-                                <td class="border p-2">
+                                <td class="border border-gray-300 dark:border-gray-600 p-2">
                                     <div class="text-center">
                                         @if($currentApproval = $step->approval)
                                             <div class="relative group">
                                                 <div
-                                                    class="absolute bottom-0 left-1/2 -translate-x-1/2 transform opacity-0 scale-75 origin-bottom group-hover:opacity-100 transition-all duration-300 z-10 px-3 py-2 text-sm text-white bg-gray-800 rounded-lg shadow-lg">
+                                                    class="absolute bottom-0 left-1/2 -translate-x-1/2 transform opacity-0 scale-75 origin-bottom group-hover:opacity-100 transition-all duration-300 z-10 px-3 py-2 text-sm text-white bg-gray-800 dark:bg-gray-900 rounded-lg shadow-lg">
                                                     {{$currentApproval->comment ?? __('ringlesoft::approvals.no_comment') .'!' }}
                                                 </div>
                                                 @if($currentApproval->approval_action === \RingleSoft\LaravelProcessApproval\Enums\ApprovalActionEnum::APPROVED->value)
                                                     <div class="relative group">
                                                         <div
-                                                            class="absolute bottom-0 left-1/2 -translate-x-1/2 transform opacity-0 scale-75 origin-bottom group-hover:opacity-100 transition-all duration-300 z-10 px-3 py-2 text-sm text-white bg-gray-800 rounded-lg shadow-lg">
+                                                            class="absolute bottom-0 left-1/2 -translate-x-1/2 transform opacity-0 scale-75 origin-bottom group-hover:opacity-100 transition-all duration-300 z-10 px-3 py-2 text-sm text-white bg-gray-800 dark:bg-gray-900 rounded-lg shadow-lg">
                                                             {{$currentApproval->comment ?? __('ringlesoft::approvals.no_comment') .'!'}}
                                                         </div>
                                                         @if($signature = $currentApproval->getSignature())
@@ -91,7 +91,7 @@
                                             </div>
                                             <div> {{$currentApproval->user?->name}}</div>
                                             <div
-                                                class="small text-gray-500">{{$currentApproval->created_at->format('d F, Y')}}</div>
+                                                class="small text-gray-500 dark:text-gray-400">{{$currentApproval->created_at->format('d F, Y')}}</div>
                                         @else
                                             <div class="py-8"></div>
                                         @endif
@@ -108,7 +108,7 @@
                             @if($userCanApprove)
                                 <div class="flex justify-between">
                                     <div class="md:col-7">
-                                        <div class="text-gray-500">
+                                        <div class="text-gray-500 dark:text-gray-400">
                                             @if($model->isRejected())
                                                 {{ __('ringlesoft::approvals.request_rejected_re_approve') }}
                                                 <strong>{{$nextApprovalStep->role->name}}</strong>
@@ -178,7 +178,7 @@
             @else
                 <div class="flex justify-between w-full mt-5">
                     <div class="md:col-7">
-                        <div class="text-gray-500">
+                        <div class="text-gray-500 dark:text-gray-400">
                             {{ __('ringlesoft::approvals.document_not_submitted') }}
                             @if($model->canBeSubmittedBy(\Illuminate\Support\Facades\Auth::user()))
                                 <span>
@@ -221,10 +221,10 @@
                  class="hidden overflow-x-hidden overflow-y-auto fixed h-modal md:h-full top-4 left-0 right-0 md:inset-0 z-50 justify-center items-center">
 
                 <div class="relative w-full max-w-md max-h-full">
-                    <div class="relative bg-white rounded-lg shadow dark:bg-gray-700 pt-2">
+                    <div class="relative bg-white rounded-lg shadow dark:bg-zinc-800 pt-2">
                         <button type="button"
                                 class="absolute top-3 right-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ml-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white z-10"
-                                data-modal-toggle="approve-modal">
+                                data-modal-hide="approve-modal">
                             <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
                                  viewBox="0 0 14 14">
                                 <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
@@ -245,13 +245,13 @@
                                         <div class="form-group">
                                     <textarea name="comment" id="approveComment" rows="3"
                                               placeholder="{{ __('ringlesoft::approvals.write_comment') }} ({{ __('ringlesoft::approvals.optional') }})"
-                                              class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"></textarea>
+                                              class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-zinc-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"></textarea>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="mt-3">
                                     <button data-modal-close="approve-modal" type="button"
-                                            class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-200 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-500 dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-gray-600"
+                                            class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-200 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10 dark:bg-zinc-800 dark:text-gray-300 dark:border-gray-500 dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-gray-600"
                                             data-modal-toggle="approve-modal"
                                     >
                                         {{ __('ringlesoft::approvals.no_cancel') }}
@@ -274,10 +274,10 @@
                  class="hidden overflow-x-hidden overflow-y-auto fixed h-modal md:h-full top-4 left-0 right-0 md:inset-0 z-50 justify-center items-center">
 
                 <div class="relative w-full max-w-md max-h-full">
-                    <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+                    <div class="relative bg-white rounded-lg shadow dark:bg-zinc-800">
                         <button type="button"
                                 class="absolute top-3 right-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ml-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white z-10"
-                                data-modal-toggle="reject-modal">
+                                data-modal-hide="reject-modal">
                             <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
                                  viewBox="0 0 14 14">
                                 <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
@@ -298,7 +298,7 @@
                                         <div class="form-group">
                                     <textarea name="comment" id="rejectComment" rows="3"
                                               placeholder="{{ __('ringlesoft::approvals.write_comment') }}"
-                                              class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                              class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-zinc-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                               required
                                     ></textarea>
                                         </div>
@@ -306,7 +306,7 @@
                                 </div>
                                 <div class="mt-3">
                                     <button data-modal-close="reject-modal" type="button"
-                                            class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-200 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-500 dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-gray-600"
+                                            class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-200 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10 dark:bg-zinc-800 dark:text-gray-300 dark:border-gray-500 dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-gray-600"
                                             data-modal-toggle="reject-modal"
                                     >
                                         {{ __('ringlesoft::approvals.no_cancel') }}
@@ -330,10 +330,10 @@
                  class="hidden overflow-x-hidden overflow-y-auto fixed h-modal md:h-full top-4 left-0 right-0 md:inset-0 z-50 justify-center items-center">
 
                 <div class="relative w-full max-w-md max-h-full">
-                    <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+                    <div class="relative bg-white rounded-lg shadow dark:bg-zinc-800">
                         <button type="button"
                                 class="absolute top-3 right-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ml-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white z-10"
-                                data-modal-toggle="return-modal">
+                                data-modal-hide="return-modal">
                             <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
                                  viewBox="0 0 14 14">
                                 <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
@@ -354,7 +354,7 @@
                                         <div class="form-group">
                                     <textarea name="comment" id="returnComment" rows="3"
                                               placeholder="{{ __('ringlesoft::approvals.write_comment') }}"
-                                              class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                              class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-zinc-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                               required
                                     ></textarea>
                                         </div>
@@ -362,7 +362,7 @@
                                 </div>
                                 <div class="mt-3">
                                     <button data-modal-close="return-modal" type="button"
-                                            class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-200 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-500 dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-gray-600"
+                                            class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-200 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10 dark:bg-zinc-800 dark:text-gray-300 dark:border-gray-500 dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-gray-600"
                                             data-modal-toggle="return-modal"
                                     >
                                         {{ __('ringlesoft::approvals.no_cancel') }}
@@ -384,10 +384,10 @@
                  class="hidden overflow-x-hidden overflow-y-auto fixed h-modal md:h-full top-4 left-0 right-0 md:inset-0 z-50 justify-center items-center">
 
                 <div class="relative w-full max-w-md max-h-full">
-                    <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+                    <div class="relative bg-white rounded-lg shadow dark:bg-zinc-800">
                         <button type="button"
                                 class="absolute top-3 right-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ml-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white z-10"
-                                data-modal-toggle="discard-modal">
+                                data-modal-hide="discard-modal">
                             <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
                                  viewBox="0 0 14 14">
                                 <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
@@ -410,13 +410,13 @@
                                               required
                                               id="discardComment" rows="3"
                                               placeholder="{{ __('ringlesoft::approvals.write_comment') }}"
-                                              class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"></textarea>
+                                              class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-zinc-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"></textarea>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="mt-3">
                                     <button data-modal-close="discard-modal" type="button"
-                                            class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-200 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-500 dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-gray-600"
+                                            class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-200 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10 dark:bg-zinc-800 dark:text-gray-300 dark:border-gray-500 dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-gray-600"
                                             data-modal-toggle="discard-modal"
                                     >
                                         {{ __('ringlesoft::approvals.no_cancel') }}
@@ -434,3 +434,107 @@
         </div>
     @endif
 @endif
+
+<script>
+    (function () {
+        if (window.__ringlesoftProcessApprovalModalInit) {
+            return;
+        }
+        window.__ringlesoftProcessApprovalModalInit = true;
+
+        const getTargetModalId = (el) => {
+            return (
+                el.getAttribute('data-modal-toggle') ||
+                el.getAttribute('data-modal-hide') ||
+                el.getAttribute('data-modal-close') ||
+                el.getAttribute('data-toggle')
+            );
+        };
+
+        const getModalEl = (modalId) => {
+            if (!modalId) {
+                return null;
+            }
+            return document.getElementById(modalId);
+        };
+
+        const openModal = (modal) => {
+            if (!modal) {
+                return;
+            }
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            modal.setAttribute('aria-hidden', 'false');
+        };
+
+        const closeModal = (modal) => {
+            if (!modal) {
+                return;
+            }
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            modal.setAttribute('aria-hidden', 'true');
+        };
+
+        document.addEventListener('click', function (e) {
+            const el = e.target.closest('[data-modal-toggle],[data-modal-hide],[data-modal-close],[data-toggle]');
+            if (!el) {
+                return;
+            }
+
+            const modalId = getTargetModalId(el);
+            const modal = getModalEl(modalId);
+            if (!modal) {
+                return;
+            }
+
+            if (el.hasAttribute('data-modal-hide') || el.hasAttribute('data-modal-close')) {
+                closeModal(modal);
+                return;
+            }
+
+            openModal(modal);
+        });
+
+        document.addEventListener('click', function (e) {
+            const modal = e.target.closest('[id].fixed');
+            if (!modal) {
+                return;
+            }
+            if (e.target === modal) {
+                closeModal(modal);
+            }
+        });
+
+        document.addEventListener('keydown', function (e) {
+            if (e.key !== 'Escape') {
+                return;
+            }
+            document.querySelectorAll('[id].fixed.flex').forEach((modal) => {
+                closeModal(modal);
+            });
+        });
+
+        document.addEventListener('keydown', function (e) {
+            const textarea = e.target.closest('textarea');
+            if (!textarea) {
+                return;
+            }
+            if (e.key === 'Enter' && e.shiftKey) {
+                const form = textarea.closest('form');
+                if (!form) {
+                    return;
+                }
+                const submitButton = form.querySelector('button[type="submit"]');
+                if (!submitButton) {
+                    return;
+                }
+                if (typeof form.checkValidity === 'function' && !form.checkValidity()) {
+                    return;
+                }
+                e.preventDefault();
+                submitButton.click();
+            }
+        });
+    })();
+</script>

@@ -23,7 +23,7 @@ class ApprovalActions extends Component
     {
         $modelApprovals = $model->approvals()->with('processApprovalFlowStep')->get()->keyBy('process_approval_flow_step_id');
         $this->modelApprovalSteps = ProcessApprovalFlowStep::query()
-            ->whereIntegerInRaw('id', collect($model->approvalStatus->steps ?? [])->pluck('id')->toArray())
+            ->whereIn('id', collect($model->approvalStatus->steps ?? [])->pluck('id')->toArray())
             ->with('role')
             ->orderBy('order')
             ->get()
