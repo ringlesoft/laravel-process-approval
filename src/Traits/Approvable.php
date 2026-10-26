@@ -10,12 +10,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use RingleSoft\LaravelProcessApproval\Contracts\ApprovableModel;
+use RingleSoft\LaravelProcessApproval\Contracts\RoleResolver;
+use RingleSoft\LaravelProcessApproval\Contracts\UserResolver;
 use RingleSoft\LaravelProcessApproval\DataObjects\ApprovalStatusStepData;
 use RingleSoft\LaravelProcessApproval\Enums\ApprovalActionEnum;
 use RingleSoft\LaravelProcessApproval\Enums\ApprovalStatusEnum;
@@ -31,6 +32,7 @@ use RingleSoft\LaravelProcessApproval\Exceptions\ApprovalsPausedException;
 use RingleSoft\LaravelProcessApproval\Exceptions\NoFurtherApprovalStepsException;
 use RingleSoft\LaravelProcessApproval\Exceptions\RequestAlreadySubmittedException;
 use RingleSoft\LaravelProcessApproval\Exceptions\RequestNotSubmittedException;
+use RingleSoft\LaravelProcessApproval\Exceptions\UnauthorizedApproverException;
 use RingleSoft\LaravelProcessApproval\Models\ProcessApproval;
 use RingleSoft\LaravelProcessApproval\Models\ProcessApprovalFlow;
 use RingleSoft\LaravelProcessApproval\Models\ProcessApprovalFlowStep;
@@ -59,7 +61,7 @@ trait Approvable
                     return $item->toApprovalStatusArray();
                 }),
                 'status' => ((property_exists($model, 'autoSubmit') && $model->autoSubmit) || (method_exists($model, 'enableAutoSubmit') && $model->enableAutoSubmit())) ? ApprovalStatusEnum::SUBMITTED->value : ApprovalStatusEnum::CREATED->value,
-                'creator_id' => Auth::id(),
+                'creator_id' => static::resolveActingUser()?->getAuthIdentifier(),
             ]);
         });
     }
@@ -391,10 +393,10 @@ trait Approvable
         if ($this->isSubmitted()) {
             throw RequestAlreadySubmittedException::create($this);
         }
-        if ($this->approvalStatus->creator_id && $this->approvalStatus->creator_id !== Auth::id()) {
+        $user = $user ?? static::resolveActingUser();
+        if ($this->approvalStatus->creator_id && $this->approvalStatus->creator_id !== $user?->getAuthIdentifier()) {
             throw new RuntimeException('Only the creator can submit the record');
         }
-        $user = $user ?? Auth::user();
         try {
             DB::beginTransaction();
             $approval = ProcessApproval::create([
@@ -446,7 +448,8 @@ trait Approvable
         if ($this->approvalsPaused) {
             throw ApprovalsPausedException::create($this);
         }
-        $user = $user ?? Auth::user();
+        $user = $user ?? static::resolveActingUser();
+        $this->ensureUserCanActOnStep($user, $nextStep);
         try {
             DB::beginTransaction();
             $approval = ProcessApproval::query()->updateOrCreate([
@@ -502,10 +505,11 @@ trait Approvable
         if ($this->approvalsPaused) {
             throw ApprovalsPausedException::create($this);
         }
-        $user = $user ?? Auth::user();
+        $user = $user ?? static::resolveActingUser();
+        $nextStep = $this->nextApprovalStep();
+        $this->ensureUserCanActOnStep($user, $nextStep);
         try {
             DB::beginTransaction();
-            $nextStep = $this->nextApprovalStep();
             $approval = ProcessApproval::create([
                 'approvable_type' => static::getApprovableType(),
                 'approvable_id' => $this->id,
@@ -543,8 +547,9 @@ trait Approvable
         if ($this->approvalsPaused) {
             throw ApprovalsPausedException::create($this);
         }
-        $user = $user ?? Auth::user();
+        $user = $user ?? static::resolveActingUser();
         $nextStep = $this->nextApprovalStep();
+        $this->ensureUserCanActOnStep($user, $nextStep);
         DB::beginTransaction();
         try {
             $approval = ProcessApproval::create([
@@ -586,9 +591,10 @@ trait Approvable
         if ($this->approvalsPaused) {
             throw ApprovalsPausedException::create($this);
         }
-        $user = $user ?? Auth::user();
+        $user = $user ?? static::resolveActingUser();
         $previousStep = $this->previousApprovalStep();
         $nextStep = $this->nextApprovalStep();
+        $this->ensureUserCanActOnStep($user, $nextStep);
         try {
             DB::beginTransaction();
             $approval = ProcessApproval::create([
@@ -643,7 +649,10 @@ trait Approvable
     public function getNextApprovers(): Collection
     {
         $nextStep = $this->nextApprovalStep();
-        return (config('process_approval.users_model'))::role($nextStep?->role)->get();
+        if (!$nextStep) {
+            return new Collection();
+        }
+        return app(RoleResolver::class)->usersWithRole($nextStep, $this);
     }
 
     /**
@@ -654,7 +663,30 @@ trait Approvable
     public function canBeApprovedBy(Authenticatable|null $user): bool|null
     {
         $nextStep = $this->nextApprovalStep();
-        return !$this->approvalsPaused && $this->isSubmitted() && $nextStep && $user?->hasRole($nextStep->role);
+        return !$this->approvalsPaused && $this->isSubmitted() && $nextStep && app(RoleResolver::class)->userHasRole($user, $nextStep, $this);
+    }
+
+    /**
+     * Ensure the user holds the role applicable to the given step
+     * @param Authenticatable|null $user
+     * @param ProcessApprovalFlowStep|null $step
+     * @return void
+     * @throws UnauthorizedApproverException
+     */
+    private function ensureUserCanActOnStep(Authenticatable|null $user, ProcessApprovalFlowStep|null $step): void
+    {
+        if (!$step || !app(RoleResolver::class)->userHasRole($user, $step, $this)) {
+            throw UnauthorizedApproverException::create($this);
+        }
+    }
+
+    /**
+     * Resolve the user acting on this request
+     * @return Authenticatable|null
+     */
+    private static function resolveActingUser(): Authenticatable|null
+    {
+        return app(UserResolver::class)->resolve(request());
     }
 
     /**

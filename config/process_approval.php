@@ -11,6 +11,24 @@ return [
 
 
     /**
+     * The class used to resolve the role applicable to an approval step and to check
+     * whether a user holds it. Must implement `RingleSoft\LaravelProcessApproval\Contracts\RoleResolver`.
+     *
+     * The default implementation uses spatie/laravel-permission's `hasRole()` and `role()` scope.
+     */
+    'role_resolver' => \RingleSoft\LaravelProcessApproval\Resolvers\DefaultRoleResolver::class,
+
+
+    /**
+     * The class used to resolve the user acting on approvals (submit, approve, reject, return, discard).
+     * Must implement `RingleSoft\LaravelProcessApproval\Contracts\UserResolver`.
+     *
+     * The default implementation returns the authenticated user.
+     */
+    'user_resolver' => \RingleSoft\LaravelProcessApproval\Resolvers\DefaultUserResolver::class,
+
+
+    /**
      * The User model class used as the actor/approver (usually your authenticatable model).
      */
     'users_model' => "\\App\\Models\\User",

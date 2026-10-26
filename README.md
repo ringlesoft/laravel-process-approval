@@ -189,6 +189,8 @@ php artisan vendor:publish --provider="RingleSoft\LaravelProcessApproval\Laravel
 ### Configurable parameters
 
 - `roles_model` - Specify the full class name of the model related to roles table. (default is Spatie's laravel-permissions  (`Spatie\Permissions\Models\Role`))
+- `role_resolver` - Specify the class that resolves the role applicable to an approval step (see [Custom Role Resolver](#custom-role-resolver)). (default is `RingleSoft\LaravelProcessApproval\Resolvers\DefaultRoleResolver`).
+- `user_resolver` - Specify the class that resolves the user acting on approvals (see [Custom User Resolver](#custom-user-resolver)). (default is `RingleSoft\LaravelProcessApproval\Resolvers\DefaultUserResolver`).
 - `users_model` - Specify the model that represents the authenticated users. (default is `App\Models\User`).
 - `models_path` - Specify the default namespace for models in your application. (default is `App\Models`).
 - `approval_controller_middlewares` - Specify any middlewares you want to apply to the ApprovalController. (Normally it
@@ -198,6 +200,67 @@ php artisan vendor:publish --provider="RingleSoft\LaravelProcessApproval\Laravel
 - `multi_tenancy_field` - Specify the multi-tenancy field in the users table. (default is `tenant_id`)
 - `use_uuids` - Enable UUID support for all package tables and UUID-based polymorphic relations (recommended for fresh installs).
 - `load_migrations` - If true, the package auto-loads vendor migrations. If you publish migrations into your app, make sure set this to `false`.
+
+### Custom Role Resolver
+
+Every approval step is assigned a role. The role resolver decides which role applies to a step, whether a user holds
+it, and which users hold it. It is used by `canBeApprovedBy()`, `getNextApprovers()` and the `approve()`, `reject()`,
+`return()` and `discard()` actions, which throw `UnauthorizedApproverException` when the user doesn't hold the role.
+
+The default resolver uses Spatie's `hasRole()` and `role()` scope. To customize it, extend `DefaultRoleResolver` (or
+implement `RingleSoft\LaravelProcessApproval\Contracts\RoleResolver`) and register it in the config:
+
+```php
+use Illuminate\Contracts\Auth\Authenticatable;
+use RingleSoft\LaravelProcessApproval\Contracts\ApprovableModel;
+use RingleSoft\LaravelProcessApproval\Models\ProcessApprovalFlowStep;
+use RingleSoft\LaravelProcessApproval\Resolvers\DefaultRoleResolver;
+
+class DepartmentRoleResolver extends DefaultRoleResolver
+{
+    public function userHasRole(?Authenticatable $user, ProcessApprovalFlowStep $step, ApprovableModel $model): bool
+    {
+        return parent::userHasRole($user, $step, $model) && $user->department_id === $model->department_id;
+    }
+}
+```
+
+```php
+// config/process_approval.php
+'role_resolver' => \App\Approvals\DepartmentRoleResolver::class,
+```
+
+### Custom User Resolver
+
+The user resolver decides who is acting when a model is submitted, approved, rejected, returned or discarded. It is used
+by the approval routes, by the model's action methods when no `$user` is passed, and by the approval actions component.
+The default resolver returns the authenticated user. Requests to the approval routes without a user get a `401`
+response, so it's recommended to set `approval_controller_middlewares` to `['auth']`.
+
+To customize it (e.g. to use a specific guard), extend `DefaultUserResolver` (or implement
+`RingleSoft\LaravelProcessApproval\Contracts\UserResolver`) and register it in the config:
+
+```php
+use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Http\Request;
+use RingleSoft\LaravelProcessApproval\Resolvers\DefaultUserResolver;
+
+class AdminUserResolver extends DefaultUserResolver
+{
+    public function resolve(Request|null $request = null): Authenticatable|null
+    {
+        return auth('admin')->user();
+    }
+}
+```
+
+```php
+// config/process_approval.php
+'user_resolver' => \App\Approvals\AdminUserResolver::class,
+```
+
+> **Warning:** The resolved user is trusted as the actor. Never return a user taken from request input (such as a
+> `user_id` field) unless you have authorized the authenticated user to act on their behalf.
 
 ### Model Submitting
 

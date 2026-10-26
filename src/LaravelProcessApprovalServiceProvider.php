@@ -8,6 +8,10 @@ use Illuminate\Support\ServiceProvider;
 use RingleSoft\LaravelProcessApproval\Console\Commands\FlowCommand;
 use RingleSoft\LaravelProcessApproval\Console\Commands\InstallCommand;
 use RingleSoft\LaravelProcessApproval\Console\Commands\StepCommand;
+use RingleSoft\LaravelProcessApproval\Contracts\RoleResolver;
+use RingleSoft\LaravelProcessApproval\Contracts\UserResolver;
+use RingleSoft\LaravelProcessApproval\Resolvers\DefaultRoleResolver;
+use RingleSoft\LaravelProcessApproval\Resolvers\DefaultUserResolver;
 use RingleSoft\LaravelProcessApproval\View\Components\ApprovalActions;
 use RingleSoft\LaravelProcessApproval\View\Components\ApprovalStatusSummary;
 
@@ -20,6 +24,14 @@ class LaravelProcessApprovalServiceProvider extends ServiceProvider
         $this->mergeConfigFrom(
             __DIR__ . '/../config/process_approval.php', 'process_approval'
         );
+
+        $this->app->bind(RoleResolver::class, static function ($app) {
+            return $app->make(config('process_approval.role_resolver') ?? DefaultRoleResolver::class);
+        });
+
+        $this->app->bind(UserResolver::class, static function ($app) {
+            return $app->make(config('process_approval.user_resolver') ?? DefaultUserResolver::class);
+        });
     }
 
     public function boot(): void

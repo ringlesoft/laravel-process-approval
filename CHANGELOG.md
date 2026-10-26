@@ -1,6 +1,18 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+### Added
+- `RoleResolver` contract and `DefaultRoleResolver`, configurable via `process_approval.role_resolver`, as the single point for resolving the role applicable to an approval step
+- `UserResolver` contract and `DefaultUserResolver`, configurable via `process_approval.user_resolver`, as the single point for resolving the user acting on approvals
+### Changed
+- The approval HTTP endpoints always act as the resolved (authenticated) user. The `user_id` request field is ignored, and requests without a user get a 401 response
+- The approval HTTP endpoints only accept a `model_name` that implements `ApprovableModel`
+- `submit()` checks the creator against the submitting user instead of `Auth::id()`
+- The bundled approval action views no longer send a `user_id` field
+- `approve()`, `reject()`, `return()` and `discard()` now throw `UnauthorizedApproverException` when the acting user doesn't hold the role of the current step (previously this was only checked in the UI)
+- `getNextApprovers()` returns an empty collection when there is no next step
+
 ## [1.1.2] - 2025-08-11
 ### Added
 - Blade template updates and approval action improvements

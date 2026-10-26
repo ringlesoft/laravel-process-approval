@@ -7,16 +7,17 @@ use Closure;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\View\Component;
 use RingleSoft\LaravelProcessApproval\Contracts\ApprovableModel;
+use RingleSoft\LaravelProcessApproval\Contracts\UserResolver;
 use RingleSoft\LaravelProcessApproval\Models\ProcessApprovalFlowStep;
 
 class ApprovalActions extends Component
 {
     public ProcessApprovalFlowStep|null $nextApprovalStep;
     public bool $userCanApprove;
+    public bool $userCanSubmit;
     public Collection $modelApprovalSteps;
 
     public function __construct(public ApprovableModel $model)
@@ -32,7 +33,9 @@ class ApprovalActions extends Component
             return $step;
         });
         $this->nextApprovalStep = $model->nextApprovalStep();
-        $this->userCanApprove = $model->canBeApprovedBy(Auth::user());
+        $user = app(UserResolver::class)->resolve(request());
+        $this->userCanApprove = (bool) $model->canBeApprovedBy($user);
+        $this->userCanSubmit = $user !== null && $model->canBeSubmittedBy($user);
     }
 
 

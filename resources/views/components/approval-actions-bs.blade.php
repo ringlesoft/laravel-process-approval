@@ -164,7 +164,7 @@
                     <div class="col-12 col-md-7">
                         <div class="text-black-50">
                             {{ __('ringlesoft::approvals.document_not_submitted') }}
-                            @if($model->canBeSubmittedBy(\Illuminate\Support\Facades\Auth::user()))
+                            @if($userCanSubmit)
                                 <span>
                             {{ __('ringlesoft::approvals.you_can_submit') }}
                         </span>
@@ -180,9 +180,8 @@
                             @if($model)
                                 <form action="{{route('ringlesoft.process-approval.submit', $model)}}" method="post">
                                     @csrf
-                                    <input type="hidden" name="user_id" value="{{auth()?->id()}}">
                                     <input type="hidden" name="model_name" value="{{$model->getApprovableType()}}">
-                                    @if($model->canBeSubmittedBy(\Illuminate\Support\Facades\Auth::user()))
+                                    @if($userCanSubmit)
                                         <button class="btn btn-success" type="submit">
                                             {{ __('ringlesoft::approvals.submit') }}
                                         </button>
@@ -196,14 +195,13 @@
         </div>
     </div>
     <!-- Modal -->
-    @if($model->canBeApprovedBy(auth()?->user()))
+    @if($userCanApprove)
         <div class="modal fade" id="modalApprove" data-{{$bsVersionAttribute}}backdrop="static" data-{{$bsVersionAttribute}}keyboard="false" tabindex="-1"
              aria-labelledby="modalApproveLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <form method="post" class="modal-content"
                       action="{{route('ringlesoft.process-approval.approve', $model)}}">
                     @csrf
-                    <input type="hidden" name="user_id" value="{{auth()?->id()}}">
                     <input type="hidden" name="model_name" value="{{$model->getApprovableType()}}">
                     <div class="modal-header">
                         <h5 class="modal-title"
@@ -234,7 +232,6 @@
                 <form method="post" class="modal-content"
                       action="{{route('ringlesoft.process-approval.reject', $model)}}">
                     @csrf
-                    <input type="hidden" name="user_id" value="{{auth()?->id()}}">
                     <input type="hidden" name="model_name" value="{{$model->getApprovableType()}}">
                     <div class="modal-header">
                         <h5 class="modal-title"
@@ -264,7 +261,6 @@
                 <form method="post" class="modal-content"
                       action="{{route('ringlesoft.process-approval.discard', $model)}}">
                     @csrf
-                    <input type="hidden" name="user_id" value="{{auth()?->id()}}">
                     <input type="hidden" name="model_name" value="{{$model->getApprovableType()}}">
                     <div class="modal-header">
                         <h5 class="modal-title"
@@ -298,7 +294,6 @@
                 <form method="post" class="modal-content"
                       action="{{route('ringlesoft.process-approval.return', $model)}}">
                     @csrf
-                    <input type="hidden" name="user_id" value="{{auth()?->id()}}">
                     <input type="hidden" name="model_name" value="{{$model->getApprovableType()}}">
                     <div class="modal-header">
                         <h5 class="modal-title"

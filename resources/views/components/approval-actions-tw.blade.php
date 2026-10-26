@@ -180,7 +180,7 @@
                     <div class="md:col-7">
                         <div class="text-gray-500 dark:text-gray-400">
                             {{ __('ringlesoft::approvals.document_not_submitted') }}
-                            @if($model->canBeSubmittedBy(\Illuminate\Support\Facades\Auth::user()))
+                            @if($userCanSubmit)
                                 <span>
                             {{ __('ringlesoft::approvals.you_can_submit') }}
                         </span>
@@ -196,9 +196,8 @@
                             @if($model)
                                 <form action="{{route('ringlesoft.process-approval.submit', $model)}}" method="post">
                                     @csrf
-                                    <input type="hidden" name="user_id" value="{{auth()?->id()}}">
                                     <input type="hidden" name="model_name" value="{{$model->getApprovableType()}}">
-                                    @if($model->canBeSubmittedBy(\Illuminate\Support\Facades\Auth::user()))
+                                    @if($userCanSubmit)
                                         <button
                                             class="block text-white bg-green-500 hover:bg-green-600 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-4 py-2.5 text-center dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800"
                                             type="submit">
@@ -215,7 +214,7 @@
     </div>
 
     <!-- Approve Modal -->
-    @if($model->canBeApprovedBy(auth()?->user()))
+    @if($userCanApprove)
         <div class="max-w-2xl mx-auto">
             <div id="approve-modal" aria-hidden="true"
                  class="hidden overflow-x-hidden overflow-y-auto fixed h-modal md:h-full top-4 left-0 right-0 md:inset-0 z-50 justify-center items-center">
@@ -239,7 +238,6 @@
                                 <h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">{{ __('ringlesoft::approvals.approve_request') }}</h3>
                                 <div>
                                     @csrf
-                                    <input type="hidden" name="user_id" value="{{auth()?->id()}}">
                                     <input type="hidden" name="model_name" value="{{$model->getApprovableType()}}">
                                     <div class="modal-body">
                                         <div class="form-group">
@@ -292,7 +290,6 @@
                                 <h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">{{ __('ringlesoft::approvals.reject_request') }}</h3>
                                 <div>
                                     @csrf
-                                    <input type="hidden" name="user_id" value="{{auth()?->id()}}">
                                     <input type="hidden" name="model_name" value="{{$model->getApprovableType()}}">
                                     <div class="modal-body">
                                         <div class="form-group">
@@ -348,7 +345,6 @@
                                 <h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">{{ __('ringlesoft::approvals.return_request') }}</h3>
                                 <div>
                                     @csrf
-                                    <input type="hidden" name="user_id" value="{{auth()?->id()}}">
                                     <input type="hidden" name="model_name" value="{{$model->getApprovableType()}}">
                                     <div class="modal-body">
                                         <div class="form-group">
@@ -402,7 +398,6 @@
                                 <h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">{{ __('ringlesoft::approvals.discard_request') }}</h3>
                                 <div>
                                     @csrf
-                                    <input type="hidden" name="user_id" value="{{auth()?->id()}}">
                                     <input type="hidden" name="model_name" value="{{$model->getApprovableType()}}">
                                     <div class="modal-body">
                                         <div class="form-group">

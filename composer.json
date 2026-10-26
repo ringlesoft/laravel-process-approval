@@ -31,8 +31,7 @@
         "illuminate/broadcasting": "^10|^11|^12|^13",
         "illuminate/database": "^10|^11|^12|^13",
         "illuminate/routing": "^10|^11|^12|^13"
-    }
-    ,
+    },
     "require-dev": {
         "roave/security-advisories": "dev-latest"
     },
@@ -44,8 +43,7 @@
             "aliases": {
                 "ProcessApproval": "RingleSoft\\LaravelProcessApproval\\Facade"
             },
-            "dont-discover": [
-            ]
+            "dont-discover": []
         }
     },
     "branches": {
@@ -53,7 +51,7 @@
             "name": "master"
         }
     },
-    "version": "1.1.5",
+    "version": "1.2.0",
     "minimum-stability": "dev",
     "prefer-stable": true
 }

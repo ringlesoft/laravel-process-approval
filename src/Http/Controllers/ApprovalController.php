@@ -10,7 +10,8 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Routing\Redirector;
-use Illuminate\Support\Facades\Auth;
+use RingleSoft\LaravelProcessApproval\Contracts\ApprovableModel;
+use RingleSoft\LaravelProcessApproval\Contracts\UserResolver;
 use RingleSoft\LaravelProcessApproval\Events\ApprovalNotificationEvent;
 
 class ApprovalController extends Controller
@@ -30,17 +31,16 @@ class ApprovalController extends Controller
      */
     public function submit(Request $request, $id): RedirectResponse|JsonResponse
     {
-        $userModel = config('process_approval.users_model');
+        $user = $this->resolveUser($request);
         $rules = [
-            'model_name' => ['string', 'required'],
-            'comment' => ['nullable'],
-            'user_id' => ['sometimes', 'exists:' . (new $userModel)->getTable() . ',id']
+            'model_name' => $this->modelNameRules(),
+            'comment' => ['nullable']
         ];
         $request->validate($rules);
         try {
             $className = $request->input('model_name');
             $model = $className::findOrFail($id);
-            if ($approval = $model->submit($this->getUser($request->get('user_id')))) {
+            if ($approval = $model->submit($user)) {
                 ApprovalNotificationEvent::dispatch(__('ringlesoft::messages.document_submitted'), $model);
             } else {
                 ApprovalNotificationEvent::dispatch(__('ringlesoft::messages.failed_to_submit_document'), $model, 'ERROR');
@@ -66,18 +66,17 @@ class ApprovalController extends Controller
      */
     public function approve(Request $request, $id): RedirectResponse|JsonResponse
     {
-        $userModel = config('process_approval.users_model');
+        $user = $this->resolveUser($request);
         $rules = [
-            'model_name' => ['string', 'required'],
-            'comment' => [],
-            'user_id' => ['sometimes', 'exists:' . (new $userModel)->getTable() . ',id']
+            'model_name' => $this->modelNameRules(),
+            'comment' => []
         ];
         $request->validate($rules);
         try {
             $className = $request->input('model_name');
             $model = $className::findOrFail($id);
             $comment = $request->input('comment');
-            if ($approval = $model->approve($comment, $this->getUser($request->get('user_id')))) {
+            if ($approval = $model->approve($comment, $user)) {
                 ApprovalNotificationEvent::dispatch(__('ringlesoft::messages.document_approved'), $model);
             } else {
                 ApprovalNotificationEvent::dispatch(__('ringlesoft::messages.failed_to_approve_document'), $model, 'ERROR');
@@ -104,18 +103,17 @@ class ApprovalController extends Controller
      */
     public function reject(Request $request, $id): RedirectResponse|JsonResponse
     {
-        $userModel = config('process_approval.users_model');
+        $user = $this->resolveUser($request);
         $rules = [
-            'model_name' => ['string', 'required'],
-            'comment' => ['string', 'required', 'min:1'],
-            'user_id' => ['sometimes', 'exists:' . (new $userModel)->getTable() . ',id']
+            'model_name' => $this->modelNameRules(),
+            'comment' => ['string', 'required', 'min:1']
         ];
         $request->validate($rules);
         try {
             $className = $request->input('model_name');
             $model = $className::findOrFail($id);
             $comment = $request->input('comment');
-            if ($approval = $model->reject($comment, $this->getUser($request->get('user_id')))) {
+            if ($approval = $model->reject($comment, $user)) {
                 ApprovalNotificationEvent::dispatch(__('ringlesoft::messages.document_rejected'), $model);
             } else {
                 ApprovalNotificationEvent::dispatch(__('messages.failed_to_reject_document'), $model, 'ERROR');
@@ -141,18 +139,17 @@ class ApprovalController extends Controller
      */
     public function return(Request $request, $id): RedirectResponse|JsonResponse
     {
-        $userModel = config('process_approval.users_model');
+        $user = $this->resolveUser($request);
         $rules = [
-            'model_name' => ['string', 'required'],
-            'comment' => ['string', 'required', 'min:1'],
-            'user_id' => ['sometimes', 'exists:' . (new $userModel)->getTable() . ',id']
+            'model_name' => $this->modelNameRules(),
+            'comment' => ['string', 'required', 'min:1']
         ];
         $request->validate($rules);
         try {
             $className = $request->input('model_name');
             $model = $className::findOrFail($id);
             $comment = $request->input('comment');
-            if ($approval = $model->return($comment, $this->getUser($request->get('user_id')))) {
+            if ($approval = $model->return($comment, $user)) {
                 ApprovalNotificationEvent::dispatch(__('ringlesoft::messages.document_returned'), $model);
             } else {
                 ApprovalNotificationEvent::dispatch(__('ringlesoft::messages.failed_to_return_document'), $model, 'ERROR');
@@ -178,18 +175,17 @@ class ApprovalController extends Controller
      */
     public function discard(Request $request, $id): RedirectResponse|JsonResponse
     {
-        $userModel = config('process_approval.users_model');
+        $user = $this->resolveUser($request);
         $rules = [
-            'model_name' => ['string', 'required'],
-            'comment' => [],
-            'user_id' => ['sometimes', 'exists:' . (new $userModel)->getTable() . ',id']
+            'model_name' => $this->modelNameRules(),
+            'comment' => []
         ];
         $request->validate($rules);
         try {
             $className = $request->input('model_name');
             $model = $className::findOrFail($id);
             $comment = $request->input('comment');
-            if ($approval = $model->discard($comment, $this->getUser($request->get('user_id')))) {
+            if ($approval = $model->discard($comment, $user)) {
                 ApprovalNotificationEvent::dispatch(__('ringlesoft::messages.document_discarded'), $model);
             } else {
                 ApprovalNotificationEvent::dispatch(__('ringlesoft::messages.failed_to_discard_document'), $model, 'ERROR');
@@ -207,9 +203,29 @@ class ApprovalController extends Controller
         return $this->redirector->back();
     }
 
-    private function getUser($user_id): Authenticatable|null
+    /**
+     * Resolve the acting user, aborting with 401 when there is none
+     * @param Request $request
+     * @return Authenticatable
+     */
+    private function resolveUser(Request $request): Authenticatable
     {
-        return (config('process_approval.users_model'))::find($user_id) ?? Auth::user();
+        $user = app(UserResolver::class)->resolve($request);
+        abort_if($user === null, 401);
+        return $user;
+    }
+
+    /**
+     * Validation rules ensuring `model_name` refers to an approvable model class
+     * @return array
+     */
+    private function modelNameRules(): array
+    {
+        return ['string', 'required', static function ($attribute, $value, $fail) {
+            if (!is_string($value) || !is_a($value, ApprovableModel::class, true)) {
+                $fail('The selected model is not approvable.');
+            }
+        }];
     }
 
     private function jsonResponse($data, $error = null, $status = null): JsonResponse

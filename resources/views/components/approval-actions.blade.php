@@ -376,13 +376,12 @@
     </div>
 
     <!-- Modals -->
-    @if($model->canBeApprovedBy(auth()?->user()))
+    @if($userCanApprove)
         <div class="lpa-modal" id="approve-modal">
             <div class="lpa-modal-content">
                 <button class="lpa-modal-close close-modal" data-modal="approve-modal">✕</button>
                 <form method="post" action="{{route('ringlesoft.process-approval.approve', $model)}}">
                     @csrf
-                    <input type="hidden" name="user_id" value="{{auth()?->id()}}">
                     <input type="hidden" name="model_name" value="{{$model->getApprovableType()}}">
                     <h3 style="margin-bottom: 20px; color: #6b7280;">{{ __('ringlesoft::approvals.approve_request') }}</h3>
                     <textarea name="comment"
@@ -407,7 +406,6 @@
                 <button class="lpa-modal-close close-modal" data-modal="reject-modal">✕</button>
                 <form method="post" action="{{route('ringlesoft.process-approval.reject', $model)}}">
                     @csrf
-                    <input type="hidden" name="user_id" value="{{auth()?->id()}}">
                     <input type="hidden" name="model_name" value="{{$model->getApprovableType()}}">
                     <h3 style="margin-bottom: 20px; color: #6b7280;">{{ __('ringlesoft::approvals.reject_request') }}</h3>
                     <textarea name="comment" placeholder="{{ __('ringlesoft::approvals.write_comment') }}"
@@ -433,7 +431,6 @@
                 <button class="lpa-modal-close close-modal" data-modal="return-modal">✕</button>
                 <form method="post" action="{{route('ringlesoft.process-approval.return', $model)}}">
                     @csrf
-                    <input type="hidden" name="user_id" value="{{auth()?->id()}}">
                     <input type="hidden" name="model_name" value="{{$model->getApprovableType()}}">
                     <h3 style="margin-bottom: 20px; color: #6b7280;">{{ __('ringlesoft::approvals.return_request') }}</h3>
                     <textarea name="comment" placeholder="{{ __('ringlesoft::approvals.write_comment') }}"
@@ -459,7 +456,6 @@
                 <button class="lpa-modal-close close-modal" data-modal="discard-modal">✕</button>
                 <form method="post" action="{{route('ringlesoft.process-approval.discard', $model)}}">
                     @csrf
-                    <input type="hidden" name="user_id" value="{{auth()?->id()}}">
                     <input type="hidden" name="model_name" value="{{$model->getApprovableType()}}">
                     <h3 style="margin-bottom: 20px; color: #6b7280;">{{ __('ringlesoft::approvals.discard_request') }}</h3>
                     <textarea name="comment" placeholder="{{ __('ringlesoft::approvals.write_comment') }}"
